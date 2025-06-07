@@ -42,22 +42,19 @@ from sklearn.model_selection import train_test_split
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.config.manager import ConfigManager
-from src.data.loading import load_dataset
-from src.data.processing import DataProcessor
-from src.data.validation import DataValidator
-from src.models.evaluation import ModelEvaluator
-from src.models.inference import ModelPredictor
-from src.models.training import ModelTrainer
-from src.plugins.registry import get_available_plugins, get_plugin
+from src.data.loading import load_data, save_data
+from src.data.processing import clean_data, normalize_features
+from src.data.validation import generate_data_quality_report
+from src.models.evaluation import evaluate_classification_model
+from src.models.inference import predict
+from src.models.training import load_model, save_model, train_model
+from src.plugins.registry import get_plugin, list_plugins
 from src.utils.common import (
     get_data_path,
     get_model_path,
     get_reports_path,
     setup_logging,
 )
-from workflows.data_ingestion import ingest_data_workflow
-from workflows.model_evaluation import evaluate_model_workflow
-from workflows.model_training import train_model_workflow
 
 
 class MLOpsPlatformDemo:
@@ -69,12 +66,23 @@ class MLOpsPlatformDemo:
         self.config_manager = ConfigManager()
 
         # Ensure directories exist
-        for path_func in [get_data_path, get_model_path, get_reports_path]:
-            try:
-                path = path_func("temp")
-                path.parent.mkdir(parents=True, exist_ok=True)
-            except Exception as e:
+        try:
+            # Create basic directory structure
+            for data_type in ["raw", "processed"]:
+                path = get_data_path(data_type)
+                path.mkdir(parents=True, exist_ok=True)
+
+            model_path = get_model_path("trained")
+            model_path.mkdir(parents=True, exist_ok=True)
+
+            reports_path = get_reports_path("documents")
+            reports_path.mkdir(parents=True, exist_ok=True)
+
+        except Exception as e:
+            if self.logger:
                 self.logger.warning(f"Could not create directory: {e}")
+            else:
+                print(f"Warning: Could not create directory: {e}")
 
     def print_header(self, title: str) -> None:
         """Print a formatted section header."""
@@ -125,28 +133,34 @@ class MLOpsPlatformDemo:
 
             # Data validation
             self.print_subheader("Data Validation")
-            validator = DataValidator()
-            validation_result = validator.validate_dataframe(df)
-            self.print_success(f"Data validation completed: {validation_result}")
+            # Convert pandas DataFrame to polars for validation
+            import polars as pl
+
+            df_polars = pl.from_pandas(df)
+            validation_result = generate_data_quality_report(df_polars)
+            self.print_success(
+                f"Data validation completed: {len(validation_result)} checks"
+            )
 
             # Data processing
             self.print_subheader("Data Processing")
-            processor = DataProcessor()
-            processed_data = processor.clean_data(df)
-            scaled_data = processor.scale_features(processed_data[feature_names])
+            # Convert to polars for processing
+            processed_data = clean_data(df_polars)
+            scaled_data = normalize_features(processed_data, columns=feature_names)
             self.print_success(f"Data processing completed: {scaled_data.shape}")
 
             # Save processed data
             processed_path = get_data_path("processed") / "sample_data_processed.csv"
             processed_path.parent.mkdir(parents=True, exist_ok=True)
 
-            processed_df = processed_data.copy()
-            processed_df[feature_names] = scaled_data
-            processed_df.to_csv(processed_path, index=False)
+            # Convert back to pandas for saving
+            scaled_df_pandas = scaled_data.to_pandas()
+            scaled_df_pandas.to_csv(processed_path, index=False)
             self.print_success(f"Processed data saved to {processed_path}")
 
         except Exception as e:
-            self.logger.error(f"Data workflow demonstration failed: {e}")
+            if self.logger:
+                self.logger.error(f"Data workflow demonstration failed: {e}")
             print(f"❌ Data workflow error: {e}")
 
     def demonstrate_model_workflows(self) -> None:
@@ -179,43 +193,59 @@ class MLOpsPlatformDemo:
 
             # Model training
             self.print_subheader("Model Training")
-            trainer = ModelTrainer()
-            model = trainer.train_model(X_train, y_train, model_type="random_forest")
+            from sklearn.ensemble import RandomForestClassifier
+
+            model = RandomForestClassifier(n_estimators=100, random_state=42)
+            trained_model = train_model(X_train, y_train, model)
             self.print_success("Random Forest model trained successfully")
 
             # Save model
-            model_path = get_model_path() / "demo_model.pkl"
+            model_path = get_model_path("trained") / "demo_model.pkl"
             model_path.parent.mkdir(parents=True, exist_ok=True)
-            trainer.save_model(model, model_path)
+            model_metadata = {
+                "model_type": "RandomForestClassifier",
+                "n_estimators": 100,
+            }
+            save_model(trained_model, model_path, model_metadata)
             self.print_success(f"Model saved to {model_path}")
 
             # Model evaluation
             self.print_subheader("Model Evaluation")
-            evaluator = ModelEvaluator()
-            predictions = model.predict(X_test)
-            metrics = evaluator.calculate_classification_metrics(y_test, predictions)
+            metrics = evaluate_classification_model(trained_model, X_test, y_test)
 
             print("📈 Model Performance:")
             for metric, value in metrics.items():
-                print(f"   {metric}: {value:.4f}")
+                if metric != "confusion_matrix":  # Skip confusion matrix for display
+                    if isinstance(value, int | float):
+                        print(f"   {metric}: {value:.4f}")
+                    else:
+                        print(f"   {metric}: {value}")
 
             # Generate evaluation report
-            report_path = get_reports_path() / "model_evaluation_report.json"
+            report_path = get_reports_path("documents") / "model_evaluation_report.json"
             report_path.parent.mkdir(parents=True, exist_ok=True)
 
+            # Convert numpy arrays to lists for JSON serialization
+            serializable_metrics = {}
+            for key, value in metrics.items():
+                if hasattr(value, "tolist"):
+                    serializable_metrics[key] = value.tolist()
+                else:
+                    serializable_metrics[key] = value
+
             with open(report_path, "w") as f:
-                json.dump(metrics, f, indent=2)
+                json.dump(serializable_metrics, f, indent=2)
             self.print_success(f"Evaluation report saved to {report_path}")
 
             # Model inference
             self.print_subheader("Model Inference")
-            predictor = ModelPredictor()
-            loaded_model = predictor.load_model(model_path)
-            sample_prediction = predictor.predict(loaded_model, X_test.iloc[:5])
+            loaded_model, loaded_info = load_model(model_path)
+            sample_prediction = predict(loaded_model, X_test.iloc[:5])
             self.print_success(f"Sample predictions: {sample_prediction}")
 
         except Exception as e:
-            self.logger.error(f"Model workflow demonstration failed: {e}")
+            if self.logger:
+                self.logger.error(f"Model workflow demonstration failed: {e}")
             print(f"❌ Model workflow error: {e}")
 
     def demonstrate_api_service(self) -> None:
@@ -246,7 +276,7 @@ class MLOpsPlatformDemo:
                     print(f"Available models: {models_response.json()}")
 
                     # Sample prediction (if model exists)
-                    model_path = get_model_path() / "demo_model.pkl"
+                    model_path = get_model_path("trained") / "demo_model.pkl"
                     if model_path.exists():
                         sample_data = {
                             "features": {
@@ -284,7 +314,8 @@ class MLOpsPlatformDemo:
                     print(f"   • {endpoint}")
 
         except Exception as e:
-            self.logger.error(f"API demonstration failed: {e}")
+            if self.logger:
+                self.logger.error(f"API demonstration failed: {e}")
             print(f"❌ API demonstration error: {e}")
 
     def demonstrate_docker_integration(self) -> None:
@@ -345,7 +376,8 @@ class MLOpsPlatformDemo:
                 )
 
         except Exception as e:
-            self.logger.error(f"Docker demonstration failed: {e}")
+            if self.logger:
+                self.logger.error(f"Docker demonstration failed: {e}")
             print(f"❌ Docker demonstration error: {e}")
 
     def demonstrate_ml_workflows(self) -> None:
@@ -385,7 +417,8 @@ class MLOpsPlatformDemo:
                 self.print_info("Workflows can be run individually with make commands")
 
         except Exception as e:
-            self.logger.error(f"Workflow demonstration failed: {e}")
+            if self.logger:
+                self.logger.error(f"Workflow demonstration failed: {e}")
             print(f"❌ Workflow demonstration error: {e}")
 
     def demonstrate_plugin_system(self) -> None:
@@ -396,7 +429,7 @@ class MLOpsPlatformDemo:
             self.print_subheader("Available Plugins")
 
             try:
-                plugins = get_available_plugins()
+                plugins = list_plugins()
                 if plugins:
                     for plugin_name in plugins:
                         self.print_success(f"Plugin: {plugin_name}")
@@ -432,7 +465,8 @@ class MLOpsPlatformDemo:
                 print(f"   • {point}")
 
         except Exception as e:
-            self.logger.error(f"Plugin demonstration failed: {e}")
+            if self.logger:
+                self.logger.error(f"Plugin demonstration failed: {e}")
             print(f"❌ Plugin demonstration error: {e}")
 
     def run_comprehensive_demo(self) -> None:
