@@ -119,7 +119,7 @@ class MLOpsPlatformDemo:
             )
 
             # Create DataFrame
-            feature_names = [f"feature_{i+1}" for i in range(X.shape[1])]
+            feature_names = [f"feature_{i + 1}" for i in range(X.shape[1])]
             df = pd.DataFrame(X, columns=feature_names)
             df["target"] = y
 
@@ -280,7 +280,7 @@ class MLOpsPlatformDemo:
                     if model_path.exists():
                         sample_data = {
                             "features": {
-                                f"feature_{i+1}": float(i * 0.1) for i in range(10)
+                                f"feature_{i + 1}": float(i * 0.1) for i in range(10)
                             },
                             "model_name": "demo_model",
                         }
