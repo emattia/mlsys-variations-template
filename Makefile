@@ -1,7 +1,7 @@
 # MLOps Template Makefile
 # Production-ready machine learning operations template
 
-.PHONY: help install install-dev clean lint format type-check test unit-test integration-test
+.PHONY: help install install-dev install-uv clean lint format type-check test unit-test integration-test
 .PHONY: all-checks all-checks-strict pre-commit run-api docker-build docker-run docker-compose
 .PHONY: demo-comprehensive demo-data demo-models demo-api demo-workflows demo-plugins
 
@@ -25,6 +25,7 @@ help:
 	@echo "  make install        Install production dependencies"
 	@echo "  make install-dev    Install development dependencies"
 	@echo "  make clean         Clean up generated files"
+	@echo "  make install-uv    Install uv package manager"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  make lint          Run linting checks"
@@ -57,15 +58,23 @@ help:
 	@echo "  make docker-clean  Clean Docker images and containers"
 
 # Environment setup
-install:
-	@echo "Installing production dependencies..."
-	python -m venv $(VENV)
-	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements.txt
+install-uv:
+	@echo "Installing uv package manager..."
+	@command -v uv >/dev/null 2>&1 && { echo "uv already installed"; exit 0; } || true
+	curl -LsSf https://astral.sh/uv/install.sh | sh
+	@echo "uv installed! You may need to restart your shell or run: source ~/.bashrc"
 
-install-dev: install
-	@echo "Installing development dependencies..."
-	$(PIP) install -r requirements-dev.txt
+install:
+	@echo "Installing production dependencies with uv..."
+	@command -v uv >/dev/null 2>&1 || { echo "uv not found. Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"; exit 1; }
+	uv venv $(VENV)
+	uv pip install -e .
+
+install-dev:
+	@echo "Installing development dependencies with uv..."
+	@command -v uv >/dev/null 2>&1 || { echo "uv not found. Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"; exit 1; }
+	uv venv $(VENV)
+	uv pip install -e ".[dev]"
 
 clean:
 	@echo "Cleaning up generated files..."
@@ -80,28 +89,28 @@ clean:
 # Code quality and testing
 lint:
 	@echo "Running linting checks..."
-	@. $(VENV_ACTIVATE); ruff check .
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff check .
 
 format:
 	@echo "Formatting code..."
-	@. $(VENV_ACTIVATE); ruff format .
-	@. $(VENV_ACTIVATE); ruff check --fix .
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff format .
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff check --fix .
 
 type-check:
 	@echo "Running type checks..."
-	@. $(VENV_ACTIVATE); mypy .
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; mypy .
 
 test:
 	@echo "Running all tests..."
-	@. $(VENV_ACTIVATE); python -m pytest tests/ -v --cov=src --cov-report=term-missing
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python -m pytest tests/ -v --cov=src --cov-report=term-missing
 
 unit-test:
 	@echo "Running unit tests..."
-	@. $(VENV_ACTIVATE); python -m pytest tests/ -v --cov=src --cov-report=term-missing -m "not integration"
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python -m pytest tests/ -v --cov=src --cov-report=term-missing -m "not integration"
 
 integration-test:
 	@echo "Running integration tests..."
-	@. $(VENV_ACTIVATE); python -m pytest tests/integration/ -v
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python -m pytest tests/integration/ -v
 
 all-checks: lint format unit-test
 	@echo "All development checks completed successfully!"
@@ -111,41 +120,41 @@ all-checks-strict: lint format type-check test
 
 pre-commit:
 	@echo "Setting up pre-commit hooks..."
-	@. $(VENV_ACTIVATE); pre-commit install
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; pre-commit install
 
 # Demonstration targets
 demo-comprehensive:
 	@echo "Running comprehensive platform demonstration..."
-	@. $(VENV_ACTIVATE); python demo_comprehensive.py
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python demo_comprehensive.py
 
 demo-data:
 	@echo "Demonstrating data workflows..."
-	@. $(VENV_ACTIVATE); python demo_comprehensive.py --component data
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python demo_comprehensive.py --component data
 
 demo-models:
 	@echo "Demonstrating model workflows..."
-	@. $(VENV_ACTIVATE); python demo_comprehensive.py --component models
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python demo_comprehensive.py --component models
 
 demo-api:
 	@echo "Demonstrating API endpoints..."
-	@. $(VENV_ACTIVATE); python demo_comprehensive.py --component api
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python demo_comprehensive.py --component api
 
 demo-workflows:
 	@echo "Demonstrating ML workflows..."
-	@. $(VENV_ACTIVATE); python demo_comprehensive.py --component workflows
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python demo_comprehensive.py --component workflows
 
 demo-plugins:
 	@echo "Demonstrating plugin system..."
-	@. $(VENV_ACTIVATE); python demo_comprehensive.py --component plugins
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python demo_comprehensive.py --component plugins
 
 # API and service management
 run-api:
 	@echo "Starting FastAPI development server..."
-	@. $(VENV_ACTIVATE); cd src && python -m uvicorn api.app:app --reload --host 0.0.0.0 --port 8000
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; cd src && python -m uvicorn api.app:app --reload --host 0.0.0.0 --port 8000
 
 run-api-prod:
 	@echo "Starting production API server..."
-	@. $(VENV_ACTIVATE); cd src && python -m uvicorn api.app:app --host 0.0.0.0 --port 8000 --workers 4
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; cd src && python -m uvicorn api.app:app --host 0.0.0.0 --port 8000 --workers 4
 
 # Docker targets
 docker-build:
