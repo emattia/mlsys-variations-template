@@ -42,7 +42,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv pip install -e ".[dev]"
+        uv pip install --system -e ".[dev]"
 
     - name: Run basic CI validation
       run: |
@@ -82,7 +82,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv pip install bandit[toml] safety
+        uv pip install --system bandit[toml] safety
 
     - name: Run security checks with bandit
       run: |
@@ -141,7 +141,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv pip install -e ".[dev]"
+        uv pip install --system -e ".[dev]"
 
     - name: Run integration tests
       run: |
@@ -175,8 +175,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv pip install -e ".[dev]"
-        uv pip install radon xenon
+        uv pip install --system -e ".[dev]"
+        uv pip install --system radon xenon
 
     - name: Check code complexity
       run: |

@@ -23,8 +23,8 @@ jobs:
 
       - name: Install latest dependencies
         run: |
-          uv pip install -r requirements-unpinned.txt
-          uv pip install -e ".[dev]"
+          uv pip install --system -r requirements-unpinned.txt
+          uv pip install --system -e ".[dev]"
 
       - name: Run all checks
         id: run-checks
@@ -45,7 +45,7 @@ jobs:
             echo "" >> $REPORT_PATH
             echo "### :package: Dependencies Tested" >> $REPORT_PATH
             echo '```' >> $REPORT_PATH
-            uv pip freeze >> $REPORT_PATH
+            uv pip freeze --system >> $REPORT_PATH
             echo '```' >> $REPORT_PATH
           else
             echo "## Dependency Check Report" > $REPORT_PATH

@@ -41,7 +41,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv pip install -e ".[dev]"
+        uv pip install --system -e ".[dev]"
 
     - name: Lint with ruff
       run: |
@@ -77,7 +77,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv pip install -e ".[dev]"
+        uv pip install --system -e ".[dev]"
 
     - name: Run workflow tests
       run: |
