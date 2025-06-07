@@ -1,0 +1,71 @@
+site_name: Analysis Template
+site_description: A streamlined data science project template
+site_author: Your Name
+repo_url: https://github.com/yourusername/analysis-template
+repo_name: analysis-template
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+    - content.code.annotate
+    - content.tabs.link
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed
+  - pymdownx.arithmatex:
+      generic: true
+  - tables
+  - footnotes
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            docstring_style: google
+          rendering:
+            show_source: true
+  - nbdoc:
+      notebooks_dir: notebooks/
+      include_source: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+    - Project Structure: user-guide/project-structure.md
+    - Data Processing: user-guide/data-processing.md
+    - Modeling: user-guide/modeling.md
+    - Evaluation: user-guide/evaluation.md
+  - Notebooks:
+    - Example Analysis: notebooks/example_analysis.md
+  - API Reference:
+    - Data Utils: api/data_utils.md
+  - Development:
+    - Contributing: development/contributing.md
+    - Testing: development/testing.md
+    - Documentation: development/documentation.md
+  - About:
+    - License: about/license.md
+    - Changelog: about/changelog.md

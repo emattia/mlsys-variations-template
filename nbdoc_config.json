@@ -1,0 +1,35 @@
+{
+  "project_name": "Analysis Template",
+  "output_dir": "documentation/generated",
+  "exclude_patterns": ["*draft*", "*scratch*"],
+  "include_source": true,
+  "theme": "readthedocs",
+  "notebooks_dir": "notebooks/",
+  "api_dir": "src/",
+  "logo": null,
+  "repository_url": "https://github.com/yourusername/analysis-template",
+  "author": "Your Name",
+  "version": "0.1.0",
+  "sections": [
+    {
+      "name": "Getting Started",
+      "notebooks": ["example_analysis.ipynb"]
+    },
+    {
+      "name": "Data Processing",
+      "notebooks": []
+    },
+    {
+      "name": "Modeling",
+      "notebooks": []
+    },
+    {
+      "name": "Evaluation",
+      "notebooks": []
+    }
+  ],
+  "metadata": {
+    "description": "A streamlined data science project template with best practices for reproducibility, code quality, and collaboration.",
+    "keywords": ["data science", "machine learning", "template", "reproducibility"]
+  }
+}

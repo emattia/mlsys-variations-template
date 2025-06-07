@@ -1,0 +1,192 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      run: pip install uv
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/uv
+        key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-uv-
+
+    - name: Install dependencies
+      run: |
+        uv pip install --system -e ".[dev]"
+
+    - name: Lint with ruff
+      run: |
+        ruff check src/ tests/
+        ruff format --check src/ tests/
+
+    - name: Type check with mypy
+      run: |
+        mypy src/ --ignore-missing-imports
+
+    - name: Test with pytest
+      run: |
+        pytest tests/ -v --cov=src --cov-report=xml --cov-report=html
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        pip install bandit[toml] safety
+
+    - name: Run security checks with bandit
+      run: |
+        bandit -r src/ -f json -o bandit-report.json || true
+        bandit -r src/ --severity-level medium
+
+    - name: Check for vulnerabilities with safety
+      run: |
+        safety check --json --output safety-report.json || true
+        safety check
+
+  docker:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t mlops-template:test .
+
+    - name: Test Docker image
+      run: |
+        # Start container in background
+        docker run -d --name test-container -p 8000:8000 mlops-template:test
+
+        # Wait for container to be ready
+        sleep 30
+
+        # Test health endpoint
+        curl -f http://localhost:8000/api/v1/health || exit 1
+
+        # Cleanup
+        docker stop test-container
+        docker rm test-container
+
+  integration:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    services:
+      api:
+        image: python:3.11-slim
+        ports:
+          - 8000:8000
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        pip install uv
+        uv pip install --system -e ".[dev]"
+
+    - name: Run integration tests
+      run: |
+        # Start API server in background
+        uvicorn src.api.app:app --host 0.0.0.0 --port 8000 &
+        API_PID=$!
+
+        # Wait for server to start
+        sleep 10
+
+        # Run integration tests
+        python -m pytest tests/integration/ -v || true
+
+        # Cleanup
+        kill $API_PID || true
+
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        pip install uv
+        uv pip install --system -e ".[dev]"
+        pip install radon xenon
+
+    - name: Check code complexity
+      run: |
+        radon cc src/ --min B
+        radon mi src/ --min B
+        xenon src/ --max-absolute B --max-modules B
+
+  build-info:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Generate build info
+      run: |
+        echo "Build Information:" > build-info.txt
+        echo "Branch: ${{ github.ref_name }}" >> build-info.txt
+        echo "Commit: ${{ github.sha }}" >> build-info.txt
+        echo "Build Date: $(date -u)" >> build-info.txt
+        echo "Python Version: ${{ env.PYTHON_VERSION }}" >> build-info.txt
+        cat build-info.txt
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-info
+        path: build-info.txt

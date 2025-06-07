@@ -1,0 +1,10 @@
+jupyterlab
+matplotlib
+polars
+seaborn
+scikit-learn
+pytest
+ruff
+pre-commit
+python-dotenv
+pyarrow
