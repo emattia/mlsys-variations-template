@@ -56,7 +56,6 @@ logs/
 data/raw/
 data/processed/
 .hydra/
-conf/
 
 # Testing
 tests/

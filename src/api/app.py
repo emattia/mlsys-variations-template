@@ -32,12 +32,24 @@ async def lifespan(app: FastAPI):
     # Initialize configuration
     try:
         config_manager = ConfigManager()
-        config = config_manager.get_config()
+        # Try to load existing config, create default if none exists
+        try:
+            config = config_manager.load_config()
+        except Exception as config_load_error:
+            logger.warning(f"Could not load existing config: {config_load_error}")
+            logger.info("Creating default configuration...")
+            config_manager.create_default_config_files()
+            config = config_manager.load_config()
+
         app.state.config = config
         logger.info("Configuration loaded successfully")
     except Exception as e:
         logger.error(f"Failed to load configuration: {e}")
-        raise
+        # Create a minimal default config instead of failing
+        logger.info("Using minimal default configuration")
+        from ..config.models import AppConfig
+
+        app.state.config = AppConfig()
 
     yield
 
