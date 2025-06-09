@@ -2,10 +2,6 @@
 
 A comprehensive MLOps repository template that provides a production-ready foundation for machine learning projects. This template supports both **platform maintainers** who need to set up ML infrastructure and **data scientists/ML engineers** who need to build, train, and deploy ML models.
 
-[![CI/CD Pipeline](https://github.com/your-org/mlops-template/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/mlops-template/actions/workflows/ci.yml)
-[![Code Quality](https://github.com/your-org/mlops-template/actions/workflows/cd.yml/badge.svg)](https://github.com/your-org/mlops-template/actions/workflows/cd.yml)
-[![Coverage](https://img.shields.io/badge/coverage-81%25-brightgreen)](https://github.com/your-org/mlops-template)
-
 ## 🎯 **For Platform Maintainers**
 
 If you're setting up ML infrastructure for your organization, this template provides:

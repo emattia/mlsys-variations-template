@@ -3,6 +3,7 @@
 This module contains comprehensive tests for the data processing functions.
 """
 
+import logging
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -10,7 +11,7 @@ from unittest.mock import patch
 import numpy as np
 import polars as pl
 import pytest
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 from src.data.processing import (
     clean_data,
@@ -31,7 +32,7 @@ def test_clean_data_basic():
 
     result = clean_data(df)
 
-    # Should keep only rows with no null values
+    # Policy decision: only rows with no null values
     assert len(result) == 1
     assert result["A"][0] == 1
     assert result["B"][0] == 1.0

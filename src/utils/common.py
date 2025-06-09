@@ -14,6 +14,37 @@ from src.config import AppConfig, ConfigManager
 logger = logging.getLogger(__name__)
 
 
+def _setup_fallback_logging(
+    level: str | None, log_format: str | None, log_file: str | None
+) -> None:
+    """Setup basic logging configuration when no config is available."""
+    logging.basicConfig(
+        level=getattr(logging, (level or "INFO").upper()),
+        format=log_format or "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler()]
+        if not log_file
+        else [logging.FileHandler(log_file)],
+        force=True,
+    )
+
+
+def _create_logging_handlers(
+    config: AppConfig, actual_file: str | None
+) -> list[logging.Handler]:
+    """Create logging handlers based on configuration."""
+    handlers = []
+
+    if config.logging.console:
+        handlers.append(logging.StreamHandler())
+
+    if actual_file:
+        log_path = Path(actual_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        handlers.append(logging.FileHandler(actual_file))
+
+    return handlers
+
+
 def setup_logging(
     config: AppConfig | None = None,
     level: str | None = None,
@@ -32,16 +63,7 @@ def setup_logging(
         try:
             config = ConfigManager().get_config()
         except RuntimeError:
-            # Fallback to basic logging setup if no config available
-            logging.basicConfig(
-                level=getattr(logging, (level or "INFO").upper()),
-                format=log_format
-                or "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                handlers=[logging.StreamHandler()]
-                if not log_file
-                else [logging.FileHandler(log_file)],
-                force=True,
-            )
+            _setup_fallback_logging(level, log_format, log_file)
             return
 
     # Use config values with overrides
@@ -51,17 +73,7 @@ def setup_logging(
         str(config.logging.file) if config.logging.file else None
     )
 
-    # Configure logging
-    handlers = []
-
-    if config.logging.console:
-        handlers.append(logging.StreamHandler())
-
-    if actual_file:
-        # Ensure log directory exists
-        log_path = Path(actual_file)
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        handlers.append(logging.FileHandler(actual_file))
+    handlers = _create_logging_handlers(config, actual_file)
 
     logging.basicConfig(
         level=getattr(logging, actual_level.upper()),

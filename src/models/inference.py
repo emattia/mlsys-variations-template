@@ -52,6 +52,77 @@ def predict(
     return y_pred
 
 
+def _load_data_file(input_path: Path) -> pl.DataFrame:
+    """Load data from a file based on its format."""
+    file_format = input_path.suffix.lstrip(".")
+
+    if file_format.lower() == "csv":
+        return pl.read_csv(input_path)
+    elif file_format.lower() == "parquet":
+        return pl.read_parquet(input_path)
+    elif file_format.lower() == "json":
+        return pl.read_json(input_path)
+    else:
+        raise ValueError(f"Unsupported file format: {file_format}")
+
+
+def _make_predictions_with_probabilities(
+    model, X, return_probabilities: bool
+) -> tuple[np.ndarray, np.ndarray | None, bool]:
+    """Make predictions and optionally return probabilities."""
+    if return_probabilities:
+        try:
+            y_pred, y_prob = predict(model, X, return_probabilities=True)
+            return y_pred, y_prob, True
+        except (AttributeError, NotImplementedError, ValueError, TypeError):
+            y_pred = predict(model, X, return_probabilities=False)
+            return y_pred, None, False
+    else:
+        y_pred = predict(model, X, return_probabilities=False)
+        return y_pred, None, False
+
+
+def _create_result_dataframe(
+    df: pl.DataFrame,
+    y_pred: np.ndarray,
+    y_prob: np.ndarray | None,
+    id_column: str | None,
+    has_probabilities: bool,
+) -> pl.DataFrame:
+    """Create result DataFrame with predictions and optional probabilities."""
+    if id_column is not None:
+        result_df = pl.DataFrame({id_column: df[id_column], "prediction": y_pred})
+    else:
+        result_df = pl.DataFrame({"prediction": y_pred})
+
+    # Add probabilities if available
+    if has_probabilities and isinstance(y_prob, np.ndarray):
+        if y_prob.shape[1] == 2:  # Binary classification
+            result_df = result_df.with_columns(pl.Series("probability", y_prob[:, 1]))
+        else:  # Multi-class classification
+            for i in range(y_prob.shape[1]):
+                result_df = result_df.with_columns(
+                    pl.Series(f"probability_class_{i}", y_prob[:, i])
+                )
+
+    return result_df
+
+
+def _save_results(result_df: pl.DataFrame, output_path: Path) -> None:
+    """Save results to file based on output format."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_format = output_path.suffix.lstrip(".")
+
+    if output_format.lower() == "csv":
+        result_df.write_csv(output_path)
+    elif output_format.lower() == "parquet":
+        result_df.write_parquet(output_path)
+    elif output_format.lower() == "json":
+        result_df.write_json(output_path)
+    else:
+        raise ValueError(f"Unsupported output format: {output_format}")
+
+
 def batch_predict(
     model_path: str | Path,
     input_path: str | Path,
@@ -75,70 +146,25 @@ def batch_predict(
     """
     logger.info(f"Starting batch prediction: {input_path} -> {output_path}")
 
-    # Load model
+    # Load model and data
     model, metadata = load_model(model_path)
-
-    # Load data
-    input_path = Path(input_path)
-    file_format = input_path.suffix.lstrip(".")
-
-    if file_format.lower() == "csv":
-        df = pl.read_csv(input_path)
-    elif file_format.lower() == "parquet":
-        df = pl.read_parquet(input_path)
-    elif file_format.lower() == "json":
-        df = pl.read_json(input_path)
-    else:
-        raise ValueError(f"Unsupported file format: {file_format}")
+    df = _load_data_file(Path(input_path))
 
     # Extract features
     if feature_columns is None:
-        # Use all columns except ID column
         feature_columns = [col for col in df.columns if col != id_column]
-
     X = df.select(feature_columns)
 
     # Make predictions
-    if return_probabilities:
-        try:
-            y_pred, y_prob = predict(model, X, return_probabilities=True)
-            has_probabilities = True
-        except (AttributeError, NotImplementedError, ValueError, TypeError):
-            y_pred = predict(model, X, return_probabilities=False)
-            has_probabilities = False
-    else:
-        y_pred = predict(model, X, return_probabilities=False)
-        has_probabilities = False
+    y_pred, y_prob, has_probabilities = _make_predictions_with_probabilities(
+        model, X, return_probabilities
+    )
 
-    # Create results DataFrame
-    if id_column is not None:
-        result_df = pl.DataFrame({id_column: df[id_column], "prediction": y_pred})
-    else:
-        result_df = pl.DataFrame({"prediction": y_pred})
-
-    # Add probabilities if available
-    if has_probabilities and isinstance(y_prob, np.ndarray):
-        if y_prob.shape[1] == 2:  # Binary classification
-            result_df = result_df.with_columns(pl.Series("probability", y_prob[:, 1]))
-        else:  # Multi-class classification
-            for i in range(y_prob.shape[1]):
-                result_df = result_df.with_columns(
-                    pl.Series(f"probability_class_{i}", y_prob[:, i])
-                )
-
-    # Save results
-    output_path = Path(output_path)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    output_format = output_path.suffix.lstrip(".")
-    if output_format.lower() == "csv":
-        result_df.write_csv(output_path)
-    elif output_format.lower() == "parquet":
-        result_df.write_parquet(output_path)
-    elif output_format.lower() == "json":
-        result_df.write_json(output_path)
-    else:
-        raise ValueError(f"Unsupported output format: {output_format}")
+    # Create and save results
+    result_df = _create_result_dataframe(
+        df, y_pred, y_prob, id_column, has_probabilities
+    )
+    _save_results(result_df, Path(output_path))
 
     # Return information about the batch prediction
     return {
@@ -151,6 +177,35 @@ def batch_predict(
         "model_type": type(model).__name__,
         "model_metadata": metadata,
     }
+
+
+def _convert_dataframe_to_payload(X: pl.DataFrame) -> dict[str, Any]:
+    """Convert DataFrame to API payload."""
+    data = {col: X[col].to_list() for col in X.columns}
+    return {"data": data, "feature_names": list(X.columns)}
+
+
+def _convert_dict_to_payload(X: dict[str, list[float]]) -> dict[str, Any]:
+    """Convert dictionary to API payload."""
+    if not all(isinstance(v, list) for v in X.values()):
+        raise ValueError("All values in the dictionary must be lists")
+    return {"data": X, "feature_names": list(X.keys())}
+
+
+def _convert_list_to_payload(
+    X: list[list[float]], feature_names: list[str]
+) -> dict[str, Any]:
+    """Convert list of lists to API payload."""
+    if feature_names is None:
+        raise ValueError("feature_names is required when X is a list of lists")
+
+    if len(X[0]) != len(feature_names):
+        raise ValueError(
+            "Length of feature_names must match the number of features in X"
+        )
+
+    data = {feature: [x[i] for x in X] for i, feature in enumerate(feature_names)}
+    return {"data": data, "feature_names": feature_names}
 
 
 def create_prediction_payload(
@@ -167,32 +222,11 @@ def create_prediction_payload(
         Dictionary payload for API request
     """
     if isinstance(X, pl.DataFrame):
-        # Convert DataFrame to dictionary
-        data = {col: X[col].to_list() for col in X.columns}
-        return {"data": data, "feature_names": list(X.columns)}
-
+        return _convert_dataframe_to_payload(X)
     elif isinstance(X, dict):
-        # Validate dictionary
-        if not all(isinstance(v, list) for v in X.values()):
-            raise ValueError("All values in the dictionary must be lists")
-
-        # Use dictionary keys as feature names
-        return {"data": X, "feature_names": list(X.keys())}
-
+        return _convert_dict_to_payload(X)
     elif isinstance(X, list) and all(isinstance(x, list) for x in X):
-        # Validate feature_names
-        if feature_names is None:
-            raise ValueError("feature_names is required when X is a list of lists")
-
-        if len(X[0]) != len(feature_names):
-            raise ValueError(
-                "Length of feature_names must match the number of features in X"
-            )
-
-        # Convert list of lists to dictionary
-        data = {feature: [x[i] for x in X] for i, feature in enumerate(feature_names)}
-        return {"data": data, "feature_names": feature_names}
-
+        return _convert_list_to_payload(X, feature_names)
     else:
         raise ValueError("X must be a DataFrame, dictionary, or list of lists")
 
