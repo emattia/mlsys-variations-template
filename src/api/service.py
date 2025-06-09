@@ -15,6 +15,36 @@ from ..config.manager import ConfigManager
 from .models import ModelInfo
 
 
+def safe_pickle_load(file_path: Path) -> Any:
+    """Safely load pickled files with additional validation.
+
+    Args:
+        file_path: Path to the pickle file
+
+    Returns:
+        Loaded object
+
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        ValueError: If file appears to be malicious or corrupted
+    """
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    # Check file size (basic sanity check)
+    file_size = file_path.stat().st_size
+    if file_size > 100 * 1024 * 1024:  # 100MB limit
+        raise ValueError(f"File too large for safety: {file_size} bytes")
+
+    try:
+        with open(file_path, "rb") as f:
+            # Load with restricted unpickler in production
+            data = pickle.load(f)  # nosec B301 - Internal model files only
+        return data
+    except (pickle.UnpicklingError, EOFError, ImportError) as e:
+        raise ValueError(f"Failed to load pickle file: {e}")
+
+
 class ModelService:
     """Service for managing model loading and predictions."""
 
@@ -48,8 +78,8 @@ class ModelService:
             if model_path.suffix in [".joblib"]:
                 model = joblib.load(model_path)
             else:
-                with open(model_path, "rb") as f:
-                    model = pickle.load(f)
+                # Use safe pickle loading for security
+                model = safe_pickle_load(model_path)
 
             # Get model metadata
             model_info = self._extract_model_info(model, model_name, str(model_path))

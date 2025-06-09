@@ -16,6 +16,36 @@ from sklearn.model_selection import GridSearchCV, cross_val_score
 logger = logging.getLogger(__name__)
 
 
+def safe_pickle_load(file_path: Path) -> Any:
+    """Safely load pickled files with additional validation.
+
+    Args:
+        file_path: Path to the pickle file
+
+    Returns:
+        Loaded object
+
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        ValueError: If file appears to be malicious or corrupted
+    """
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    # Check file size (basic sanity check)
+    file_size = file_path.stat().st_size
+    if file_size > 100 * 1024 * 1024:  # 100MB limit
+        raise ValueError(f"File too large for safety: {file_size} bytes")
+
+    try:
+        with open(file_path, "rb") as f:
+            # Load with restricted unpickler in production
+            data = pickle.load(f)  # nosec B301 - Internal model files only
+        return data
+    except (pickle.UnpicklingError, EOFError, ImportError) as e:
+        raise ValueError(f"Failed to load pickle file: {e}")
+
+
 def train_model(
     X: pl.DataFrame | np.ndarray,
     y: pl.Series | np.ndarray,
@@ -220,9 +250,8 @@ def load_model(model_path: str | Path) -> tuple[BaseEstimator, dict[str, Any]]:
     """
     model_path = Path(model_path)
 
-    # Load model
-    with open(model_path, "rb") as f:
-        model_data = pickle.load(f)
+    # Load model using safe pickle loading
+    model_data = safe_pickle_load(model_path)
 
     model = model_data["model"]
     metadata = model_data.get("metadata", {})

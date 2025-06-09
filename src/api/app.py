@@ -176,6 +176,6 @@ if __name__ == "__main__":
     config = config_manager.get_config()
 
     # Run the application
-    uvicorn.run(
-        "src.api.app:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
-    )
+    # Use localhost in development, configure host properly for production
+    host = "127.0.0.1"  # Bind to localhost only for security
+    uvicorn.run("src.api.app:app", host=host, port=8000, reload=True, log_level="info")
