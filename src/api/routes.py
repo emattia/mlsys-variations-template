@@ -4,9 +4,9 @@ FastAPI routes for model serving endpoints.
 
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from ..config.manager import ConfigManager
+from ..config.manager import get_config_manager
 from .models import (
     BatchPredictionRequest,
     HealthResponse,
@@ -21,10 +21,16 @@ router = APIRouter()
 
 
 # Dependency to get model service
-def get_model_service() -> ModelService:
-    """Dependency to get model service instance."""
-    config_manager = ConfigManager()
-    return ModelService(config_manager)
+def get_model_service(request: Request) -> ModelService:
+    """Return the application-wide ModelService instance."""
+    service: ModelService | None = getattr(request.app.state, "model_service", None)
+
+    if service is None:
+        # Create and cache singleton if it doesn't exist
+        request.app.state.model_service = ModelService(get_config_manager())
+        service = request.app.state.model_service
+
+    return service
 
 
 @router.get("/health", response_model=HealthResponse, tags=["health"])

@@ -1,5 +1,6 @@
 """Pytest configuration and fixtures for the MLOps testing framework."""
 
+import asyncio
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
@@ -7,9 +8,20 @@ from typing import Any
 
 import polars as pl
 import pytest
+from asgi_lifespan import LifespanManager
+from httpx import AsyncClient
 
-from src.config import AppConfig, ConfigManager
+from src.api.app import app
+from src.config import Config, ConfigManager
 from src.plugins import ExecutionContext
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for each test session."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="session")
@@ -20,42 +32,6 @@ def temp_dir() -> Generator[Path, None, None]:
 
 
 @pytest.fixture(scope="session")
-def test_config(temp_dir: Path) -> AppConfig:
-    """Create a test configuration."""
-    config = AppConfig(
-        app_name="test-mlsys",
-        environment="testing",
-        paths={
-            "data_raw": temp_dir / "data" / "raw",
-            "data_processed": temp_dir / "data" / "processed",
-            "data_interim": temp_dir / "data" / "interim",
-            "data_external": temp_dir / "data" / "external",
-            "models_trained": temp_dir / "models" / "trained",
-            "models_evaluation": temp_dir / "models" / "evaluation",
-            "reports_figures": temp_dir / "reports" / "figures",
-            "reports_tables": temp_dir / "reports" / "tables",
-            "reports_documents": temp_dir / "reports" / "documents",
-            "logs_dir": temp_dir / "logs",
-        },
-        logging={
-            "level": "DEBUG",
-            "console": True,
-            "file": None,
-        },
-        ml={
-            "random_seed": 42,
-            "test_size": 0.2,
-            "cv_folds": 3,  # Smaller for faster testing
-        },
-    )
-
-    # Create directories
-    config.create_directories()
-
-    return config
-
-
-@pytest.fixture
 def config_manager(temp_dir: Path) -> ConfigManager:
     """Create a test configuration manager."""
     config_dir = temp_dir / "conf"
@@ -64,8 +40,14 @@ def config_manager(temp_dir: Path) -> ConfigManager:
     return manager
 
 
+@pytest.fixture(scope="session")
+def test_config(config_manager: ConfigManager) -> Config:
+    """Create a test configuration."""
+    return config_manager.load_config()
+
+
 @pytest.fixture
-def execution_context(test_config: AppConfig) -> ExecutionContext:
+def execution_context(test_config: Config) -> ExecutionContext:
     """Create a test execution context."""
     return ExecutionContext(
         config=test_config,
@@ -73,6 +55,15 @@ def execution_context(test_config: AppConfig) -> ExecutionContext:
         component_name="test-component",
         metadata={"test": True},
     )
+
+
+@pytest.fixture(scope="session")
+async def async_client(test_config: Config) -> AsyncClient:
+    """Create an async test client for the API."""
+    app.state.config = test_config
+    async with LifespanManager(app):
+        async with AsyncClient(app=app, base_url="http://test") as client:
+            yield client
 
 
 @pytest.fixture

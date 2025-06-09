@@ -1,0 +1,10 @@
+data_external: data/external
+data_interim: data/interim
+data_processed: data/processed
+data_raw: data/raw
+logs_dir: logs
+models_evaluation: models/evaluation
+models_trained: models/trained
+reports_documents: reports/documents
+reports_figures: reports/figures
+reports_tables: reports/tables

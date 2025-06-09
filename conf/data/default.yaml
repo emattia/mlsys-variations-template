@@ -1,0 +1,9 @@
+encoding: utf-8
+file_format: csv
+max_missing_percentage: 0.5
+min_rows: 1
+missing_value_strategy: drop
+outlier_detection: false
+scaling_method: standard
+separator: ','
+validate_schema: true

@@ -4,11 +4,14 @@ Integration tests for the API endpoints.
 
 import asyncio
 import subprocess
+import sys
 import time
 from collections.abc import AsyncGenerator
+from pathlib import Path
 
 import httpx
 import pytest
+import requests
 
 
 @pytest.fixture(scope="session")
@@ -17,6 +20,8 @@ def api_server():
     # Start the server in a subprocess
     process = subprocess.Popen(
         [
+            sys.executable,  # Use the same python that runs pytest
+            "-m",
             "uvicorn",
             "src.api.app:app",
             "--host",
@@ -27,18 +32,12 @@ def api_server():
             "error",  # Reduce log noise
         ]
     )
-
-    # Wait for server to start
+    # Give the server time to start
     time.sleep(5)
-
     yield "http://localhost:8001"
-
-    # Cleanup
+    # Teardown: stop the server
     process.terminate()
-    try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        process.kill()
+    process.wait()
 
 
 @pytest.fixture

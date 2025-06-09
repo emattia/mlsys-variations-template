@@ -14,7 +14,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 
-from ..config.manager import ConfigManager
+from ..config.manager import get_config_manager
 from .models import ErrorResponse
 from .routes import router
 
@@ -29,27 +29,27 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting FastAPI application...")
 
-    # Initialize configuration
-    try:
-        config_manager = ConfigManager()
-        # Try to load existing config, create default if none exists
+    if not hasattr(app.state, "config"):
+        logger.info("No config found in app.state, initializing...")
         try:
+            config_manager = get_config_manager()
             config = config_manager.load_config()
-        except Exception as config_load_error:
-            logger.warning(f"Could not load existing config: {config_load_error}")
-            logger.info("Creating default configuration...")
+            app.state.config = config
+            logger.info("Configuration loaded successfully")
+        except Exception as e:
+            logger.error(f"Failed to load configuration: {e}")
+            logger.info("Creating default configuration as fallback...")
             config_manager.create_default_config_files()
-            config = config_manager.load_config()
+            app.state.config = config_manager.load_config()
 
-        app.state.config = config
-        logger.info("Configuration loaded successfully")
-    except Exception as e:
-        logger.error(f"Failed to load configuration: {e}")
-        # Create a minimal default config instead of failing
-        logger.info("Using minimal default configuration")
-        from ..config.models import AppConfig
+    if not hasattr(app.state, "model_service"):
+        logger.info("No model_service found in app.state, initializing...")
+        from .service import ModelService  # Local import to avoid circular
 
-        app.state.config = AppConfig()
+        config_manager = get_config_manager()
+        if not config_manager.get_config():
+            config_manager.load_config()
+        app.state.model_service = ModelService(config_manager)
 
     yield
 
@@ -176,18 +176,18 @@ def create_app(config_override: dict[str, Any] = None) -> FastAPI:
     return app
 
 
-# Create the application instance
+# Create the application instance for use by tests and other modules
 app = create_app()
-
 
 if __name__ == "__main__":
     import uvicorn
 
-    # Load configuration
-    config_manager = ConfigManager()
-    config = config_manager.get_config()
-
-    # Run the application
-    # Use localhost in development, configure host properly for production
-    host = "127.0.0.1"  # Bind to localhost only for security
-    uvicorn.run("src.api.app:app", host=host, port=8000, reload=True, log_level="info")
+    # Run the application using the factory
+    uvicorn.run(
+        "src.api.app:create_app",
+        factory=True,
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+        log_level="info",
+    )

@@ -11,13 +11,14 @@ class PredictionRequest(BaseModel):
     """Request model for predictions."""
 
     model_config = ConfigDict(
+        protected_namespaces=(),
         json_schema_extra={
             "example": {
                 "features": [5.1, 3.5, 1.4, 0.2],
                 "model_name": "default",
                 "return_probabilities": False,
             }
-        }
+        },
     )
 
     features: list[float | int] = Field(
@@ -36,6 +37,7 @@ class PredictionResponse(BaseModel):
     """Response model for predictions."""
 
     model_config = ConfigDict(
+        protected_namespaces=(),
         json_schema_extra={
             "example": {
                 "prediction": [1],
@@ -44,7 +46,7 @@ class PredictionResponse(BaseModel):
                 "timestamp": "2024-01-01T12:00:00Z",
                 "processing_time_ms": 15.2,
             }
-        }
+        },
     )
 
     prediction: list[float | int | str] = Field(..., description="Model predictions")
@@ -62,13 +64,14 @@ class BatchPredictionRequest(BaseModel):
     """Request model for batch predictions."""
 
     model_config = ConfigDict(
+        protected_namespaces=(),
         json_schema_extra={
             "example": {
                 "features": [[5.1, 3.5, 1.4, 0.2], [4.9, 3.0, 1.4, 0.2]],
                 "model_name": "default",
                 "return_probabilities": False,
             }
-        }
+        },
     )
 
     features: list[list[float | int]] = Field(
@@ -87,6 +90,7 @@ class HealthResponse(BaseModel):
     """Response model for health checks."""
 
     model_config = ConfigDict(
+        protected_namespaces=(),
         json_schema_extra={
             "example": {
                 "status": "healthy",
@@ -95,7 +99,7 @@ class HealthResponse(BaseModel):
                 "models_loaded": ["default"],
                 "uptime_seconds": 3600.5,
             }
-        }
+        },
     )
 
     status: str = Field(..., description="Service health status")
@@ -109,6 +113,7 @@ class ModelInfo(BaseModel):
     """Model information response."""
 
     model_config = ConfigDict(
+        protected_namespaces=(),
         json_schema_extra={
             "example": {
                 "name": "default",
@@ -118,7 +123,7 @@ class ModelInfo(BaseModel):
                 "loaded_at": "2024-01-01T12:00:00Z",
                 "model_path": "/models/default.pkl",
             }
-        }
+        },
     )
 
     name: str = Field(..., description="Model name")
@@ -135,13 +140,14 @@ class ErrorResponse(BaseModel):
     """Error response model."""
 
     model_config = ConfigDict(
+        protected_namespaces=(),
         json_schema_extra={
             "example": {
                 "error": "Invalid input",
                 "detail": "Feature vector length mismatch",
                 "timestamp": "2024-01-01T12:00:00Z",
             }
-        }
+        },
     )
 
     error: str = Field(..., description="Error message")

@@ -17,6 +17,8 @@ from src.plugins.registry import PluginRegistry
 class TestDataProcessor(DataProcessor):
     """Test implementation of DataProcessor."""
 
+    __test__ = False  # Tell pytest not to collect this as a test case
+
     def initialize(self, context: ExecutionContext) -> None:
         """Initialize the component."""
         pass

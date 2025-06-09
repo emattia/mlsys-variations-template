@@ -53,89 +53,44 @@ If you're setting up ML infrastructure for your organization, this template prov
 
 ---
 
-## 🔬 **For Data Scientists & ML Engineers**
+## 🏗️ System Architecture Overview
 
-If you're building ML models and experiments, this template provides:
+This repository is structured as a cohesive MLOps platform, where each directory plays a specific role in the lifecycle of a machine learning project. The system is built around a centralized configuration system that drives behavior across  components, from data processing to model deployment.
 
-### **Complete ML Workflow**
-- **📊 Data Processing**: Polars-based ETL with validation pipelines
-- **🤖 Model Training**: Plugin-based training with multiple algorithms
-- **📈 Experiment Tracking**: Configuration-driven experimentation
-- **🔍 Model Evaluation**: Comprehensive metrics and visualization
-- **🚀 Model Deployment**: One-command API deployment
-- **📝 Research Notebooks**: Jupyter environment with plotting utilities
+- The `conf/` directory defines the *what*—the declarative configuration for different environments, models, and experiments using YAML files.
+- The `src/` directory contains the *how*—the Python source code that implements the logic, including the `src/config/` module, which reads, validates, and makes the configuration from `conf/` available to the rest of the application.
 
-### **Quick Start for ML Work**
+This separation of configuration from code is a core principle of the template, enabling reproducible experiments and seamless deployments across environments.
 
-1. **Clone and setup environment**:
-   ```bash
-   git clone <your-org-repo>
-   cd mlops-template
-   make install
-   ```
+## Directory Structure
 
-2. **Start development environment**:
-   ```bash
-   # Launch Jupyter for exploration
-   make jupyter
+Here is a breakdown of the key directories and how they function as part of the broader system:
 
-   # Start API server for testing
-   make serve-dev
-   ```
+- **`conf/`**: **Configuration Hub**. Contains all YAML configuration files for the project. It uses a hierarchical structure (e.g., `conf/model`, `conf/api`) managed by Hydra. This is where you define parameters for experiments, data processing, and deployment environments. The `README.md` within this directory provides an in-depth guide.
 
-3. **Run your first experiment**:
-   ```bash
-   # Train a model
-   python -m workflows.model_training data/raw/your_data.csv
+- **`src/`**: **Core Application Logic**. The main Python source code for the platform.
+    - **`src/api/`**: Implements the FastAPI production server for model serving.
+    - **`src/config/`**: **Configuration Implementation**. This is the Python-based implementation of the configuration system. It uses Pydantic to validate the YAML files from `conf/` and provides a type-safe `Config` object to the rest of the application.
+    - **`src/data/`**: Scripts for data ingestion, processing, and validation. These scripts are driven by settings in `conf/data/`.
+    - **`src/models/`**: Code for training, evaluating, and running inference with ML models. This module consumes model parameters from `conf/model/`.
+    - **`src/plugins/`**: An extensible plugin system for adding custom components like new model types or data processors.
+    - **`src/utils/`**: Shared utilities used across the application.
 
-   # Evaluate results
-   python -m workflows.model_evaluation
+- **`data/`**: **Dataset Storage**. The default location for storing datasets. It's typically divided into subdirectories like `raw/`, `processed/`, and `interim/`. `conf/paths.py` often defines the paths used to access this data.
 
-   # Deploy to API
-   curl -X POST "http://localhost:8000/api/v1/predict" \
-        -H "Content-Type: application/json" \
-        -d '{"features": [1.0, 2.0, 3.0, 4.0]}'
-   ```
+- **`models/`**: **Trained Model Artifacts**. This directory stores the serialized outputs of model training (e.g., `.pkl` or `.onnx` files), along with versioning and metadata. It is the destination for trained models managed by the logic in `src/models/`.
 
----
+- **`workflows/`**: **Orchestration Scripts**. Contains high-level Python scripts that orchestrate end-to-end ML workflows, such as `model_training.py` or `batch_inference.py`. These scripts load the configuration and tie together components from `src/` to execute a complete process.
 
-## 🏗️ **Project Structure**
+- **`notebooks/`**: **Research and Exploration**. For Jupyter notebooks used in data analysis, experimentation, and visualization. A safe space for iterative, non-production work.
 
-```
-mlops-template/
-├── 🐳 Deployment & Infrastructure
-│   ├── Dockerfile                 # Multi-stage container builds
-│   ├── docker-compose.yml         # Development & production orchestration
-│   ├── .github/workflows/         # CI/CD pipelines
-│   └── conf/                      # Configuration management
-│
-├── 🚀 Production API
-│   └── src/api/                   # FastAPI application
-│       ├── app.py                 # Application factory
-│       ├── routes.py              # API endpoints
-│       ├── service.py             # Model service layer
-│       └── models.py              # Pydantic validation models
-│
-├── 🤖 ML Core
-│   └── src/
-│       ├── data/                  # Data processing & validation
-│       ├── models/                # Training, evaluation & inference
-│       ├── plugins/               # Extensible ML components
-│       ├── config/                # Configuration management
-│       └── utils/                 # Common utilities
-│
-├── 🔬 Research & Development
-│   ├── notebooks/                 # Jupyter notebooks
-│   ├── workflows/                 # Training & evaluation scripts
-│   ├── data/                      # Dataset storage (raw/processed)
-│   ├── models/                    # Trained model artifacts
-│   └── reports/                   # Analysis outputs
-│
-└── 🧪 Quality Assurance
-    ├── tests/                     # Comprehensive test suite
-    ├── .pre-commit-config.yaml    # Code quality automation
-    └── Makefile                   # Development workflow
-```
+- **`tests/`**: **Quality Assurance**. Contains the entire test suite for the project, including unit, integration, and functional tests, ensuring code reliability.
+
+- **`reports/`**: **Generated Outputs**. Stores outputs from model evaluation and analysis, such as performance metrics (`.json`), plots (`.png`), and HTML reports.
+
+- **`docs/`**: **Project Documentation**. Contains user guides, architecture diagrams, and other generated documentation.
+
+- **`.github/`**: **CI/CD Pipelines**. Defines the GitHub Actions workflows for continuous integration, testing, and deployment.
 
 ---
 

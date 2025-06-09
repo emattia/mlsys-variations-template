@@ -1,108 +1,293 @@
 """Pydantic configuration models for type-safe configuration management."""
 
+from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, Optional, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, validator
 from pydantic_settings import BaseSettings
+
+# These Enums can be used to provide strong typing for config fields
+# and ensure only valid values are used.
+
+
+class Environment(str, Enum):
+    DEVELOPMENT = "development"
+    STAGING = "staging"
+    PRODUCTION = "production"
+    TEST = "test"
+
+
+class ProblemType(str, Enum):
+    CLASSIFICATION = "classification"
+    REGRESSION = "regression"
+
+
+class ScalingMethod(str, Enum):
+    STANDARD = "standard"
+    MINMAX = "minmax"
+    ROBUST = "robust"
+
+
+class CategoricalEncoding(str, Enum):
+    ONE_HOT = "one_hot"
+    TARGET = "target"
+    ORDINAL = "ordinal"
+
+
+class FeatureSelection(str, Enum):
+    MUTUAL_INFO = "mutual_info"
+    CHI2 = "chi2"
+    F_CLASSIF = "f_classif"
+
+
+class MissingHandling(str, Enum):
+    MEDIAN = "median"
+    MEAN = "mean"
+    MODE = "mode"
+    DROP = "drop"
 
 
 class PathsConfig(BaseModel):
-    """Configuration for file and directory paths."""
+    """Configuration for project paths."""
 
-    # Data paths
-    data_raw: Path = Field(default=Path("data/raw"), description="Raw data directory")
-    data_processed: Path = Field(
-        default=Path("data/processed"), description="Processed data directory"
-    )
-    data_interim: Path = Field(
-        default=Path("data/interim"), description="Interim data directory"
-    )
-    data_external: Path = Field(
-        default=Path("data/external"), description="External data directory"
-    )
+    data_root: str = "data"
+    model_root: str = "models"
+    reports_root: str = "reports"
+    logs_root: str = "logs"
 
-    # Model paths
-    models_trained: Path = Field(
-        default=Path("models/trained"), description="Trained models directory"
-    )
-    models_evaluation: Path = Field(
-        default=Path("models/evaluation"), description="Model evaluation directory"
-    )
+    class Config:
+        protected_namespaces = ()
 
-    # Output paths
-    reports_figures: Path = Field(
-        default=Path("reports/figures"), description="Figures output directory"
-    )
-    reports_tables: Path = Field(
-        default=Path("reports/tables"), description="Tables output directory"
-    )
-    reports_documents: Path = Field(
-        default=Path("reports/documents"), description="Documents output directory"
-    )
+    # Derived path properties for convenience and backward compatibility
+    @property
+    def data_raw(self) -> Path:
+        """Path to raw data."""
+        return Path(self.data_root) / "raw"
 
-    # Logs
-    logs_dir: Path = Field(default=Path("logs"), description="Logs directory")
+    @property
+    def data_processed(self) -> Path:
+        """Path to processed data."""
+        return Path(self.data_root) / "processed"
 
-    @validator("*", pre=True)
-    def convert_to_path(cls, v):
-        """Convert strings to Path objects."""
-        if isinstance(v, str):
-            return Path(v)
-        return v
+    @property
+    def data_interim(self) -> Path:
+        """Path to interim data."""
+        return Path(self.data_root) / "interim"
+
+    @property
+    def data_external(self) -> Path:
+        """Path to external data."""
+        return Path(self.data_root) / "external"
+
+    @property
+    def models_trained(self) -> Path:
+        """Path to trained models."""
+        return Path(self.model_root) / "trained"
+
+    @property
+    def models_evaluation(self) -> Path:
+        """Path to model evaluation artifacts."""
+        return Path(self.model_root) / "evaluation"
+
+    @property
+    def reports_figures(self) -> Path:
+        """Path to report figures."""
+        return Path(self.reports_root) / "figures"
+
+    @property
+    def reports_tables(self) -> Path:
+        """Path to report tables."""
+        return Path(self.reports_root) / "tables"
+
+    @property
+    def reports_documents(self) -> Path:
+        """Path to report documents."""
+        return Path(self.reports_root) / "documents"
+
+    @property
+    def logs_dir(self) -> Path:
+        """Path to log directory."""
+        return Path(self.logs_root)
 
 
 class LoggingConfig(BaseModel):
-    """Configuration for logging settings."""
+    """Configuration for logging."""
 
-    level: str = Field(default="INFO", description="Logging level")
-    format: str = Field(
-        default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        description="Log message format",
-    )
-    file: Path | None = Field(default=None, description="Log file path")
-    console: bool = Field(default=True, description="Enable console logging")
+    level: str = "INFO"
+    format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    console: bool = True
+    file: Path | None = None
 
-    @validator("level")
+    @field_validator("level", mode="before")
     def validate_level(cls, v):
-        """Validate logging level."""
-        valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
-        if v.upper() not in valid_levels:
-            raise ValueError(f"Invalid log level: {v}. Must be one of {valid_levels}")
-        return v.upper()
+        """Ensure log level is valid and uppercase."""
+        v = v.upper()
+        allowed_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+        if v not in allowed_levels:
+            raise ValueError(f"Invalid log level: {v}. Must be one of {allowed_levels}")
+        return v
+
+    class Config:
+        protected_namespaces = ()
+
+
+class FeaturesConfig(BaseModel):
+    """Configuration for feature engineering."""
+
+    scaling_method: ScalingMethod = ScalingMethod.STANDARD
+    categorical_encoding: CategoricalEncoding = CategoricalEncoding.ONE_HOT
+    feature_selection: FeatureSelection = FeatureSelection.MUTUAL_INFO
+    handle_missing: MissingHandling = MissingHandling.MEDIAN
+
+
+class ModelParametersConfig(BaseModel):
+    """Parameters for the ML model."""
+
+    n_estimators: int = 100
+    max_depth: int | None = None
+    min_samples_split: int = 2
+    min_samples_leaf: int = 1
+    max_features: str = "auto"
+    bootstrap: bool = True
+    random_state: int = 42
+    n_jobs: int = -1
+
+
+class HyperparameterRangesConfig(BaseModel):
+    """Ranges for hyperparameter tuning."""
+
+    n_estimators: dict[str, Any] = Field(
+        default_factory=lambda: {"type": "int", "low": 10, "high": 200}
+    )
+    max_depth: dict[str, Any] = Field(
+        default_factory=lambda: {"type": "int", "low": 3, "high": 50}
+    )
+    min_samples_split: dict[str, Any] = Field(
+        default_factory=lambda: {"type": "int", "low": 2, "high": 20}
+    )
+    min_samples_leaf: dict[str, Any] = Field(
+        default_factory=lambda: {"type": "int", "low": 1, "high": 20}
+    )
+
+
+class ModelTrainingConfig(BaseModel):
+    """Configuration specific to model training."""
+
+    early_stopping: bool = False
+    validation_metric: str = "accuracy"
+    save_best_only: bool = True
+
+
+class DetailedModelConfig(BaseModel):
+    """Configuration for a specific model."""
+
+    model_type: str = "RandomForest"
+    algorithm: str = "ensemble.RandomForestClassifier"
+    parameters: ModelParametersConfig = Field(default_factory=ModelParametersConfig)
+    hyperparameter_ranges: HyperparameterRangesConfig = Field(
+        default_factory=HyperparameterRangesConfig
+    )
+    training: ModelTrainingConfig = Field(default_factory=ModelTrainingConfig)
+
+    class Config:
+        protected_namespaces = ()
+
+
+class APISecurityConfig(BaseModel):
+    enable_cors: bool = True
+    cors_origins: list[str] = Field(default_factory=lambda: ["*"])
+    api_key_header: str = "X-API-Key"
+    rate_limit_enabled: bool = False
+    rate_limits: dict[str, str] | None = None
+
+
+class APIModelsConfig(BaseModel):
+    auto_load: bool = True
+    model_directory: str = "models"
+    max_models: int = 10
+    model_timeout: int = 300
+    lazy_loading: bool = True
+
+    class Config:
+        protected_namespaces = ()
+
+
+class APIMonitoringConfig(BaseModel):
+    enable_metrics: bool = True
+    metrics_endpoint: str = "/metrics"
+    health_endpoint: str = "/health"
+    log_requests: bool = True
+    prometheus_port: int = 9090
+
+
+class APICachingConfig(BaseModel):
+    enabled: bool = False
+    backend: str = "memory"
+    redis_url: str = "redis://localhost:6379/0"
+    default_ttl: int = 300
+
+
+class APIConfig(BaseModel):
+    """Configuration for the API server."""
+
+    host: str = "127.0.0.1"
+    port: int = 8000
+    workers: int = 1
+    timeout: int = 120
+    max_request_size: int = 1048576  # 1MB
+    security: APISecurityConfig = Field(default_factory=APISecurityConfig)
+    models: APIModelsConfig = Field(default_factory=APIModelsConfig)
+    monitoring: APIMonitoringConfig = Field(default_factory=APIMonitoringConfig)
+    caching: APICachingConfig = Field(default_factory=APICachingConfig)
+
+
+# Main Configuration Model that brings everything together
 
 
 class MLConfig(BaseModel):
-    """Configuration for machine learning parameters."""
+    """Configuration for machine learning processes."""
 
-    random_seed: int = Field(default=42, description="Random seed for reproducibility")
-    test_size: float = Field(
-        default=0.2, ge=0.0, le=1.0, description="Test set size fraction"
-    )
-    validation_size: float = Field(
-        default=0.2, ge=0.0, le=1.0, description="Validation set size fraction"
-    )
-    cv_folds: int = Field(
-        default=5, ge=2, description="Number of cross-validation folds"
-    )
+    problem_type: str = "classification"
+    target_column: str = "target"
+    test_size: float = Field(default=0.2, ge=0.0, le=1.0)
+    validation_size: float = Field(default=0.2, ge=0.0, le=1.0)
+    cv_folds: int = Field(default=5, ge=2)
+    random_seed: int = 42
+    hyperparameter_search: bool = False
+    early_stopping: bool = False
+    primary_metric: str = "accuracy"
 
-    # Model training
-    hyperparameter_search: bool = Field(
-        default=False, description="Enable hyperparameter search"
-    )
-    early_stopping: bool = Field(default=True, description="Enable early stopping")
-    patience: int = Field(default=10, ge=1, description="Early stopping patience")
+    class Config:
+        protected_namespaces = ()
 
-    # Metrics
-    primary_metric: str = Field(
-        default="accuracy", description="Primary evaluation metric"
-    )
-    additional_metrics: list[str] = Field(
-        default_factory=list, description="Additional metrics to track"
-    )
+    @field_validator("problem_type")
+    def validate_problem_type(cls, v):
+        """Validate problem type."""
+        valid_types = {"classification", "regression", "clustering"}
+        if v not in valid_types:
+            raise ValueError(f"Invalid problem type: {v}. Must be one of {valid_types}")
+        return v
 
 
-class ModelConfig(BaseModel):
+class Config(BaseModel):
+    """The main configuration model for the entire application."""
+
+    project_name: str = "mlops-project"
+    version: str = "0.1.0"
+    environment: Environment = Environment.DEVELOPMENT
+    ml: MLConfig = Field(default_factory=MLConfig)
+    paths: PathsConfig = Field(default_factory=PathsConfig)
+    logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    features: FeaturesConfig = Field(default_factory=FeaturesConfig)
+    model: DetailedModelConfig = Field(default_factory=DetailedModelConfig)
+    api: APIConfig = Field(default_factory=APIConfig)
+
+    # The 'defaults' list from Hydra is not part of the validated config content,
+    # so we don't define it here. Hydra processes it before Pydantic sees it.
+
+
+class SimpleModelConfig(BaseModel):
     """Configuration for model-specific parameters."""
 
     model_type: str = Field(default="random_forest", description="Type of model to use")
@@ -114,7 +299,6 @@ class ModelConfig(BaseModel):
     feature_columns: list[str] | None = Field(
         default=None, description="List of feature columns"
     )
-    target_column: str = Field(default="target", description="Target column name")
     categorical_features: list[str] = Field(
         default_factory=list, description="Categorical feature columns"
     )
@@ -122,18 +306,38 @@ class ModelConfig(BaseModel):
         default_factory=list, description="Numerical feature columns"
     )
 
+    # Target column (supervised problems)
+    target_column: str = Field(
+        default="target", description="Name of the target column"
+    )
+
     # Model parameters (flexible for different model types)
     model_params: dict[str, Any] = Field(
         default_factory=dict, description="Model-specific parameters"
     )
 
-    @validator("problem_type")
+    @field_validator("problem_type")
     def validate_problem_type(cls, v):
         """Validate problem type."""
         valid_types = {"classification", "regression", "clustering"}
         if v not in valid_types:
             raise ValueError(f"Invalid problem type: {v}. Must be one of {valid_types}")
         return v
+
+    class Config:
+        protected_namespaces = ()
+
+
+# ---------------------------------------------------------------------------
+# Backwards-compatibility alias
+# ---------------------------------------------------------------------------
+
+# Re-export ``SimpleModelConfig`` under the historical name ``ModelConfig`` so that
+# external modules importing ``ModelConfig`` continue to work without code
+# changes. This preserves API stability while resolving the previous duplicate
+# class definition issue.
+
+ModelConfig = SimpleModelConfig
 
 
 class DataConfig(BaseModel):
@@ -169,7 +373,7 @@ class DataConfig(BaseModel):
         description="Maximum allowed missing data percentage",
     )
 
-    @validator("missing_value_strategy")
+    @field_validator("missing_value_strategy")
     def validate_missing_strategy(cls, v):
         """Validate missing value strategy."""
         valid_strategies = {
@@ -186,7 +390,7 @@ class DataConfig(BaseModel):
             )
         return v
 
-    @validator("scaling_method")
+    @field_validator("scaling_method")
     def validate_scaling_method(cls, v):
         """Validate scaling method."""
         valid_methods = {"standard", "minmax", "robust", "quantile", "none"}
@@ -220,8 +424,8 @@ class AppConfig(BaseSettings):
     ml: MLConfig = Field(
         default_factory=MLConfig, description="Machine learning configurations"
     )
-    model: ModelConfig = Field(
-        default_factory=ModelConfig, description="Model configurations"
+    model: SimpleModelConfig = Field(
+        default_factory=SimpleModelConfig, description="Model configurations"
     )
     data: DataConfig = Field(
         default_factory=DataConfig, description="Data processing configurations"
@@ -255,7 +459,7 @@ class AppConfig(BaseSettings):
         env_file_encoding = "utf-8"
         case_sensitive = False
 
-    @validator("environment")
+    @field_validator("environment")
     def validate_environment(cls, v):
         """Validate environment."""
         valid_envs = {"development", "staging", "production", "testing"}

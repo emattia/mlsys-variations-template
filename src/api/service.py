@@ -59,7 +59,7 @@ class ModelService:
             if model_path is None:
                 # Try to find model in standard locations
                 config = self.config_manager.get_config()
-                model_dir = Path(config.paths.models_dir)
+                model_dir = Path(config.paths.model_root)
 
                 # Try different file extensions
                 for ext in [".pkl", ".joblib", ".pickle"]:
@@ -216,7 +216,7 @@ class ModelService:
 
             # Save model
             config = self.config_manager.get_config()
-            model_dir = Path(config.paths.models_dir)
+            model_dir = Path(config.paths.model_root)
             model_dir.mkdir(parents=True, exist_ok=True)
 
             model_path = model_dir / "default.joblib"

@@ -1,0 +1,36 @@
+# conf/api/development.yaml
+host: "127.0.0.1"
+port: ${oc.env:API_PORT,8000}
+workers: 1
+timeout: 60
+max_request_size: 10485760  # 10MB
+
+# Disable production-grade security for local development
+security:
+  enable_cors: true
+  cors_origins: ["*"] # Allow all for dev
+  api_key_header: "X-API-Key"
+  rate_limit_enabled: false
+
+# Model loading settings for development
+models:
+  auto_load: true
+  model_directory: ${oc.env:MODEL_DIRECTORY,"models/trained"}
+  max_models: 2
+  model_timeout: 600 # Longer timeout for debugging
+  lazy_loading: false # Load models at startup for immediate feedback
+
+# Monitoring settings for dev
+monitoring:
+  enable_metrics: true
+  metrics_endpoint: "/api/v1/metrics"
+  health_endpoint: "/api/v1/health"
+  log_requests: true
+  prometheus_port: 9090
+
+# Caching can be disabled or use an in-memory store for dev
+caching:
+  enabled: false
+  backend: "memory" # or redis if available
+  redis_url: ${oc.env:REDIS_URL,"redis://localhost:6379"}
+  default_ttl: 60

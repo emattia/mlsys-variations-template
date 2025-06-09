@@ -3,11 +3,13 @@ Unit tests for the API components.
 """
 
 import time
+import warnings
 from datetime import datetime
 from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
+from fastapi import Request
 from fastapi.testclient import TestClient
 
 from src.api.app import create_app
@@ -19,13 +21,20 @@ from src.api.models import (
 from src.api.service import ModelService
 from src.config.manager import ConfigManager
 
+warnings.filterwarnings(
+    "ignore",
+    message="X does not have valid feature names, but",
+    category=UserWarning,
+    module="sklearn",
+)
+
 
 @pytest.fixture
 def mock_config_manager():
     """Mock configuration manager."""
     config_manager = Mock(spec=ConfigManager)
     config = Mock()
-    config.paths.models_dir = "models"
+    config.paths.model_root = "models"
     config_manager.get_config.return_value = config
     return config_manager
 
@@ -63,7 +72,7 @@ def client(mock_service):
     app = create_app()
 
     # Override dependency
-    def get_mock_service():
+    def get_mock_service(request: Request) -> ModelService:
         return mock_service
 
     app.dependency_overrides[get_model_service] = get_mock_service
@@ -93,7 +102,10 @@ def client_with_mock_service(mock_config_manager):
     mock_service.unload_model.return_value = True
 
     # Override the dependency
-    app.dependency_overrides[get_model_service] = lambda: mock_service
+    def override(request: Request) -> ModelService:
+        return mock_service
+
+    app.dependency_overrides[get_model_service] = override
 
     return TestClient(app)
 
@@ -265,7 +277,7 @@ class TestAPIEndpoints:
         # Mock service is automatically injected via fixture
 
         response = client.get("/api/v1/health")
-        assert response.status_code == 200
+        assert response.status_code == 200, "Response: " + response.text
         data = response.json()
         assert data["status"] == "no_models_loaded"
 

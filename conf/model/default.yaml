@@ -1,0 +1,6 @@
+categorical_features: []
+model_params: {}
+model_type: random_forest
+numerical_features: []
+problem_type: classification
+target_column: target

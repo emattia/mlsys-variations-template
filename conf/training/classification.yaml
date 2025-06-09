@@ -1,0 +1,8 @@
+# conf/training/classification.yaml
+# Default configuration for classification training tasks.
+
+# Example: Define a primary metric for evaluation.
+primary_metric: "f1_score"
+
+# You can add other training-related settings here,
+# such as learning rate schedulers, callbacks, etc.
