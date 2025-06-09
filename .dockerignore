@@ -4,9 +4,9 @@
 .gitmodules
 
 # Documentation
-README.md
 docs/
 *.md
+!README.md
 
 # Python
 __pycache__

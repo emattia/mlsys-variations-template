@@ -21,8 +21,8 @@ RUN pip install uv
 # Set work directory
 WORKDIR /app
 
-# Copy dependency files
-COPY pyproject.toml ./
+# Copy dependency files and README (needed for package build)
+COPY pyproject.toml README.md ./
 
 # Install dependencies
 RUN uv pip install --system -e ".[dev]"
