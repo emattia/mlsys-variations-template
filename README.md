@@ -99,26 +99,34 @@ Here is a breakdown of the key directories and how they function as part of the 
 ### **Prerequisites**
 
 - **Python 3.10+**
-- **[uv](https://github.com/astral-sh/uv)** (Python package manager)
 - **Docker** (for containerization)
 - **Make** (for workflow automation)
 
-### **Installation**
+### **Quick Setup**
 
 ```bash
 # 1. Clone the repository
 git clone <your-repo-url>
 cd mlops-template
 
-# 2. Install dependencies and setup environment
-make install
+# 2. Complete development environment setup (recommended for first-time)
+make setup-complete
 
-# 3. Setup development tools
-make setup-dev
+# 3. Verify your setup
+make verify-setup
 
-# 4. Verify installation
+# 4. Run all checks to ensure everything works
 make all-checks
 ```
+
+### **Setup Options**
+
+Choose the setup level that fits your needs:
+
+- **`make setup-complete`** - Full setup with Docker build (recommended for first-time)
+- **`make setup`** - Complete development environment (dependencies + security tools)
+- **`make setup-basic`** - Basic setup (dependencies only)
+- **`make verify-setup`** - Check what's installed and working
 
 ### **Environment Configuration**
 

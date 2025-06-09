@@ -29,6 +29,7 @@ jobs:
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
+      image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
     steps:
     - name: Checkout repository
@@ -81,7 +82,7 @@ jobs:
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: ${{ needs.build-and-push.outputs.image-tag }}
+        image-ref: ${{ needs.build-and-push.outputs.image-ref }}
         format: 'sarif'
         output: 'trivy-results.sarif'
 

@@ -18,14 +18,20 @@ DOCKER_REGISTRY := # Set your registry here
 
 # Default target
 help:
-	@echo "MLOps Template - Available Commands"
-	@echo "=================================="
+	@echo "🚀 MLOps Template - Available Commands"
+	@echo "======================================"
+	@echo ""
+	@echo "🆕 First time? Run: make setup-complete"
+	@echo "🔍 Check your setup: make verify-setup"
 	@echo ""
 	@echo "Setup & Environment:"
+	@echo "  make setup          Complete development environment setup"
+	@echo "  make setup-basic    Basic setup (dependencies only)"
+	@echo "  make setup-complete Complete setup + Docker build (recommended for first-time)"
+	@echo "  make verify-setup   Verify development environment setup"
 	@echo "  make install        Install production dependencies"
 	@echo "  make install-dev    Install development dependencies"
 	@echo "  make clean         Clean up generated files"
-	@echo "  make install-uv    Install uv package manager"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  make lint          Run linting checks"
@@ -33,6 +39,11 @@ help:
 	@echo "  make type-check    Run type checking with mypy"
 	@echo "  make complexity-check  Run complexity checks (radon/xenon)"
 	@echo "  make security-check    Run security checks (bandit)"
+	@echo "  make trivy-fs-scan     Run Trivy filesystem scan (HIGH/CRITICAL only)"
+	@echo "  make trivy-fs-scan-all Run comprehensive Trivy filesystem scan"
+	@echo "  make trivy-image-scan  Run Trivy Docker image scan (requires IMAGE=)"
+	@echo "  make security-scan-local    Run all local security scans"
+	@echo "  make security-scan-comprehensive  Run comprehensive security scans"
 	@echo "  make quality-checks    Run complexity and security checks"
 	@echo "  make test          Run all tests"
 	@echo "  make unit-test     Run unit tests only"
@@ -61,11 +72,56 @@ help:
 	@echo "  make docker-clean  Clean Docker images and containers"
 
 # Environment setup
+setup: install-uv install-trivy install-dev pre-commit
+	@echo ""
+	@echo "🎉 Complete development environment setup completed!"
+	@echo ""
+	@echo "✅ Tools installed:"
+	@echo "   - uv package manager"
+	@echo "   - Trivy security scanner"
+	@echo "   - Development dependencies"
+	@echo "   - Pre-commit hooks"
+	@echo ""
+	@echo "🚀 You're ready to start developing!"
+	@echo "   Run 'make all-checks' to verify everything works"
+
+setup-basic: install-uv install-dev
+	@echo ""
+	@echo "✅ Basic development setup completed!"
+	@echo "   Run 'make setup' for complete environment with security tools"
+
+setup-complete: setup docker-build
+	@echo ""
+	@echo "🚀 Complete setup with Docker image build finished!"
+	@echo ""
+	@echo "🧪 Test your setup:"
+	@echo "   make all-checks              # Run all quality checks"
+	@echo "   make trivy-fs-scan          # Test security scanning"
+	@echo "   make trivy-image-scan IMAGE=$(DOCKER_IMAGE):$(DOCKER_TAG)  # Test Docker image scanning"
+
 install-uv:
 	@echo "Installing uv package manager..."
 	@command -v uv >/dev/null 2>&1 && { echo "uv already installed"; exit 0; } || true
 	curl -LsSf https://astral.sh/uv/install.sh | sh
 	@echo "uv installed! You may need to restart your shell or run: source ~/.bashrc"
+
+install-trivy:
+	@echo "Installing Trivy security scanner..."
+	@command -v trivy >/dev/null 2>&1 && { echo "Trivy already installed"; exit 0; } || true
+	@if command -v brew >/dev/null 2>&1; then \
+		echo "Installing Trivy via Homebrew..."; \
+		brew install trivy; \
+	elif command -v apt-get >/dev/null 2>&1; then \
+		echo "Installing Trivy via apt..."; \
+		sudo apt-get update && sudo apt-get install -y wget apt-transport-https gnupg lsb-release; \
+		wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -; \
+		echo "deb https://aquasecurity.github.io/trivy-repo/deb $$(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list; \
+		sudo apt-get update && sudo apt-get install -y trivy; \
+	else \
+		echo "Installing Trivy via curl..."; \
+		curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin; \
+	fi
+	@echo "Trivy installed successfully!"
 
 install:
 	@echo "Installing production dependencies with uv..."
@@ -111,7 +167,43 @@ security-check:
 	@echo "Running security checks..."
 	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; bandit -r src/ -f json || true
 
-quality-checks: complexity-check security-check
+trivy-fs-scan:
+	@echo "Running Trivy filesystem scan..."
+	@command -v trivy >/dev/null 2>&1 || { echo "Trivy not found. Install with 'make install-trivy'"; exit 1; }
+	trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL .
+
+trivy-fs-scan-all:
+	@echo "Running comprehensive Trivy filesystem scan..."
+	@command -v trivy >/dev/null 2>&1 || { echo "Trivy not found. Install with 'make install-trivy'"; exit 1; }
+	trivy fs --scanners vuln,secret,misconfig .
+
+trivy-image-scan:
+	@echo "Running Trivy Docker image scan..."
+	@command -v trivy >/dev/null 2>&1 || { echo "Trivy not found. Install with 'make install-trivy'"; exit 1; }
+	@if [ -z "$(IMAGE)" ]; then \
+		echo "Usage: make trivy-image-scan IMAGE=your-image:tag"; \
+		echo "Example: make trivy-image-scan IMAGE=$(DOCKER_IMAGE):$(DOCKER_TAG)"; \
+		exit 1; \
+	fi
+	trivy image --severity HIGH,CRITICAL $(IMAGE)
+
+trivy-image-scan-all:
+	@echo "Running comprehensive Trivy Docker image scan..."
+	@command -v trivy >/dev/null 2>&1 || { echo "Trivy not found. Install with 'make install-trivy'"; exit 1; }
+	@if [ -z "$(IMAGE)" ]; then \
+		echo "Usage: make trivy-image-scan-all IMAGE=your-image:tag"; \
+		echo "Example: make trivy-image-scan-all IMAGE=$(DOCKER_IMAGE):$(DOCKER_TAG)"; \
+		exit 1; \
+	fi
+	trivy image $(IMAGE)
+
+security-scan-local: security-check trivy-fs-scan
+	@echo "Local security scans completed!"
+
+security-scan-comprehensive: security-check trivy-fs-scan-all
+	@echo "Comprehensive security scans completed!"
+
+quality-checks: complexity-check security-scan-local
 	@echo "Quality checks completed!"
 
 test:
@@ -131,6 +223,24 @@ all-checks: lint format quality-checks unit-test
 
 all-checks-strict: lint format type-check quality-checks test
 	@echo "All strict checks completed successfully!"
+
+verify-setup:
+	@echo "🔍 Verifying development environment setup..."
+	@echo ""
+	@echo "Checking tools..."
+	@command -v uv >/dev/null 2>&1 && echo "✅ uv package manager" || echo "❌ uv package manager (run 'make setup')"
+	@command -v trivy >/dev/null 2>&1 && echo "✅ Trivy security scanner" || echo "❌ Trivy security scanner (run 'make setup')"
+	@command -v docker >/dev/null 2>&1 && echo "✅ Docker" || echo "❌ Docker (install Docker Desktop)"
+	@echo ""
+	@echo "Checking Python environment..."
+	@if [ -f "$(VENV_ACTIVATE)" ]; then \
+		echo "✅ Virtual environment"; \
+		. $(VENV_ACTIVATE) && python -c "import pytest, ruff, bandit, radon" && echo "✅ Development dependencies" || echo "❌ Development dependencies (run 'make setup')"; \
+	else \
+		echo "❌ Virtual environment (run 'make setup')"; \
+	fi
+	@echo ""
+	@echo "Run 'make all-checks' to test everything works!"
 
 pre-commit:
 	@echo "Setting up pre-commit hooks..."

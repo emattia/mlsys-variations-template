@@ -1,0 +1,28 @@
+# Trivy ignore file for MLOps Template
+# Ignore issues in development/test dependencies that aren't part of production
+
+# JupyterLab test packages - not used in production
+.venv/lib/python3.13/site-packages/jupyterlab/tests/
+.venv/lib/python3.13/site-packages/jupyterlab/staging/
+
+# Pytest and development test packages
+.venv/lib/python3.13/site-packages/pkg_resources/tests/
+
+# Node.js packages in Python virtual environment (not our dependencies)
+.venv/**/yarn.lock
+.venv/**/node_modules/
+
+# Specific CVE ignore for test packages (until they update JupyterLab)
+CVE-2024-37890
+
+# Coverage files
+.coverage*
+htmlcov/
+
+# Jupyter notebook checkpoints
+**/.ipynb_checkpoints/
+
+# Development artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
