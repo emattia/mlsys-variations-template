@@ -79,9 +79,8 @@ def run_batch_inference(
     # Load model to get metadata
     model, metadata = load_model(model_path)
     logger.info(
-        f"Loaded {metadata.get('model_type', 'unknown')} model for {
-            metadata.get('problem_typeunknown')
-        }"
+        f"Loaded {metadata.get('model_type', 'unknown')} model for "
+        f"{metadata.get('problem_type', 'unknown')} problem"
     )
 
     # Use feature columns from model metadata if not provided

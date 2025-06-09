@@ -94,94 +94,134 @@ class ConfigManager:
         """
         GlobalHydra.instance().clear()
 
-        # Calculate relative path from cwd to config_dir
-        try:
-            # Always use relative path for Hydra (required by Hydra)
-            rel_path = os.path.relpath(self.config_dir, Path.cwd())
-        except ValueError:
-            # This happens on Windows if the paths are on different drives
-            rel_path = str(self.config_dir.absolute())
+        # Try to load config with Hydra first
+        config = self._try_hydra_load(overrides)
+        if config is not None:
+            return config
 
+        # Fall back to default config with manual override application
+        return self._create_fallback_config(overrides)
+
+    def _try_hydra_load(self, overrides: list[str] | None = None) -> Config | None:
+        """Try to load configuration using Hydra.
+
+        Returns:
+            Config object if successful, None if failed
+        """
         try:
+            # Calculate relative path from cwd to config_dir
+            rel_path = self._get_hydra_config_path()
+
             hydra.initialize(config_path=rel_path, job_name="app", version_base=None)
             self._hydra_config = hydra.compose(
                 config_name=self.config_name, overrides=overrides or []
             )
             logger.info("Hydra initialized and config composed successfully")
 
-            # 2. Load and resolve config
+            # Load and resolve config
             config_dict = OmegaConf.to_container(self._hydra_config, resolve=True)
 
-            # 3. Create and validate Pydantic model
+            # Create and validate Pydantic model
             self._app_config = Config(**config_dict if config_dict else {})
             logger.info("Configuration loaded and validated successfully")
             return self._app_config
 
         except Exception as e:
             logger.error(f"Configuration loading failed: {e}")
-            # Fallback to a default config and try to apply overrides manually
-            logger.info("Falling back to default configuration")
-            self._app_config = Config()
+            return None
 
-            # Try to apply overrides to the fallback config
-            if overrides:
-                try:
-                    # Parse and apply simple overrides manually
-                    updates = {}
-                    for override in overrides:
-                        if "=" not in override:
-                            logger.warning(
-                                f"Skipping invalid override format: {override}"
-                            )
-                            continue
+    def _get_hydra_config_path(self) -> str:
+        """Get the config path for Hydra initialization."""
+        try:
+            # Always use relative path for Hydra (required by Hydra)
+            return os.path.relpath(self.config_dir, Path.cwd())
+        except ValueError:
+            # This happens on Windows if the paths are on different drives
+            return str(self.config_dir.absolute())
 
-                        key, value = override.split("=", 1)
+    def _create_fallback_config(self, overrides: list[str] | None = None) -> Config:
+        """Create fallback config with manual override application."""
+        logger.info("Falling back to default configuration")
+        self._app_config = Config()
 
-                        # Skip empty keys
-                        if not key.strip():
-                            logger.warning(
-                                f"Skipping override with empty key: {override}"
-                            )
-                            continue
+        if overrides:
+            self._apply_overrides_to_fallback(overrides)
 
-                        key = key.strip()
-                        value = value.strip()
+        return self._app_config
 
-                        # Handle nested keys like ml.random_seed
-                        if "." in key:
-                            keys = [k.strip() for k in key.split(".")]
-                            # Skip if any key part is empty
-                            if any(not k for k in keys):
-                                logger.warning(
-                                    f"Skipping override with empty key part: {override}"
-                                )
-                                continue
+    def _apply_overrides_to_fallback(self, overrides: list[str]) -> None:
+        """Apply overrides to the fallback configuration."""
+        try:
+            updates = self._parse_overrides(overrides)
 
-                            nested_dict = updates
-                            for k in keys[:-1]:
-                                if k not in nested_dict:
-                                    nested_dict[k] = {}
-                                nested_dict = nested_dict[k]
+            if updates:
+                # Apply updates to the fallback config
+                current_dict = self._app_config.model_dump()
+                updated_dict = self._deep_merge(current_dict, updates)
+                self._app_config = Config(**updated_dict)
+                logger.info(f"Applied overrides to fallback config: {updates}")
 
-                            # Try to convert value to appropriate type
-                            nested_dict[keys[-1]] = self._convert_override_value(value)
-                        else:
-                            # Try to convert value to appropriate type
-                            updates[key] = self._convert_override_value(value)
+        except Exception as override_error:
+            logger.warning(
+                f"Failed to apply overrides to fallback config: {override_error}"
+            )
 
-                    if updates:
-                        # Apply updates to the fallback config
-                        current_dict = self._app_config.model_dump()
-                        updated_dict = self._deep_merge(current_dict, updates)
-                        self._app_config = Config(**updated_dict)
-                        logger.info(f"Applied overrides to fallback config: {updates}")
+    def _parse_overrides(self, overrides: list[str]) -> dict[str, Any]:
+        """Parse override strings into a nested dictionary."""
+        updates = {}
 
-                except Exception as override_error:
-                    logger.warning(
-                        f"Failed to apply overrides to fallback config: {override_error}"
-                    )
+        for override in overrides:
+            if not self._is_valid_override_format(override):
+                continue
 
-            return self._app_config
+            key, value = override.split("=", 1)
+            key = key.strip()
+            value = value.strip()
+
+            if not key:
+                logger.warning(f"Skipping override with empty key: {override}")
+                continue
+
+            self._apply_single_override(updates, key, value, override)
+
+        return updates
+
+    def _is_valid_override_format(self, override: str) -> bool:
+        """Check if override has valid format."""
+        if "=" not in override:
+            logger.warning(f"Skipping invalid override format: {override}")
+            return False
+        return True
+
+    def _apply_single_override(
+        self, updates: dict[str, Any], key: str, value: str, original_override: str
+    ) -> None:
+        """Apply a single override to the updates dictionary."""
+        if "." in key:
+            self._apply_nested_override(updates, key, value, original_override)
+        else:
+            updates[key] = self._convert_override_value(value)
+
+    def _apply_nested_override(
+        self, updates: dict[str, Any], key: str, value: str, original_override: str
+    ) -> None:
+        """Apply a nested override (with dots in key)."""
+        keys = [k.strip() for k in key.split(".")]
+
+        # Skip if any key part is empty
+        if any(not k for k in keys):
+            logger.warning(
+                f"Skipping override with empty key part: {original_override}"
+            )
+            return
+
+        nested_dict = updates
+        for k in keys[:-1]:
+            if k not in nested_dict:
+                nested_dict[k] = {}
+            nested_dict = nested_dict[k]
+
+        nested_dict[keys[-1]] = self._convert_override_value(value)
 
     def _load_yaml_config(self, config_path: str | Path) -> dict[str, Any]:
         """Load configuration from YAML file.

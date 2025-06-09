@@ -31,10 +31,13 @@ help:
 	@echo "  make lint          Run linting checks"
 	@echo "  make format        Format code with ruff"
 	@echo "  make type-check    Run type checking with mypy"
+	@echo "  make complexity-check  Run complexity checks (radon/xenon)"
+	@echo "  make security-check    Run security checks (bandit)"
+	@echo "  make quality-checks    Run complexity and security checks"
 	@echo "  make test          Run all tests"
 	@echo "  make unit-test     Run unit tests only"
 	@echo "  make integration-test  Run integration tests only"
-	@echo "  make all-checks    Run comprehensive checks (lint, format, test)"
+	@echo "  make all-checks    Run comprehensive checks (lint, format, quality, test)"
 	@echo "  make all-checks-strict  Run all checks including type checking"
 	@echo "  make pre-commit    Setup pre-commit hooks"
 	@echo ""
@@ -100,6 +103,17 @@ type-check:
 	@echo "Running type checks..."
 	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; mypy .
 
+complexity-check:
+	@echo "Running complexity checks..."
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; radon cc src/ --min B
+
+security-check:
+	@echo "Running security checks..."
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; bandit -r src/ -f json || true
+
+quality-checks: complexity-check security-check
+	@echo "Quality checks completed!"
+
 test:
 	@echo "Running all tests..."
 	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python -m pytest tests/ -v --cov=src --cov-report=term-missing
@@ -112,10 +126,10 @@ integration-test:
 	@echo "Running integration tests..."
 	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python -m pytest tests/integration/ -v
 
-all-checks: lint format unit-test
+all-checks: lint format quality-checks unit-test
 	@echo "All development checks completed successfully!"
 
-all-checks-strict: lint format type-check test
+all-checks-strict: lint format type-check quality-checks test
 	@echo "All strict checks completed successfully!"
 
 pre-commit:
