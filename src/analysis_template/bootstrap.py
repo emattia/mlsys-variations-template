@@ -35,6 +35,19 @@ def is_valid_package_name(name):
     return re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", name) is not None
 
 
+def _parse_git_url(url: str) -> tuple[str | None, str | None]:
+    """Parses a git URL to extract user and repository."""
+    if not url:
+        return None, None
+    # Match SSH or HTTPS URLs:
+    # git@github.com:user/repo.git or https://github.com/user/repo
+    match = re.search(r"github\.com[/:]([^/]+)/([^/]+)", url)
+    if match:
+        user, repo = match.groups()
+        return user, repo.replace(".git", "")
+    return None, None
+
+
 def bootstrap():
     """Initializes the project."""
     console.print("Welcome to the project bootstrap wizard!")
@@ -55,14 +68,17 @@ def bootstrap():
 
     # Docs config
     remote_url = get_git_remote_url()
-    if remote_url:
-        default_url = f"https://{remote_url.split('/')[-2]}.github.io/{remote_url.split('/')[-1].replace('.git', '')}"
-        docs_base_url = Prompt.ask(
-            "Documentation base URL",
-            default=default_url,
-        )
-    else:
-        docs_base_url = Prompt.ask("Documentation base URL")
+    user, repo = _parse_git_url(remote_url)
+    get_git_current_branch()
+
+    default_url = ""
+    if user and repo:
+        default_url = f"https://{user}.github.io/{repo}"
+
+    docs_base_url = Prompt.ask(
+        "Documentation site URL (e.g., for GitHub Pages)",
+        default=default_url,
+    )
 
     console.print("Configuring project...")
 
@@ -98,7 +114,7 @@ def bootstrap():
     # Update scripts entry
     new_script_entry = f'{cli_name} = "{package_name}.cli:app"'
     pyproject_toml = re.sub(
-        r'atem = "analysis_template\.bootstrap:bootstrap"',
+        r'mlsys = "analysis_template\.bootstrap:bootstrap"',
         new_script_entry,
         pyproject_toml,
     )
@@ -120,11 +136,14 @@ def bootstrap():
     # Final cleanup
     console.print("Cleaning up bootstrap files...")
     shutil.rmtree(old_package_dir)
+    (Path("mlsys")).unlink()
+
+    # Re-install the project to update the CLI
+    console.print("Finalizing installation...")
+    subprocess.run(["pip", "install", "-e", "."], check=True)
 
     console.print("\n[green]Project initialized successfully![/green]")
-    console.print("\nTo get started, install the project in editable mode:")
-    console.print("  [cyan]pip install -e .[/cyan]")
-    console.print("\nThen run your new CLI:")
+    console.print(f"\nYour new CLI '{cli_name}' is ready to use:")
     console.print(f"  [cyan]{cli_name} --help[/cyan]")
     console.print(f"  [cyan]{cli_name} hello[/cyan]")
     console.print(f"  [cyan]{cli_name} docs --serve[/cyan]")

@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+from src.analysis_template.bootstrap import bootstrap
+
+if __name__ == "__main__":
+    bootstrap()

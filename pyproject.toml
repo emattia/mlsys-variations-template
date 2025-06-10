@@ -20,7 +20,7 @@ pymdown-extensions = "^10.2.1"
 
 
 [tool.poetry.scripts]
-atem = "analysis_template.bootstrap:bootstrap"
+mlsys = "analysis_template.bootstrap:bootstrap"
 
 [tool.isort]
 profile = "black"
