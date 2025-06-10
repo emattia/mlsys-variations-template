@@ -1,0 +1,56 @@
+"""Plugin '{{ plugin_name }}' scaffold.
+
+This file was generated via `mlops_cli add-plugin`.
+Fill in the methods to implement your custom logic.
+"""
+
+from __future__ import annotations
+
+import time
+import logging
+from pathlib import Path
+from typing import Any
+
+from src.plugins.base import MLOpsComponent, ExecutionContext, ComponentResult, ComponentStatus
+from src.plugins import register_plugin
+
+logger = logging.getLogger(__name__)
+
+
+@register_plugin(name="{{ plugin_name }}", category="{{ category }}", description="Describe {{ plugin_name }}", version="0.1.0")
+class {{ class_name }}(MLOpsComponent):
+    """TODO: Describe what this plugin does."""
+
+    # ------------------------------------------------------------------
+    # Lifecycle hooks
+    # ------------------------------------------------------------------
+
+    def initialize(self, context: ExecutionContext) -> None:  # type: ignore[override]
+        """Initialize resources before execute."""
+        self.logger.info("Initializing {{ plugin_name }}")
+
+    def execute(self, context: ExecutionContext) -> ComponentResult:  # type: ignore[override]
+        """Main execution logic for the plugin."""
+        start = time.time()
+        try:
+            # TODO: implement your logic here
+            output: dict[str, Any] = {}
+            return ComponentResult(
+                status=ComponentStatus.SUCCESS,
+                component_name=self.name,
+                execution_time=time.time() - start,
+                output_data=output,
+                metrics={},
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.exception("{{ class_name }} failed: %s", e)
+            return ComponentResult(
+                status=ComponentStatus.FAILED,
+                component_name=self.name,
+                execution_time=time.time() - start,
+                error_message=str(e),
+            )
+
+    def validate_config(self, config: dict[str, Any]) -> bool:  # type: ignore[override]
+        """Validate plugin-specific config if provided."""
+        return True

@@ -1,0 +1,15 @@
+import pytest
+
+from src.plugins import get_plugin, ExecutionContext
+from src.config import load_config
+
+
+def _ctx():
+    return ExecutionContext(config=load_config(), run_id="test", component_name="{{ plugin_name }}")
+
+
+def test_execute_success():
+    plugin = get_plugin("{{ plugin_name }}", cache=False)
+    plugin.initialize(_ctx())
+    result = plugin.execute(_ctx())
+    assert result.is_success()

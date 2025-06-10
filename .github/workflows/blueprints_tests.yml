@@ -1,0 +1,30 @@
+name: Blueprint Smoke Tests
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # daily at 03:00 UTC
+  pull_request:
+    paths:
+      - "blueprints/**"
+      - ".github/workflows/blueprints_tests.yml"
+
+jobs:
+  run-blueprints:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        blueprint:
+          - feature_store  # Add more blueprint names here
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          pip install uv
+          uv pip install -e ".[dev]"
+      - name: Run smoke test
+        run: |
+          make cli ARGS="blueprint run ${{ matrix.blueprint }}"

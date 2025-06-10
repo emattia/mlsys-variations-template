@@ -16,7 +16,13 @@ from .base import (
     ModelTrainer,
     WorkflowOrchestrator,
 )
-from .registry import PluginRegistry, get_plugin, list_plugins, register_plugin
+from .registry import (
+    PluginRegistry,
+    get_plugin,
+    get_registry,
+    list_plugins,
+    register_plugin,
+)
 
 __all__ = [
     "MLOpsComponent",
@@ -33,4 +39,5 @@ __all__ = [
     "register_plugin",
     "get_plugin",
     "list_plugins",
+    "get_registry",
 ]

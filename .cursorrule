@@ -1,0 +1,72 @@
+# Repository Rules for analysis-template
+
+This file outlines the structure and conventions of the `analysis-template` repository to facilitate development, especially when using an AI-powered tool like Cursor.
+
+## Repository Overview
+
+This repository is a template for building data analysis and machine learning projects. It includes a FastAPI service for model serving, a structured data processing pipeline, a plugin system for extensibility, and a robust testing setup.
+
+### High-level commands
+
+- `make setup`: Installs dependencies.
+- `make unit-test`: Runs unit tests.
+- `make integration-test`: Runs integration tests.
+- `make format`: Formats the code.
+- `make lint`: Lints the code.
+- `make api`: Runs the FastAPI application.
+
+## Directory Structure
+
+Here's a breakdown of the key directories:
+
+- `.github/`: CI/CD workflows for GitHub Actions.
+  - `workflows/`: Contains workflows for testing, including specific ones for plugins and blueprints.
+- `docs/`: Project documentation.
+- `src/`: All Python source code for the project.
+- `scripts/`: Utility and automation scripts.
+- `tests/`: Contains all tests.
+
+## Source Code (`src/`)
+
+- `api/`: The FastAPI application for serving models.
+  - `app.py`: FastAPI app setup.
+  - `routes.py`: API endpoints.
+  - `service.py`: Business logic for the API.
+  - `models.py`: Pydantic models for request/response validation.
+- `config/`: Configuration management using Hydra.
+  - `manager.py`: The main configuration manager.
+  - `models.py`: Pydantic models defining the configuration structure.
+- `data/`: Modules for data loading, processing, and validation.
+- `models/`: Modules for model training, evaluation, and inference.
+- `plugins/`: The core of the extension mechanism. See "Extensibility" section.
+- `utils/`: Common utility functions.
+
+## Testing (`tests/`)
+
+The repository uses a multi-layered testing strategy:
+
+- `tests/unit/`: Unit tests for individual components. These should be fast and have no external dependencies.
+- `tests/integration/`: Integration tests that verify the interaction between different components.
+- `tests/contracts/`: Contract tests to enforce interfaces, especially for plugins.
+
+## Extensibility: Plugins and Blueprints
+
+The template is designed to be extended using plugins and blueprints.
+
+- **Plugins (`src/plugins/`)**: Plugins are self-contained modules that can add new functionality. The `PluginRegistry` in `src/plugins/registry.py` discovers and loads them. To add a new plugin, you typically create a new sub-package in `src/plugins/`.
+
+- **Blueprints**: A "blueprint" seems to be a pre-packaged set of configurations, plugins, and potentially other code that sets up the template for a specific use case. Adding a new blueprint might involve adding a new configuration directory and a corresponding CI workflow in `.github/workflows/`.
+
+When extending the template, ensure that:
+1. New functionality is encapsulated in plugins where possible.
+2. New configurations are added following the existing structure.
+3. New tests are added to cover the new features, following the unit/integration/contract test separation.
+
+## Project Customization
+
+To customize this template for a new project (e.g., changing the project name, CLI name, etc.), you should look at:
+
+- `pyproject.toml`: For project metadata like package name.
+- `config/`: The Hydra configuration files would be the place for application-level naming and parameters. A central configuration file for project-wide names should be established.
+
+A future `cli-wizard` script could automate this process of "forking" or specializing the template.

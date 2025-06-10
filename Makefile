@@ -70,6 +70,10 @@ help:
 	@echo "  make docker-compose Start services with docker-compose"
 	@echo "  make docker-push   Push image to registry"
 	@echo "  make docker-clean  Clean Docker images and containers"
+	@echo "  make cli ARGS=\"<command>\"   Run unified CLI (e.g., make cli ARGS=\"repo info\")"
+	@echo "  make plugin-add NAME=<name> [CATEGORY=<cat>]   Scaffold new plugin"
+	@echo "  make plugins-list           List registered plugins"
+	@echo "  make repo-info              Show git repo info"
 
 # Environment setup
 setup: install-uv install-trivy install-dev pre-commit
@@ -320,3 +324,18 @@ serve-docs:
 build-docs:
 	@echo "Building documentation..."
 	@. $(VENV_ACTIVATE); mkdocs build
+
+# CLI helpers
+cli:
+	@if [ -z "$(ARGS)" ]; then echo "Usage: make cli ARGS=\"<command>\""; exit 1; fi
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python scripts/mlops_cli.py $(ARGS)
+
+plugin-add:
+	@if [ -z "$(NAME)" ]; then echo "Usage: make plugin-add NAME=<name> [CATEGORY=<cat>]"; exit 1; fi
+	@$(MAKE) cli ARGS="plugin add $(NAME) $(if $(CATEGORY),--category $(CATEGORY),)"
+
+plugins-list:
+	@$(MAKE) cli ARGS="plugin list --verbose"
+
+repo-info:
+	@$(MAKE) cli ARGS="repo info"
