@@ -136,9 +136,8 @@ def _install_and_cleanup(package_slug: str) -> None:
 # --- Main Command -------------------------------------------------------------------
 
 
-@app.command()
-def init():
-    """Initialize this project by setting key metadata."""
+def _run_wizard():
+    """The main wizard logic, callable from __main__."""
     console.rule("[bold magenta]Project Bootstrap Wizard[/bold magenta]")
 
     repo_name = Path.cwd().name
@@ -166,12 +165,22 @@ def init():
 
     docs_base_url = Prompt.ask("Confirm project git URL", default=default_docs_url)
 
-    # Perform all setup actions
     _update_pyproject_toml(project_name, package_slug, cli_command, docs_base_url)
     _update_final_cli(project_name)
     _rename_package(package_slug)
     _install_and_cleanup(package_slug)
 
 
+@app.command(hidden=True)
+def init():
+    """Initialize this project by setting key metadata."""
+    _run_wizard()
+
+
 if __name__ == "__main__":
-    app()
+    # This allows the script to be called directly with `python bootstrap.py`
+    # and also handle arguments if passed via Typer in the future.
+    if len(sys.argv) == 1 or (len(sys.argv) > 1 and sys.argv[1] != "init"):
+        _run_wizard()
+    else:
+        app()
