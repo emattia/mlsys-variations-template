@@ -68,13 +68,13 @@ def main():
         print(e.stderr.decode())
         sys.exit(1)
 
-    # 4. Execute the real CLI script
-    cli_script_path = Path("src/analysis_template/bootstrap.py")
-    if not cli_script_path.exists():
-        _print_error(f"Bootstrap script not found at '{cli_script_path}'.")
+    # 4. Execute the bootstrap script
+    bootstrap_script_path = Path("src/analysis_template/bootstrap.py")
+    if not bootstrap_script_path.exists():
+        _print_error(f"Bootstrap script not found at '{bootstrap_script_path}'.")
         sys.exit(1)
 
-    cmd = [python_executable, str(cli_script_path)] + sys.argv[1:]
+    cmd = [python_executable, str(bootstrap_script_path)]
     subprocess.run(cmd)
 
 
