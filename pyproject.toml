@@ -31,8 +31,13 @@ dependencies = [
     "uvicorn[standard]>=0.24.0",
     "python-multipart>=0.0.6",
     "httpx>=0.25.0",
-    "typer>=0.9.0",
+    "typer[all]>=0.9.0",
+    "rich>=13.0.0",
+    "shellingham>=1.5.0",
 ]
+
+[project.scripts]
+atem = "analysis_template.cli:app"
 
 [project.optional-dependencies]
 dev = [
@@ -73,7 +78,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["mlsys_variations_template"]
+known-first-party = ["analysis_template"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -99,7 +104,7 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+packages = ["src/analysis_template"]
 
 # Configuration settings that would typically be in config.yaml
 [tool.mlsys_variations_template]
@@ -133,3 +138,8 @@ file = "logs/analysis.log"
 random_seed = 42
 test_size = 0.2
 cv_folds = 5
+
+[tool.project_meta]
+package_slug = "analysis_template"
+cli_command = "atem"
+docs_base_url = "https://github.com/yourusername/analysis-template/tree/main/docs"
