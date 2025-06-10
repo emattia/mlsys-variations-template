@@ -148,6 +148,8 @@ clean:
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 	find . -type d -name ".ruff_cache" -exec rm -rf {} +
+	@echo "Removing local test coverage files..."
+	find . -type f -name ".coverage.*" -delete
 
 # Code quality and testing
 lint:

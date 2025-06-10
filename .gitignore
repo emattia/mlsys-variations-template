@@ -74,6 +74,12 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# MkDocs
+site/
+/docs/generated/
+/docs/nbdoc_build/
+/docs/site/
+
 # Data files
 *.csv
 *.xlsx
