@@ -35,9 +35,13 @@ CI matrix runs every blueprint nightly; PRs touching a blueprint run only its sm
 ## 7  Performance budgets
 * Each blueprint / integration may include `budget.yaml` (max RAM, CPU seconds). CI fails if exceeded by >20 %.
 
-## 8  Security & Docs
-* Trivy scan (`HIGH`,`CRITICAL`) must be 0.
-* `mkdocs build --strict` executed in CI; markdown code blocks are doctested.
+## 8  Security
+* Trivy scan (`HIGH`,`CRITICAL`) must be 0 (both filesystem and container scans).
+* Bandit static analysis and Safety dependency check pass with no **HIGH** or **CRITICAL** findings.
+
+## 9  Documentation
+* `mkdocs build --strict` must succeed (code blocks are doctested).
+* Broken links are forbidden – run `make link-check` before pushing.
 
 ---
 Contributions that add new artefacts **must** include corresponding tests and, when relevant, update CI matrices. Use `make all-checks` locally before opening a PR.

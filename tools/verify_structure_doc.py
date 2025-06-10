@@ -19,7 +19,6 @@ DOC_FILE = REPO_ROOT / "docs/user-guide/project-structure.md"
 # Directories that we deliberately ignore when comparing against the doc.
 _IGNORE = {
     ".git",
-    ".github",
     ".venv",
     "__pycache__",
     ".ruff_cache",
@@ -27,6 +26,11 @@ _IGNORE = {
     ".pytest_cache",
     "htmlcov",
     "logs",
+    "documentation",
+    "tools",
+    "archive",
+    "scripts",
+    ".cursor",
 }
 
 
@@ -48,8 +52,8 @@ def _extract_doc_dirs() -> list[str]:
 
     tree_block = tree_match.group(0)
 
-    # Grab directory names from the first level (├── <name>/).
-    dirs = re.findall(r"├──\s+([^/]+)/", tree_block)
+    # Grab directory names from first level only (start of line).
+    dirs = re.findall(r"^[├└]──\s+([^/]+)/", tree_block, flags=re.MULTILINE)
     return sorted(dirs)
 
 
