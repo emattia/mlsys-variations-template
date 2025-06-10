@@ -34,6 +34,6 @@ repos:
     hooks:
     -   id: verify-structure-doc
         name: Verify docs/user-guide/project-structure.md
-        entry: python tools/verify_structure_doc.py
+        entry: python3 tools/verify_structure_doc.py
         language: system
         pass_filenames: false

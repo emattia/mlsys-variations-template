@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""
+A zero-dependency bootstrap script for the Analysis Template.
+
+This script is the first thing a new user runs. Its only job is to:
+1. Ensure a virtual environment exists.
+2. Install the minimal dependencies required to run the real CLI (`typer` and `rich`).
+3. Execute the real CLI, passing along any command-line arguments.
+
+This allows for a smooth, two-step setup process:
+1. `git clone ...`
+2. `./atem init`
+"""
+import sys
+import subprocess
+from pathlib import Path
+
+# --- Configuration ---
+VENV_DIR = Path(".venv")
+MIN_PYTHON_VERSION = (3, 10)
+BOOTSTRAP_DEPS = ["typer>=0.9.0", "rich>=13.0.0"]
+
+# --- Helper Functions ---
+def _get_python_executable() -> str:
+    """Determine the correct path to the python executable in the venv."""
+    return (
+        str(VENV_DIR / "bin" / "python")
+        if sys.platform != "win32"
+        else str(VENV_DIR / "Scripts" / "python.exe")
+    )
+
+def _print_error(message: str):
+    """Prints an error message in a standard format."""
+    print(f"\033[91mError: {message}\033[0m", file=sys.stderr)
+
+# --- Main Logic ---
+def main():
+    """Main bootstrap logic."""
+    # 1. Check Python version
+    if sys.version_info < MIN_PYTHON_VERSION:
+        _print_error(
+            f"Python {'.'.join(map(str, MIN_PYTHON_VERSION))} or higher is required."
+        )
+        sys.exit(1)
+
+    # 2. Ensure virtual environment exists
+    if not VENV_DIR.is_dir():
+        print(f"🐍 Creating virtual environment in './{VENV_DIR}'...")
+        try:
+            subprocess.run([sys.executable, "-m", "venv", str(VENV_DIR)], check=True)
+        except subprocess.CalledProcessError as e:
+            _print_error(f"Could not create virtual environment. {e}")
+            sys.exit(1)
+
+    python_executable = _get_python_executable()
+
+    # 3. Install bootstrap dependencies
+    print("📦 Installing required packages to run the wizard (typer, rich)...")
+    try:
+        subprocess.run(
+            [python_executable, "-m", "pip", "install", *BOOTSTRAP_DEPS],
+            check=True,
+            capture_output=True,  # Hide pip's noisy output on success
+        )
+    except subprocess.CalledProcessError as e:
+        _print_error(f"Could not install bootstrap dependencies. {e}")
+        print(e.stdout.decode())
+        print(e.stderr.decode())
+        sys.exit(1)
+
+    # 4. Execute the real CLI script
+    cli_script_path = Path("src/analysis_template/bootstrap.py")
+    if not cli_script_path.exists():
+        _print_error(f"Bootstrap script not found at '{cli_script_path}'.")
+        sys.exit(1)
+
+    cmd = [python_executable, str(cli_script_path)] + sys.argv[1:]
+    subprocess.run(cmd)
+
+
+if __name__ == "__main__":
+    main()
