@@ -1,5 +1,34 @@
 #!/usr/bin/env python3
-from src.analysis_template.bootstrap import bootstrap
+import subprocess
+import sys
+import importlib.util
+
+# Minimal dependencies for the bootstrap wizard
+BOOTSTRAP_DEPS = ["rich", "typer[all]"]
+
+def check_and_install_deps():
+    """
+    Checks if bootstrap dependencies are installed, and installs them if not.
+    """
+    missing = [dep for dep in BOOTSTRAP_DEPS if not importlib.util.find_spec(dep.split('[')[0])]
+
+    if missing:
+        print(f"Installing required packages: {', '.join(missing)}...")
+        try:
+            # Use sys.executable to ensure pip installs into the correct environment
+            subprocess.check_call([sys.executable, "-m", "pip", "install", *missing], stdout=subprocess.DEVNULL)
+            print("Packages installed successfully.")
+        except subprocess.CalledProcessError:
+            print(f"Error: Could not install packages. Please run manually: pip install {' '.join(missing)}", file=sys.stderr)
+            sys.exit(1)
+
+def main():
+    """Run the bootstrap process."""
+    check_and_install_deps()
+
+    # Now that dependencies are installed, we can safely import and run the wizard
+    from src.analysis_template.bootstrap import bootstrap
+    bootstrap()
 
 if __name__ == "__main__":
-    bootstrap()
+    main()
