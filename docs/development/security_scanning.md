@@ -1,5 +1,7 @@
 # Security Scanning Guide
 
+<!-- NOTE: This file was moved from the project root to docs/development/ to keep all documentation inside the MkDocs tree. -->
+
 This project includes comprehensive security scanning capabilities that can be run both locally and in CI/CD.
 
 ## 🚀 Quick Start

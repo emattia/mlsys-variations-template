@@ -48,7 +48,7 @@ def validate_toml_file(file_path: str) -> tuple[bool, str | None]:
                 except ModuleNotFoundError:
                     # Last resort: use a simple syntax check
                     return simple_toml_syntax_check(file_path)
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         # This will catch TOMLDecodeError from any of the parsers
         return False, str(err)
 
@@ -117,7 +117,7 @@ def simple_toml_syntax_check(file_path: str) -> tuple[bool, str | None]:
                     return False, f"Unclosed inline table on line {i + 1}: {line}"
 
         return True, None
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         return False, f"Error during syntax check: {str(err)}"
 
 

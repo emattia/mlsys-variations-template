@@ -76,9 +76,20 @@ Here are some suggested first steps to get familiar with the template:
 
 ## Adding Your Own Data
 
-1. Place raw data files in the `data/raw/` directory.
-2. Create data processing workflows in the `workflows/` directory.
-3. Process the data and save the results to `data/processed/`.
+1. Place raw data files in the `data/raw/` directory **or ingest directly from an external source via a plugin**.  For example, to pull a Snowflake table into `data/raw/` you can run:
+
+```bash
+uv pip install snowflake-connector-python
+python -m workflows.data_ingest \
+    data.source=snowflake \
+    data.snowflake.account=<ACCOUNT> \
+    data.snowflake.database=<DB> \
+    data.snowflake.query='SELECT * FROM SALES'
+```
+
+2. Create data processing workflows in the `workflows/` directory (see `workflows/data_processing.py` for an example).  These workflows should read from `data/raw/` **only** and write their outputs to `data/processed/`.
+
+3. Keep large external datasets out of Git.  Instead reference them via environment variables (e.g. an S3 URI) or a plugin-specific config file under `conf/data/`.
 
 ## Creating Notebooks
 
@@ -88,9 +99,12 @@ Here are some suggested first steps to get familiar with the template:
 
 ## Developing Source Code
 
-1. Add reusable functions and classes to the `src/` directory.
-2. Organize code into modules by functionality.
-3. Write tests for your code in the `tests/` directory.
+1. Put **pure, importable** functions and classes in `src/`.  These should not perform direct I/O – leave that to the workflows.
+2. Orchestrate your library code inside `workflows/` scripts (or DAGs) which *do* perform I/O and move artefacts between `data/` ↔ `models/` ↔ `reports/`.
+3. When adding new functionality:
+   - Write unit tests under `tests/unit/` for every public function.
+   - Add or update a smoke test under `workflows/tests/` that executes the full workflow against a small fixture dataset (see `tests/fixtures/`).
+4. If the code needs to be surfaced as an API, create an endpoint inside `endpoints/` and add an integration test under `tests/integration/`.
 
 ## Running Tests
 
@@ -109,18 +123,21 @@ pytest workflows/tests/
 
 ## Building Documentation
 
-Generate documentation for your project:
-
 ```bash
-# Generate notebook documentation
-python -m nbdoc build notebooks/ -o documentation/generated/notebooks
+# 1. Turn notebooks → markdown (nbdoc)
+python -m nbdoc build notebooks/ -o docs/generated/notebooks
 
-# Generate API documentation
-python -m pdoc --html --output-dir documentation/generated/api src
+# 2. Generate API docs from docstrings (pdoc)
+python -m pdoc --html --output-dir docs/generated/api src
 
-# Build MkDocs site
-mkdocs build
+# 3. Build & serve the MkDocs site with live reload
+mkdocs serve  # http://127.0.0.1:8000
+
+# 4. Or run everything in one step
+make docs  # output goes to the local 'site/' directory
 ```
+
+A GitHub Actions workflow (`.github/workflows/docs.yml`) publishes the built site to **GitHub Pages** on every push to `main`.
 
 ## Next Steps
 

@@ -1,5 +1,7 @@
 # GitHub Actions Fixes Summary
 
+<!-- Moved from project root to docs/development/ to centralise documentation. -->
+
 ## Issues Identified and Resolved
 
 ### 1. **Dependency Installation Issues**
