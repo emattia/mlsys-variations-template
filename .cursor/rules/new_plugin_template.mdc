@@ -1,0 +1,18 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+When creating a new plugin, use the following structure.
+
+First, create a new directory for your plugin under `src/plugins/`. For example, `src/plugins/my_new_plugin`.
+
+Inside that directory, create an `__init__.py` that contains your plugin class. It should inherit from one of the base plugin classes from `src/plugins/base.py`.
+
+Here is a template for the plugin file, which you can adapt.
+@scripts/templates/plugin_skeleton.py.jinja
+
+You must also add a contract test for your new plugin. Create a test file in `tests/contracts/`.
+
+Here is a template for the test file.
+@scripts/templates/plugin_test_skeleton.py.jinja
