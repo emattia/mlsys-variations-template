@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mlsys-variations-template"
+name = "llm-factory"
 version = "0.1.0"
 description = "A streamlined data science project template"
 readme = "README.md"
@@ -78,7 +78,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["analysis_template"]
+known-first-party = ["llm_factory"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -104,7 +104,7 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/analysis_template"]
+packages = ["src/llm_factory"]
 
 # Configuration settings that would typically be in config.yaml
 [tool.mlsys_variations_template]
@@ -140,6 +140,6 @@ test_size = 0.2
 cv_folds = 5
 
 [tool.project_meta]
-package_slug = "analysis_template"
+package_slug = "llm_factory"
 cli_command = "atem"
 docs_base_url = "https://github.com/yourusername/analysis-template/tree/main/docs"
