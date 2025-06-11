@@ -63,15 +63,7 @@ def test_dependencies():
 def test_src_importable():
     """Test that src modules are importable."""
     try:
-        # Add src directory to Python path for testing
-        import sys
-        from pathlib import Path
-
-        src_path = Path.cwd() / "src"
-        if str(src_path) not in sys.path:
-            sys.path.insert(0, str(src_path))
-
-        from utils.common import get_project_root
+        from src.utils.common import get_project_root
 
         project_root = get_project_root()
         assert project_root.exists(), "Project root not found"
