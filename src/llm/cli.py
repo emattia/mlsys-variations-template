@@ -27,7 +27,7 @@ def docs(
 @app.command()
 def hello():
     """A simple example command."""
-    print("Hello from your new project: {{project_name}}!")
+    print("Hello from your new project: llm!")
 
 
 if __name__ == "__main__":
