@@ -3,7 +3,6 @@
 This module contains comprehensive tests for the data processing functions.
 """
 
-import logging
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -11,7 +10,7 @@ from unittest.mock import patch
 import numpy as np
 import polars as pl
 import pytest
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 from src.data.processing import (
     clean_data,

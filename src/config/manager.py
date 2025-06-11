@@ -3,13 +3,12 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import hydra
 import yaml
 from hydra.core.global_hydra import GlobalHydra
 from omegaconf import DictConfig, OmegaConf
-from pydantic import ValidationError
 
 from .models import (
     APIConfig,

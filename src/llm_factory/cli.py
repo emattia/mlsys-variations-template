@@ -1,20 +1,13 @@
-from __future__ import annotations
-
-"""Operational CLI for the llm-factory project."""
-
-import os
-import shutil
 import subprocess
 import sys
 import webbrowser
 from pathlib import Path
-from typing import Optional
 
 import tomllib
 import typer
 from rich.console import Console
-from rich.panel import Panel
-from rich.prompt import Prompt
+
+"""Operational CLI for the llm-factory project."""
 
 # --- Globals & Setup -----------------------------------------------------------------
 

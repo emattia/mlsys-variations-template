@@ -17,7 +17,6 @@ from src.utils.common import (
     get_reports_path,
     load_config,
     load_environment_variables,
-    load_yaml_config,
     save_config,
     setup_logging,
 )

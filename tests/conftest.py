@@ -5,6 +5,7 @@ import tempfile
 from collections.abc import Generator
 from pathlib import Path
 from typing import Any
+import sys
 
 import polars as pl
 import pytest
@@ -14,6 +15,11 @@ from httpx import AsyncClient
 from src.api.app import app
 from src.config import Config, ConfigManager
 from src.plugins import ExecutionContext
+
+# Add project root to sys.path
+# This allows tests to import modules from the `src` directory.
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 
 @pytest.fixture(scope="session")

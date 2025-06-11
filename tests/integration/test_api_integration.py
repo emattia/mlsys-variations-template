@@ -7,11 +7,9 @@ import subprocess
 import sys
 import time
 from collections.abc import AsyncGenerator
-from pathlib import Path
 
 import httpx
 import pytest
-import requests
 
 
 @pytest.fixture(scope="session")

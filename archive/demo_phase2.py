@@ -76,7 +76,7 @@ class Phase2Demo:
                     if response.status_code == 200:
                         self.print_success("FastAPI server started successfully")
                         return True
-                except:
+                except Exception:
                     time.sleep(1)
 
             self.print_error("Failed to start FastAPI server")
@@ -245,7 +245,7 @@ class Phase2Demo:
             with open(".dockerignore") as f:
                 lines = f.readlines()
                 print(
-                    f"  Rules defined: {len([l for l in lines if l.strip() and not l.startswith('#')])}"
+                    f"  Rules defined: {len([line for line in lines if line.strip() and not line.startswith('#')])}"
                 )
 
         self.print_info("To build and run with Docker:")
@@ -328,6 +328,38 @@ class Phase2Demo:
             else:
                 self.print_error(f"{file_name}: Missing")
 
+        if Path("tests/integration/test_api.py").exists():
+            self.print_success("Integration test suite found (test_api.py)")
+            with open("tests/integration/test_api.py") as f:
+                lines = f.readlines()
+                test_lines = [
+                    line
+                    for line in lines
+                    if "::test_" in line and ("PASSED" in line or "FAILED" in line)
+                ]
+                print(f"  Test cases found: {len(test_lines)}")
+
+        # Run tests and show coverage
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "pytest", "--cov=src"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            if "%" in result.stdout:
+                coverage_lines = [
+                    line
+                    for line in result.stdout.split("\n")
+                    if "%" in line and "src" in line
+                ]
+                if coverage_lines:
+                    print("\n  Coverage Summary:")
+                    for line in coverage_lines[:3]:  # Show first 3 lines
+                        print(f"  {line.strip()}")
+        except Exception as e:
+            self.print_info(f"Coverage analysis: {e}")
+
     def demo_testing_infrastructure(self):
         """Demonstrate testing infrastructure."""
         self.print_section("Testing Infrastructure")
@@ -354,9 +386,9 @@ class Phase2Demo:
                 # Count tests
                 lines = result.stdout.split("\n")
                 test_lines = [
-                    l
-                    for l in lines
-                    if "::test_" in l and ("PASSED" in l or "FAILED" in l)
+                    line
+                    for line in lines
+                    if "::test_" in line and ("PASSED" in line or "FAILED" in line)
                 ]
                 print(f"  Tests executed: {len(test_lines)}")
             else:
@@ -389,7 +421,9 @@ class Phase2Demo:
 
             if "%" in result.stdout:
                 coverage_lines = [
-                    l for l in result.stdout.split("\n") if "%" in l and "src" in l
+                    line
+                    for line in result.stdout.split("\n")
+                    if "%" in line and "src" in line
                 ]
                 if coverage_lines:
                     self.print_success("Test coverage analysis available")

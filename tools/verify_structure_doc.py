@@ -16,10 +16,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DOC_FILE = REPO_ROOT / "docs/user-guide/project-structure.md"
 
-# Directories that we deliberately ignore when comparing against the doc.
+# Directories deliberately ignored when comparing against the doc.
 _IGNORE = {
     ".git",
     ".venv",
+    ".bootstrap_venv",
     "__pycache__",
     ".ruff_cache",
     ".mypy_cache",

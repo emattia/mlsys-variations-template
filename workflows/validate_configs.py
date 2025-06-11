@@ -1,5 +1,4 @@
 # workflows/validate_configs.py
-import os
 import sys
 from pathlib import Path
 
@@ -8,7 +7,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.config import ConfigManager, load_config
+from src.config import ConfigManager  # noqa: E402
 
 
 def validate_all_configs():

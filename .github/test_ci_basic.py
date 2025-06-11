@@ -4,7 +4,6 @@ Basic CI test to verify environment setup works correctly.
 This test can be run in GitHub Actions to verify everything is working.
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path

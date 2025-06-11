@@ -1,15 +1,9 @@
-import sys
-from pathlib import Path
-
 import pytest
-
-# Add the project root to the Python path to allow importing from 'src'
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
-
+from pathlib import Path
 from src.config import ConfigManager
 
 # The root directory of the configuration files.
+project_root = Path(__file__).parent.parent.parent
 CONFIG_DIR = project_root / "conf"
 
 # Define the different configuration scenarios to test.

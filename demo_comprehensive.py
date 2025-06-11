@@ -24,14 +24,11 @@ Components:
 """
 
 import argparse
-import asyncio
 import json
-import logging
 import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Optional
 
 import pandas as pd
 import requests
@@ -42,7 +39,6 @@ from sklearn.model_selection import train_test_split
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.config.manager import ConfigManager
-from src.data.loading import load_data, save_data
 from src.data.processing import clean_data, normalize_features
 from src.data.validation import generate_data_quality_report
 from src.models.evaluation import evaluate_classification_model
