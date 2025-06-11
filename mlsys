@@ -1,11 +1,181 @@
 #!/usr/bin/env python3
+"""
+🌟 Welcome to your new analysis project! 🌟
+
+Like a seed that grows into a mighty tree,
+Your project starts small but dreams free.
+With data as soil and code as light,
+Watch your insights bloom bright!
+
+Stability in structure, growth in scope,
+Consistency in process, endless hope.
+"""
+
+import sys
+import subprocess
 import shutil
 from pathlib import Path
+import os
 
-import toml
-import typer
-from rich.console import Console
-from rich.panel import Panel
+
+def ensure_dependencies():
+    """Ensure required dependencies are installed in a bootstrap virtual environment."""
+    required_packages = ["typer[all]", "rich"]
+
+    # Create bootstrap venv path
+    bootstrap_venv = Path.home() / ".mlsys_bootstrap_venv"
+    python_exe = bootstrap_venv / "bin" / "python"
+
+    # Check if we're already running from the bootstrap environment
+    if str(bootstrap_venv) in sys.executable:
+        # We're already in the bootstrap environment, dependencies should be available
+        return
+
+    # Check if bootstrap venv exists and has our dependencies
+    if bootstrap_venv.exists() and python_exe.exists():
+        try:
+            # Test if dependencies are available in the bootstrap venv
+            result = subprocess.run(
+                [
+                    str(python_exe),
+                    "-c",
+                    'import typer, rich; print("Dependencies available")',
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+
+            if result.returncode == 0:
+                # Dependencies are available, re-exec with bootstrap python
+                print("🔄 Using bootstrap environment...")
+                os.execv(str(python_exe), [str(python_exe)] + sys.argv)
+        except (subprocess.TimeoutExpired, Exception):
+            pass
+
+    # Need to create/update bootstrap environment
+    print("🚀 Setting up bootstrap environment...")
+
+    # Remove old bootstrap venv if it exists but is broken
+    if bootstrap_venv.exists():
+        shutil.rmtree(bootstrap_venv)
+
+    try:
+        # Create new bootstrap venv
+        print("  📦 Creating virtual environment...")
+        subprocess.check_call(
+            [sys.executable, "-m", "venv", str(bootstrap_venv)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        # Install dependencies in bootstrap venv
+        print("  🔧 Installing dependencies...")
+        subprocess.check_call(
+            [str(python_exe), "-m", "pip", "install", "--quiet"] + required_packages,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        print("✅ Bootstrap environment ready!")
+
+        # Re-exec with bootstrap python
+        print("🔄 Switching to bootstrap environment...")
+        os.execv(str(python_exe), [str(python_exe)] + sys.argv)
+
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Failed to set up bootstrap environment: {e}")
+        print("Please ensure you have:")
+        print("  - Python venv module available")
+        print("  - Internet connection for package downloads")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        sys.exit(1)
+
+
+# Ensure dependencies before importing them
+ensure_dependencies()
+
+# Now we can safely import our dependencies
+try:
+    import tomllib  # Python 3.11+
+except ImportError:
+    import tomli as tomllib  # Fallback for older Python versions
+
+import typer  # noqa: E402
+from rich.console import Console  # noqa: E402
+from rich.panel import Panel  # noqa: E402
+
+
+def write_toml(data, file_path):
+    """Simple TOML writer for our specific use case."""
+
+    def format_value(value):
+        """Format a value for TOML output."""
+        if isinstance(value, str):
+            return f'"{value}"'
+        elif isinstance(value, bool):
+            return str(value).lower()
+        elif isinstance(value, (int, float)):
+            return str(value)
+        elif isinstance(value, list):
+            if value and isinstance(value[0], dict):
+                # Array of inline tables
+                items = []
+                for item in value:
+                    pairs = []
+                    for k, v in item.items():
+                        pairs.append(f"{k} = {format_value(v)}")
+                    items.append("{" + ", ".join(pairs) + "}")
+                return "[" + ", ".join(items) + "]"
+            else:
+                # Simple array
+                return "[" + ", ".join(format_value(item) for item in value) + "]"
+        elif isinstance(value, dict):
+            # Inline table
+            pairs = []
+            for k, v in value.items():
+                if isinstance(v, dict):
+                    # Nested dict - cannot be inline
+                    return None  # Signal that this needs to be a section
+                pairs.append(f"{k} = {format_value(v)}")
+            return "{" + ", ".join(pairs) + "}"
+        else:
+            return str(value)
+
+    with open(file_path, "w") as f:
+        for section, content in data.items():
+            if isinstance(content, dict):
+                f.write(f"[{section}]\n")
+                for key, value in content.items():
+                    if isinstance(value, dict):
+                        # Check if this can be an inline table
+                        inline_value = format_value(value)
+                        if inline_value is not None:
+                            f.write(f"{key} = {inline_value}\n")
+                        else:
+                            # Need to create a subsection
+                            f.write(f"\n[{section}.{key}]\n")
+                            for subkey, subvalue in value.items():
+                                formatted = format_value(subvalue)
+                                if formatted is not None:
+                                    f.write(f"{subkey} = {formatted}\n")
+                                elif isinstance(subvalue, dict):
+                                    # Another level of nesting
+                                    f.write(f"\n[{section}.{key}.{subkey}]\n")
+                                    for nested_key, nested_value in subvalue.items():
+                                        f.write(
+                                            f"{nested_key} = {format_value(nested_value)}\n"
+                                        )
+                    else:
+                        formatted = format_value(value)
+                        if formatted is not None:
+                            f.write(f"{key} = {formatted}\n")
+                f.write("\n")
+            else:
+                f.write(f"{section} = {format_value(content)}\n")
+
 
 # --- Configuration ---
 OLD_PROJECT_NAME_SNAKE = "analysis_template"
@@ -98,12 +268,22 @@ def main(
     pyproject_path = project_root / "pyproject.toml"
     if pyproject_path.exists():
         try:
-            data = toml.load(pyproject_path)
+            with open(pyproject_path, "rb") as f:
+                data = tomllib.load(f)
 
             # Handle both Poetry and PEP 621 formats
             if "tool" in data and "poetry" in data["tool"]:
                 # Poetry format
                 data["tool"]["poetry"]["name"] = new_kebab_case
+
+                # Update packages configuration if it exists
+                if "packages" in data["tool"]["poetry"]:
+                    for package in data["tool"]["poetry"]["packages"]:
+                        if isinstance(package, dict) and "include" in package:
+                            # Update the include field to use the new package name
+                            if package["include"] == OLD_PROJECT_NAME_SNAKE:
+                                package["include"] = new_snake_case
+
                 console.print(
                     "✅ Updated [cyan]pyproject.toml[/cyan] (Poetry format) with new project name."
                 )
@@ -119,14 +299,50 @@ def main(
                 )
                 raise typer.Exit(code=1)
 
+            # Update CLI script name in Poetry if it exists
+            if (
+                "tool" in data
+                and "poetry" in data["tool"]
+                and "scripts" in data["tool"]["poetry"]
+            ):
+                scripts = data["tool"]["poetry"]["scripts"]
+                # If there's a script with the old name, rename it
+                if OLD_PROJECT_NAME_SNAKE in scripts:
+                    old_script_path = scripts[OLD_PROJECT_NAME_SNAKE]
+                    # Update the script path to use new package name
+                    new_script_path = old_script_path.replace(
+                        OLD_PROJECT_NAME_SNAKE, new_snake_case
+                    )
+                    scripts[new_snake_case] = new_script_path
+                    del scripts[OLD_PROJECT_NAME_SNAKE]
+
             # Update ruff's linter settings for the new package name (if present)
             if "tool" in data and "ruff" in data.get("tool", {}):
-                data["tool"]["ruff"]["lint"]["isort"]["known-first-party"] = [
-                    new_snake_case
-                ]
+                if (
+                    "lint" in data["tool"]["ruff"]
+                    and "isort" in data["tool"]["ruff"]["lint"]
+                ):
+                    data["tool"]["ruff"]["lint"]["isort"]["known-first-party"] = [
+                        new_snake_case
+                    ]
 
-            with open(pyproject_path, "w") as f:
-                toml.dump(data, f)
+            # Update isort settings for the new package name (if present as separate tool)
+            if "tool" in data and "isort" in data["tool"]:
+                if "known_first_party" in data["tool"]["isort"]:
+                    # Handle both list and string formats
+                    known_first_party = data["tool"]["isort"]["known_first_party"]
+                    if isinstance(known_first_party, list):
+                        data["tool"]["isort"]["known_first_party"] = [
+                            new_snake_case if name == OLD_PROJECT_NAME_SNAKE else name
+                            for name in known_first_party
+                        ]
+                    elif (
+                        isinstance(known_first_party, str)
+                        and known_first_party == OLD_PROJECT_NAME_SNAKE
+                    ):
+                        data["tool"]["isort"]["known_first_party"] = new_snake_case
+
+            write_toml(data, pyproject_path)
         except Exception as e:
             console.print(f"[bold red]Error updating pyproject.toml:[/bold red] {e}")
             raise typer.Exit(code=1)
