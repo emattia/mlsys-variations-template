@@ -1,11 +1,57 @@
 #!/usr/bin/env python3
+import os
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
-import toml
-import typer
-from rich.console import Console
-from rich.panel import Panel
+# --- Self-Bootstrap Dependencies ---
+VENV_DIR = ".bootstrap_venv"
+BOOTSTRAP_DEPS = ["toml", "typer[all]", "rich"]
+
+
+def check_and_install_deps():
+    """
+    Ensures the script runs in a dedicated virtual environment with necessary
+    dependencies, creating it if it doesn't exist.
+    """
+    project_root = Path(__file__).parent.resolve()
+    venv_path = project_root / VENV_DIR
+    venv_python = (
+        venv_path / "Scripts" / "python.exe"
+        if sys.platform == "win32"
+        else venv_path / "bin" / "python"
+    )
+
+    # If we are not running with the venv's python, create it and/or re-launch.
+    if sys.executable != str(venv_python.resolve()):
+        if not venv_python.exists():
+            print(f"[*] Creating bootstrap virtual environment in '{VENV_DIR}'...")
+            subprocess.run(
+                [sys.executable, "-m", "venv", venv_path],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            print(f"[*] Installing dependencies: {', '.join(BOOTSTRAP_DEPS)}")
+            subprocess.run(
+                [str(venv_python), "-m", "pip", "install", *BOOTSTRAP_DEPS],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        # Re-launch the script with the venv's python
+        os.execv(str(venv_python), [str(venv_python), *sys.argv])
+        sys.exit()
+
+
+# This check must be performed before other imports that might be missing.
+check_and_install_deps()
+
+import toml  # noqa: E402
+import typer  # noqa: E402
+from rich.console import Console  # noqa: E402
+from rich.panel import Panel  # noqa: E402
 
 # --- Configuration ---
 # The original template name to be replaced
@@ -52,14 +98,14 @@ def init(
 
     # --- 1. Introduction ---
     story = (
-        "You stand at the trailhead of a new mlsys. Before you lies a long, templated lineage, forged from "
-        "from past journeys. This script is your guide, ready to shape this repository into a masterpiece. "
-        "It will set the paths according to your wish, update the maps, and prepare your expedition for the discoveries that await."
+        "You stand at the trailhead of a new analysis. Before you lies a well-marked path, a template forged "
+        "from past journeys. This script is your guide, ready to shape this path into a unique trail for your specific quest. "
+        "It will rename the trails, update the maps, and prepare your expedition for the discoveries that await."
     )
 
     haiku = """
-[green]Solid foundation,[/green]
-[green]New ideas now take root,[/green]
+[bold green]Solid foundation,[/bold green]
+[bold green]New ideas now take root,[/bold green]
 [bold green]Growth is assured here.[/bold green]
     """
     console.print(
@@ -99,13 +145,19 @@ def init(
     if pyproject_path.exists():
         try:
             data = toml.load(pyproject_path)
-            # Update project name
+            if "project" not in data:
+                console.print(
+                    "[bold red]Error:[/bold red] '[cyan]pyproject.toml[/cyan]' is missing the required '[project]' table."
+                )
+                raise typer.Exit(code=1)
+
             data["project"]["name"] = new_kebab_case
-            # Update ruff's linter settings for the new package name
-            if "tool" in data and "ruff" in data["tool"]:
+
+            if "tool" in data and "ruff" in data.get("tool", {}):
                 data["tool"]["ruff"]["lint"]["isort"]["known-first-party"] = [
                     new_snake_case
                 ]
+
             with open(pyproject_path, "w") as f:
                 toml.dump(data, f)
             console.print(
@@ -121,14 +173,13 @@ def init(
     files_changed_count = 0
     for md_file in md_files:
         try:
-            content = md_file.read_text()
+            content = md_file.read_text(encoding="utf-8")
             if OLD_PROJECT_NAME_KEBAB in content or OLD_PROJECT_NAME_TITLE in content:
                 content = content.replace(OLD_PROJECT_NAME_KEBAB, new_kebab_case)
                 content = content.replace(OLD_PROJECT_NAME_TITLE, new_title_case)
-                md_file.write_text(content)
+                md_file.write_text(content, encoding="utf-8")
                 files_changed_count += 1
         except Exception:
-            # Ignore binary files or read errors
             pass
     console.print(f"✅ Scanned and updated {files_changed_count} documentation files.")
 
