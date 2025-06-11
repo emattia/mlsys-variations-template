@@ -42,8 +42,9 @@ def main():
         )
 
     # 2. Run the core script using the venv's python
-    # We pass all original command-line arguments to the core script
-    command = [str(venv_python), str(core_script_full_path), *sys.argv[1:]]
+    # We pass all command-line arguments *except* the script name and the 'init' command.
+    args_to_pass = sys.argv[2:]
+    command = [str(venv_python), str(core_script_full_path), *args_to_pass]
     result = subprocess.run(command)
 
     # 3. Propagate the exit code from the core script
