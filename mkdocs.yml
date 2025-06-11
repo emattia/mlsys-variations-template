@@ -34,16 +34,6 @@ markdown_extensions:
 
 plugins:
   - search
-  - mkdocstrings:
-      handlers:
-        python:
-          selection:
-            docstring_style: google
-          rendering:
-            show_source: true
-  - nbdoc:
-      notebooks_dir: notebooks/
-      include_source: true
 
 extra_javascript:
   - javascripts/mathjax.js
