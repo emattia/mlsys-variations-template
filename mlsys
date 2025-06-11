@@ -17,6 +17,7 @@ app = typer.Typer(
     help="A utility CLI for managing this project.",
     add_completion=False,
     no_args_is_help=True,
+    invoke_without_command=True,
 )
 console = Console()
 
@@ -36,8 +37,8 @@ def to_title_case(name: str) -> str:
     return " ".join(word.capitalize() for word in name.replace("-", "_").split("_"))
 
 
-@app.command()
-def init(
+@app.callback()
+def main(
     new_name: str = typer.Argument(
         ...,
         help="The new name for the project (e.g., 'customer-churn-model').",
