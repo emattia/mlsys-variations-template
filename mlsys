@@ -99,14 +99,27 @@ def main(
     if pyproject_path.exists():
         try:
             data = toml.load(pyproject_path)
-            if "project" not in data:
+
+            # Handle both Poetry and PEP 621 formats
+            if "tool" in data and "poetry" in data["tool"]:
+                # Poetry format
+                data["tool"]["poetry"]["name"] = new_kebab_case
                 console.print(
-                    "[bold red]Error:[/bold red] '[cyan]pyproject.toml[/cyan]' is missing the required '[project]' table."
+                    "✅ Updated [cyan]pyproject.toml[/cyan] (Poetry format) with new project name."
+                )
+            elif "project" in data:
+                # PEP 621 format
+                data["project"]["name"] = new_kebab_case
+                console.print(
+                    "✅ Updated [cyan]pyproject.toml[/cyan] (PEP 621 format) with new project name."
+                )
+            else:
+                console.print(
+                    "[bold red]Error:[/bold red] '[cyan]pyproject.toml[/cyan]' is missing both '\\[project]' and '\\[tool.poetry]' tables."
                 )
                 raise typer.Exit(code=1)
 
-            data["project"]["name"] = new_kebab_case
-
+            # Update ruff's linter settings for the new package name (if present)
             if "tool" in data and "ruff" in data.get("tool", {}):
                 data["tool"]["ruff"]["lint"]["isort"]["known-first-party"] = [
                     new_snake_case
@@ -114,9 +127,6 @@ def main(
 
             with open(pyproject_path, "w") as f:
                 toml.dump(data, f)
-            console.print(
-                "✅ Updated [cyan]pyproject.toml[/cyan] with new project name."
-            )
         except Exception as e:
             console.print(f"[bold red]Error updating pyproject.toml:[/bold red] {e}")
             raise typer.Exit(code=1)
