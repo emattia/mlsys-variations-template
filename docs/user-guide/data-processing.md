@@ -1,6 +1,6 @@
 # Data Processing
 
-*(This page is a stub and will be expanded in a future update.)*
+> "Data is the new oil." — Clive Humby
 
 This section will cover:
 

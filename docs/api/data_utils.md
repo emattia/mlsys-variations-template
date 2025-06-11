@@ -1,5 +1,7 @@
 # `data_utils` API Reference
 
+> "Without data, you're just another person with an opinion." — W. Edwards Deming
+
 This page will host the API reference for the `src/tabular_data_utils.py` and related helper modules.
 
 The content is auto-generated via **pdoc**.  Run:

@@ -1,5 +1,7 @@
 # Example Analysis Notebook
 
+> "An approximate answer to the right problem is worth a great deal more than a precise answer to the wrong problem." — John Tukey
+
 The live, interactive version of this notebook can be found at:
 
 ```

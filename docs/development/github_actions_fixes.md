@@ -1,4 +1,6 @@
-# GitHub Actions Fixes Summary
+# GitHub Actions: Common Issues & Fixes
+
+> "If it hurts, do it more frequently, and bring the pain forward." — Jez Humble
 
 <!-- Moved from project root to docs/development/ to centralise documentation. -->
 

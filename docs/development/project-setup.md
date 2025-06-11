@@ -2,6 +2,8 @@
 
 > *"Give me six hours to chop down a tree and I will spend the first four sharpening the axe."* - Abraham Lincoln
 
+# Project Setup
+
 This guide transforms you from template curious to production ready in under 10 minutes.
 
 ## 🎯 Quick Decision Matrix

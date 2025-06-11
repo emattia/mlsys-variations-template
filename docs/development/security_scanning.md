@@ -1,5 +1,7 @@
 # Security Scanning Guide
 
+> "Security is not a product, but a process." — Bruce Schneier
+
 <!-- NOTE: This file was moved from the project root to docs/development/ to keep all documentation inside the MkDocs tree. -->
 
 This project includes comprehensive security scanning capabilities that can be run both locally and in CI/CD.
@@ -167,6 +169,4 @@ secret:
 ### Integration with IDEs
 Many IDEs support Trivy and Bandit integration for real-time security feedback.
 
----
-
-For more information, see the [Trivy documentation](https://trivy.dev/) and [Bandit documentation](https://bandit.readthedocs.io/).
+# Security Scanning

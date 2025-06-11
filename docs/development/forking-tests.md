@@ -1,5 +1,7 @@
 # Forking Procedure Tests
 
+> "Program testing can be used to show the presence of bugs, but never to show their absence!" — Edsger W. Dijkstra
+
 This document explains the testing infrastructure for validating the mlsys forking procedure.
 
 ## Overview

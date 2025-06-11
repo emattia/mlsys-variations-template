@@ -1,6 +1,6 @@
 # Modeling
 
-*(This page is a stub and will be expanded in a future update.)*
+> "All models are wrong, but some are useful." — George E. P. Box
 
 Planned contents:
 

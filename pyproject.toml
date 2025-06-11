@@ -3,12 +3,12 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "llm"
+name = "analysis-template"
 version = "0.1.0"
-description = "A template for data analysis projects."
+description = "Production-ready MLOps template for specialized ML systems"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-packages = [{include = "llm", from = "src"}]
+packages = [{include = "analysis_template", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -42,11 +42,11 @@ pytest-asyncio = {version = "^0.23.7", optional = true}
 dev = ["nbdoc", "radon", "pytest", "ruff", "bandit", "mypy", "polars", "asgi-lifespan", "httpx", "fastapi", "hydra-core", "pydantic-settings", "joblib", "numpy", "pytest-cov", "scikit-learn", "matplotlib", "pytest-asyncio"]
 
 [tool.poetry.scripts]
-llm = "llm.cli:app"
+analysis-template = "analysis_template.cli:app"
 
 [tool.isort]
 profile = "black"
-known_first_party = ["llm"]
+known_first_party = ["analysis_template"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -1,5 +1,7 @@
 # Testing Strategy
 
+> "Debugging is twice as hard as writing the code in the first place." — Brian W. Kernighan
+
 This document specifies the non-negotiable testing principles that govern **core code**, *plugins*, *blueprints*, and *integrations*.
 
 ## 1  Core (`src/`)

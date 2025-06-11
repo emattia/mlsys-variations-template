@@ -1,63 +1,87 @@
-# Debug Toml Test
+# MLOps Template Documentation
 
-A streamlined, modern data science project template with best practices for reproducibility, code quality, and collaboration.
+> "AI is the new electricity." — Andrew Ng
 
-## Overview
+Production-ready machine learning platform template with specialized branches for different ML domains.
 
-This documentation provides a comprehensive guide to using the Debug Toml Test for data science projects. The template is designed to help you:
+## Quick Links
 
-- Organize your code and data effectively
-- Ensure reproducibility of your analyses
-- Maintain high code quality
-- Collaborate efficiently with team members
-- Document your work thoroughly
+- **[Getting Started](getting-started.md)** - Setup and configuration
+- **[Branch Strategy](../branching_strategy.md)** - Choose your specialization
+- **[Project Structure](user-guide/project-structure.md)** - Architecture overview
+- **[API Reference](api/data_utils.md)** - Code documentation
 
-## Features
+## Template Features
 
-- **Modern Python Setup**: Uses `uv` for dependency management and `pyproject.toml` for configuration
-- **Code Quality**: Integrated with `ruff`, `mypy`, and pre-commit hooks
-- **Testing**: Comprehensive testing setup with `pytest` for both code and workflows
-- **Documentation**: Notebook documentation with `nbdoc`
-- **CI/CD**: GitHub Actions workflows for automated testing
-- **Data Processing**: Example workflows for data processing and analysis
-- **Reproducibility**: Environment management and configuration
+- **FastAPI service** with auto-generated docs
+- **Docker containerization** for deployment
+- **Plugin system** for extensibility
+- **Quality tools** (ruff, mypy, pytest, bandit)
+- **CI/CD pipelines** via GitHub Actions
+- **Configuration management** with Hydra
 
-## Getting Started
+## Specializations
 
-To get started with the template, see the [Getting Started](getting-started.md) guide.
+| Branch | Purpose | Technologies |
+|--------|---------|-------------|
+| `main` | General ML/Analytics | Scikit-learn, Pandas |
+| `agentic-ai-system` | Multi-agent AI | LangChain, AutoGen |
+| `llm-finetuning-system` | LLM training | Transformers, PyTorch |
+| `chalk-feature-engineering` | Real-time features | Chalk, streaming |
+
+## Quick Setup
+
+```bash
+# 1. Clone template
+git clone <repo-url> my-project && cd my-project
+
+# 2. Transform to your project
+./mlsys my-awesome-project
+
+# 3. Start development
+make all-checks && make run-api
+```
 
 ## Project Structure
 
 ```
-├── .github/            # GitHub configuration (Actions workflows)
-├── data/               # Data files
-│   ├── raw/            # Original, immutable data
-│   ├── processed/      # Cleaned, transformed data
-│   ├── interim/        # Intermediate data
-│   └── external/       # Data from external sources
-├── documentation/      # Project documentation
-├── endpoints/          # API endpoints and services
-├── models/             # Trained models and model artifacts
-│   ├── trained/        # Saved model files
-│   └── evaluation/     # Model evaluation results
-├── notebooks/          # Jupyter notebooks
-├── reports/            # Generated analysis reports
-│   ├── figures/        # Generated graphics and figures
-│   └── tables/         # Generated tables
-├── src/                # Source code for use in this project
-├── tests/              # Test suite
-└── workflows/          # Data and model workflows
-    └── tests/          # Workflow tests
+├── src/                # Core ML components
+│   ├── api/           # FastAPI service
+│   ├── data/          # Data processing
+│   ├── models/        # Model training/inference
+│   └── plugins/       # Extensible components
+├── workflows/         # ML pipelines
+├── tests/             # Test suite
+├── docs/              # Documentation
+├── data/              # Data files
+│   ├── raw/           # Original data
+│   └── processed/     # Cleaned data
+├── models/            # Trained models
+└── reports/           # Analysis outputs
 ```
 
-## Example Notebook
+## Development Commands
 
-Check out the [Example Analysis](notebooks/example_analysis.md) notebook for a demonstration of how to use the template for data analysis.
+```bash
+make install-dev      # Install dependencies
+make test             # Run tests
+make lint             # Code quality checks
+make run-api          # Start API service
+make build-docker     # Build container
+```
+
+## Configuration
+
+- **Environment**: Copy `.env-example` to `.env`
+- **Configs**: Override in `conf/` directory
+- **Plugins**: Extend functionality in `src/plugins/`
 
 ## Contributing
 
-Contributions to the template are welcome! See the [Contributing](development/contributing.md) guide for more information.
+1. Install development dependencies: `make install-dev`
+2. Run quality checks: `make all-checks`
+3. Submit pull request
 
 ## License
 
-This project is licensed under the MIT License - see the [License](about/license.md) file for details.
+MIT License - see [LICENSE](../LICENSE)

@@ -1,5 +1,7 @@
 # Documentation Overview
 
+> "Any fool can write code that a computer can understand. Good programmers write code that humans can understand." — Martin Fowler
+
 <!-- Consolidated from the old `documentation/README.md`. -->
 
 This project's documentation stack combines several tools:

@@ -1,6 +1,6 @@
 # Evaluation
 
-*(This page is a stub and will be expanded in a future update.)*
+> "In God we trust; all others must bring data." — W. Edwards Deming
 
 Topics to be covered:
 

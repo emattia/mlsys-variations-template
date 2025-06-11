@@ -1,5 +1,7 @@
 # NBDoc Guide
 
+> "Research is what I'm doing when I don't know what I'm doing." — Wernher von Braun
+
 <!-- Relocated from the legacy `documentation/` directory to the MkDocs hierarchy. -->
 
 This guide explains how to use **NBDoc** to document Jupyter notebooks in this project.
