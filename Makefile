@@ -74,6 +74,12 @@ help:
 	@echo "  make plugin-add NAME=<name> [CATEGORY=<cat>]   Scaffold new plugin"
 	@echo "  make plugins-list           List registered plugins"
 	@echo "  make repo-info              Show git repo info"
+	@echo ""
+	@echo "Forking Procedure Testing:"
+	@echo "  make test-forking-smoke     Quick smoke test for forking procedure"
+	@echo "  make test-forking-full      Comprehensive forking procedure tests"
+	@echo "  make test-forking-custom NAME=<name>  Test with custom project name"
+	@echo "  make validate-forking       Validate forking procedure health"
 
 # Environment setup
 setup: install-uv install-trivy install-dev pre-commit
@@ -343,3 +349,22 @@ plugins-list:
 
 repo-info:
 	@$(MAKE) cli ARGS="repo info"
+
+# Forking procedure testing
+test-forking-smoke:
+	@echo "Running forking procedure smoke test..."
+	@python3 scripts/test_forking_smoke.py
+
+test-forking-full:
+	@echo "Running comprehensive forking procedure tests..."
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python -m pytest tests/integration/test_forking_procedure.py -v
+
+test-forking-custom:
+	@if [ -z "$(NAME)" ]; then echo "Usage: make test-forking-custom NAME=<project-name>"; exit 1; fi
+	@echo "Testing forking procedure with custom name: $(NAME)"
+	@python3 scripts/test_forking_smoke.py $(NAME)
+
+validate-forking:
+	@echo "Validating forking procedure health..."
+	@python3 scripts/test_forking_smoke.py --keep-temp
+	@echo "Run 'make test-forking-full' for comprehensive testing"

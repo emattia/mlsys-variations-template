@@ -1,6 +1,6 @@
 # Project Structure
 
-This page explains the organization and structure of the Analysis Template.
+This page explains the organization and structure of the Debug Toml Test.
 
 ## Overview
 
@@ -40,7 +40,7 @@ The `data/` directory contains all data files used in the project. It is organiz
 - **interim/**: Intermediate data that has been transformed but is not yet in its final form.
 - **external/**: Data from external sources, such as third-party datasets.
 
-See [data/README.md](https://github.com/yourusername/analysis-template/blob/main/data/README.md) for more details.
+See [data/README.md](https://github.com/yourusername/debug-toml-test/blob/main/data/README.md) for more details.
 
 ### src/
 
@@ -53,7 +53,7 @@ The `src/` directory contains the core source code for the project, organized in
 - **config/**: Configuration management
 - **io/**: Input/output operations
 
-See [src/README.md](https://github.com/yourusername/analysis-template/blob/main/src/README.md) for more details.
+See [src/README.md](https://github.com/yourusername/debug-toml-test/blob/main/src/README.md) for more details.
 
 ### notebooks/
 
@@ -65,7 +65,7 @@ The `notebooks/` directory contains Jupyter notebooks for exploratory data analy
 - **03_evaluation**: Model evaluation and comparison
 - **04_reporting**: Final results and visualizations
 
-See [notebooks/README.md](https://github.com/yourusername/analysis-template/blob/main/notebooks/README.md) for more details.
+See [notebooks/README.md](https://github.com/yourusername/debug-toml-test/blob/main/notebooks/README.md) for more details.
 
 ### workflows/
 
@@ -79,7 +79,7 @@ The `workflows/` directory contains data processing and model training workflows
 - **config/**: Configuration files for workflows
 - **tests/**: Tests for workflows
 
-See [workflows/README.md](https://github.com/yourusername/analysis-template/blob/main/workflows/README.md) for more details.
+See [workflows/README.md](https://github.com/yourusername/debug-toml-test/blob/main/workflows/README.md) for more details.
 
 ### models/
 
@@ -120,7 +120,7 @@ The `reports/` directory contains generated reports, figures, tables, and other 
 - **documents/**: Generated reports and documents
 - **presentations/**: Slides and presentation materials
 
-See [reports/README.md](https://github.com/yourusername/analysis-template/blob/main/reports/README.md) for more details.
+See [reports/README.md](https://github.com/yourusername/debug-toml-test/blob/main/reports/README.md) for more details.
 
 ### tests/
 
@@ -132,7 +132,7 @@ The `tests/` directory contains the test suite for the project, ensuring code qu
 - **fixtures/**: Test data and fixtures
 - **conftest.py**: Shared pytest fixtures and configuration
 
-See [tests/README.md](https://github.com/yourusername/analysis-template/blob/main/tests/README.md) for more details.
+See [tests/README.md](https://github.com/yourusername/debug-toml-test/blob/main/tests/README.md) for more details.
 
 ### docs/
 
@@ -150,7 +150,7 @@ The `endpoints/` directory contains API endpoints, services, and interfaces for 
 - **schemas/**: Data validation schemas
 - **utils/**: Utility functions for endpoints
 
-See [endpoints/README.md](https://github.com/yourusername/analysis-template/blob/main/endpoints/README.md) for more details.
+See [endpoints/README.md](https://github.com/yourusername/debug-toml-test/blob/main/endpoints/README.md) for more details.
 
 ## Configuration Files
 

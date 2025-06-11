@@ -1,10 +1,10 @@
-# Analysis Template
+# Debug Toml Test
 
 A streamlined, modern data science project template with best practices for reproducibility, code quality, and collaboration.
 
 ## Overview
 
-This documentation provides a comprehensive guide to using the Analysis Template for data science projects. The template is designed to help you:
+This documentation provides a comprehensive guide to using the Debug Toml Test for data science projects. The template is designed to help you:
 
 - Organize your code and data effectively
 - Ensure reproducibility of your analyses

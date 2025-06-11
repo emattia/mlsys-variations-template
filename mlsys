@@ -182,6 +182,12 @@ OLD_PROJECT_NAME_SNAKE = "analysis_template"
 OLD_PROJECT_NAME_KEBAB = "analysis-template"
 OLD_PROJECT_NAME_TITLE = "Analysis Template"
 
+# Current state - the repo might be in an intermediate state
+CURRENT_PACKAGE_NAMES = [
+    "analysis_template",
+    "llm",
+]  # Handle both original and current state
+
 # --- CLI Application Setup ---
 app = typer.Typer(
     help="A utility CLI for managing this project.",
@@ -218,7 +224,19 @@ def main(
     Initializes and renames the project template.
     """
     project_root = Path(__file__).parent.resolve()
-    old_src_path = project_root / "src" / OLD_PROJECT_NAME_SNAKE
+
+    # Find the current source directory (could be analysis_template or llm)
+    old_src_path = None
+    for name in CURRENT_PACKAGE_NAMES:
+        candidate_path = project_root / "src" / name
+        if candidate_path.exists():
+            old_src_path = candidate_path
+            break
+
+    if old_src_path is None:
+        old_src_path = (
+            project_root / "src" / OLD_PROJECT_NAME_SNAKE
+        )  # fallback for error message
 
     # --- 1. Introduction ---
     story = (
@@ -281,7 +299,7 @@ def main(
                     for package in data["tool"]["poetry"]["packages"]:
                         if isinstance(package, dict) and "include" in package:
                             # Update the include field to use the new package name
-                            if package["include"] == OLD_PROJECT_NAME_SNAKE:
+                            if package["include"] in CURRENT_PACKAGE_NAMES:
                                 package["include"] = new_snake_case
 
                 console.print(
@@ -306,15 +324,21 @@ def main(
                 and "scripts" in data["tool"]["poetry"]
             ):
                 scripts = data["tool"]["poetry"]["scripts"]
-                # If there's a script with the old name, rename it
-                if OLD_PROJECT_NAME_SNAKE in scripts:
-                    old_script_path = scripts[OLD_PROJECT_NAME_SNAKE]
+                # Find and update script with any of the current package names
+                script_to_update = None
+                for name in CURRENT_PACKAGE_NAMES:
+                    if name in scripts:
+                        script_to_update = name
+                        break
+
+                if script_to_update:
+                    old_script_path = scripts[script_to_update]
                     # Update the script path to use new package name
                     new_script_path = old_script_path.replace(
-                        OLD_PROJECT_NAME_SNAKE, new_snake_case
+                        script_to_update, new_snake_case
                     )
-                    scripts[new_snake_case] = new_script_path
-                    del scripts[OLD_PROJECT_NAME_SNAKE]
+                    scripts[new_kebab_case] = new_script_path
+                    del scripts[script_to_update]
 
             # Update ruff's linter settings for the new package name (if present)
             if "tool" in data and "ruff" in data.get("tool", {}):
@@ -333,12 +357,12 @@ def main(
                     known_first_party = data["tool"]["isort"]["known_first_party"]
                     if isinstance(known_first_party, list):
                         data["tool"]["isort"]["known_first_party"] = [
-                            new_snake_case if name == OLD_PROJECT_NAME_SNAKE else name
+                            new_snake_case if name in CURRENT_PACKAGE_NAMES else name
                             for name in known_first_party
                         ]
                     elif (
                         isinstance(known_first_party, str)
-                        and known_first_party == OLD_PROJECT_NAME_SNAKE
+                        and known_first_party in CURRENT_PACKAGE_NAMES
                     ):
                         data["tool"]["isort"]["known_first_party"] = new_snake_case
 
@@ -350,13 +374,20 @@ def main(
     # --- 5. Update Documentation Files ---
     docs_path = project_root / "docs"
     md_files = list(docs_path.rglob("*.md"))
+    md_files.append(project_root / "README.md")
+
     files_changed_count = 0
     for md_file in md_files:
         try:
             content = md_file.read_text(encoding="utf-8")
-            if OLD_PROJECT_NAME_KEBAB in content or OLD_PROJECT_NAME_TITLE in content:
+            if (
+                OLD_PROJECT_NAME_KEBAB in content
+                or OLD_PROJECT_NAME_TITLE in content
+                or "MLOps Template" in content
+            ):
                 content = content.replace(OLD_PROJECT_NAME_KEBAB, new_kebab_case)
                 content = content.replace(OLD_PROJECT_NAME_TITLE, new_title_case)
+                content = content.replace("MLOps Template", new_title_case)
                 md_file.write_text(content, encoding="utf-8")
                 files_changed_count += 1
         except Exception:

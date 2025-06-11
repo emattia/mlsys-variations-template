@@ -1,0 +1,368 @@
+name: Forking Procedure Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'mlsys'
+      - 'src/analysis_template/**'
+      - 'pyproject.toml'
+      - 'docs/**'
+      - 'tests/integration/test_forking_procedure.py'
+      - '.github/workflows/forking-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'mlsys'
+      - 'src/analysis_template/**'
+      - 'pyproject.toml'
+      - 'docs/**'
+      - 'tests/integration/test_forking_procedure.py'
+      - '.github/workflows/forking-tests.yml'
+  schedule:
+    # Run daily at 3 AM UTC to catch any regressions
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      test_project_names:
+        description: 'Comma-separated list of project names to test (optional)'
+        required: false
+        default: 'test-project,customer-churn-model,ai-assistant'
+      skip_slow_tests:
+        description: 'Skip slow integration tests'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  test-forking-basic:
+    name: Test Forking Procedure (Basic)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+      fail-fast: false
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/uv
+          ~/.cargo/bin/uv
+        key: ${{ runner.os }}-uv-forking-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
+        restore-keys: |
+          ${{ runner.os }}-uv-forking-${{ matrix.python-version }}-
+          ${{ runner.os }}-uv-forking-
+
+    - name: Install test dependencies
+      run: |
+        uv pip install --system pytest tomli-w toml
+
+    - name: Verify mlsys script exists and is executable
+      run: |
+        ls -la mlsys
+        chmod +x mlsys
+        file mlsys
+
+    - name: Test basic forking procedure
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_mlsys_script_exists_and_executable -v
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_original_structure_exists -v
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_mlsys_transformation_basic -v
+
+    - name: Test directory renaming
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_directory_renaming -v
+
+    - name: Test configuration updates
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_pyproject_toml_updates -v
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_configuration_files_valid -v
+
+  test-forking-comprehensive:
+    name: Test Forking Procedure (Comprehensive)
+    runs-on: ubuntu-latest
+    needs: test-forking-basic
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv pip install --system -e ".[dev]"
+
+    - name: Test complex project names
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_mlsys_transformation_complex_name -v
+
+    - name: Test documentation updates
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_documentation_updates -v
+
+    - name: Test import integrity
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_import_integrity -v
+
+    - name: Test make commands compatibility
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_make_commands_work -v
+
+    - name: Test idempotency
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_transformation_idempotency -v
+
+  test-forking-integration:
+    name: Test Full Forking Integration
+    runs-on: ubuntu-latest
+    needs: test-forking-comprehensive
+    if: ${{ !inputs.skip_slow_tests }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv pip install --system -e ".[dev]"
+
+    - name: Test full workflow integration
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_full_workflow_integration -v -s
+      timeout-minutes: 15
+
+  test-custom-project-names:
+    name: Test Custom Project Names
+    runs-on: ubuntu-latest
+    needs: test-forking-basic
+    if: ${{ inputs.test_project_names }}
+
+    strategy:
+      matrix:
+        project-name: ${{ fromJson(format('["{0}"]', join(split(inputs.test_project_names, ','), '", "'))) }}
+      fail-fast: false
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install test dependencies
+      run: |
+        uv pip install --system pytest tomli-w toml
+
+    - name: Test custom project name transformation
+      run: |
+        # Create a temporary test script for custom project names
+        cat > test_custom_name.py << 'EOF'
+        import subprocess
+        import tempfile
+        import shutil
+        from pathlib import Path
+        import sys
+
+        project_name = "${{ matrix.project-name }}"
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_path = Path(tmpdir) / "test_project"
+            project_root = Path.cwd()
+
+            # Copy project
+            shutil.copytree(
+                project_root,
+                temp_path,
+                ignore=shutil.ignore_patterns(
+                    '.git', '__pycache__', '*.pyc', '.pytest_cache',
+                    '.venv', '.bootstrap_venv', 'htmlcov', 'logs',
+                    '*.egg-info', '.coverage*', '.mypy_cache', '.ruff_cache'
+                )
+            )
+
+            # Make mlsys executable
+            mlsys_path = temp_path / "mlsys"
+            mlsys_path.chmod(0o755)
+
+            # Run transformation
+            result = subprocess.run(
+                [str(mlsys_path), project_name],
+                cwd=temp_path,
+                capture_output=True,
+                text=True,
+                timeout=120
+            )
+
+            if result.returncode != 0:
+                print(f"STDERR: {result.stderr}")
+                print(f"STDOUT: {result.stdout}")
+                sys.exit(1)
+
+            # Verify basic structure
+            snake_case = project_name.replace("-", "_")
+            new_src = temp_path / "src" / snake_case
+            if not new_src.exists():
+                print(f"New source directory {snake_case} does not exist")
+                sys.exit(1)
+
+            print(f"✅ Successfully transformed project to: {project_name}")
+        EOF
+
+        python test_custom_name.py
+
+  test-branch-compatibility:
+    name: Test Branch Compatibility
+    runs-on: ubuntu-latest
+    needs: test-forking-basic
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    strategy:
+      matrix:
+        # Test different branch scenarios (simulated)
+        branch-scenario: ['main', 'specialized-branch']
+      fail-fast: false
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install test dependencies
+      run: |
+        uv pip install --system pytest tomli-w toml
+
+    - name: Test branch-specific forking
+      run: |
+        python -m pytest tests/integration/test_forking_procedure.py::TestBranchSpecificForking -v
+
+  generate-forking-report:
+    name: Generate Forking Test Report
+    runs-on: ubuntu-latest
+    needs: [test-forking-basic, test-forking-comprehensive, test-forking-integration]
+    if: always()
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Generate test report
+      run: |
+        cat > forking-test-report.md << 'EOF'
+        # Forking Procedure Test Report
+
+        **Date**: $(date -u)
+        **Branch**: ${{ github.ref_name }}
+        **Commit**: ${{ github.sha }}
+        **Workflow**: ${{ github.run_id }}
+
+        ## Test Results Summary
+
+        | Test Suite | Status |
+        |------------|--------|
+        | Basic Forking | ${{ needs.test-forking-basic.result }} |
+        | Comprehensive Tests | ${{ needs.test-forking-comprehensive.result }} |
+        | Integration Tests | ${{ needs.test-forking-integration.result }} |
+
+        ## What Was Tested
+
+        - ✅ mlsys script execution and transformation
+        - ✅ Directory renaming functionality
+        - ✅ Configuration file updates (pyproject.toml, etc.)
+        - ✅ Documentation updates
+        - ✅ Import integrity after transformation
+        - ✅ Make command compatibility
+        - ✅ Project name handling (various formats)
+        - ✅ Idempotency and error handling
+
+        ## Test Coverage
+
+        The forking procedure tests validate:
+        1. **Script Functionality**: mlsys works correctly across different scenarios
+        2. **Name Transformations**: Proper handling of different naming conventions
+        3. **File Updates**: All relevant files are updated correctly
+        4. **Project Integrity**: Transformed projects remain functional
+        5. **Error Handling**: Graceful handling of edge cases
+
+        Generated at $(date -u)
+        EOF
+
+        cat forking-test-report.md
+
+    - name: Upload test report
+      uses: actions/upload-artifact@v4
+      with:
+        name: forking-test-report
+        path: forking-test-report.md
+        retention-days: 30
+
+  notify-on-failure:
+    name: Notify on Forking Test Failure
+    runs-on: ubuntu-latest
+    needs: [test-forking-basic, test-forking-comprehensive, test-forking-integration]
+    if: failure() && (github.event_name == 'push' || github.event_name == 'schedule')
+
+    steps:
+    - name: Create failure notification
+      run: |
+        echo "🚨 Forking Procedure Tests Failed"
+        echo "Branch: ${{ github.ref_name }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Workflow: ${{ github.run_id }}"
+        echo ""
+        echo "The mlsys forking procedure is not working correctly."
+        echo "This could break the user onboarding experience."
+        echo ""
+        echo "Please check the test logs and fix the issues immediately."
