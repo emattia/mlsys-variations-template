@@ -34,7 +34,6 @@ FROM python:3.11-slim as production
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/app/.venv/bin:$PATH" \
     ENVIRONMENT=production
 
 # Install system dependencies for runtime
