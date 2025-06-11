@@ -1,202 +1,54 @@
 #!/usr/bin/env python3
-import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-# --- Self-Bootstrap Dependencies ---
+# --- Configuration ---
 VENV_DIR = ".bootstrap_venv"
-BOOTSTRAP_DEPS = ["toml", "typer[all]", "rich"]
+DEPS = ["toml", "typer[all]", "rich"]
+CORE_SCRIPT_PATH = "scripts/_mlsys_core.py"
 
 
-def check_and_install_deps():
+def main():
     """
-    Ensures the script runs in a dedicated virtual environment with necessary
-    dependencies, creating it if it doesn't exist.
+    Ensures a dedicated virtual environment exists and has the necessary
+    dependencies, then runs the core application script.
     """
     project_root = Path(__file__).parent.resolve()
     venv_path = project_root / VENV_DIR
+    core_script_full_path = project_root / CORE_SCRIPT_PATH
+
     venv_python = (
         venv_path / "Scripts" / "python.exe"
         if sys.platform == "win32"
         else venv_path / "bin" / "python"
     )
 
-    # If we are not running with the venv's python, create it and/or re-launch.
-    if sys.executable != str(venv_python.resolve()):
-        if not venv_python.exists():
-            print(f"[*] Creating bootstrap virtual environment in '{VENV_DIR}'...")
-            subprocess.run(
-                [sys.executable, "-m", "venv", venv_path],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            print(f"[*] Installing dependencies: {', '.join(BOOTSTRAP_DEPS)}")
-            subprocess.run(
-                [str(venv_python), "-m", "pip", "install", *BOOTSTRAP_DEPS],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-        # Re-launch the script with the venv's python
-        os.execv(str(venv_python), [str(venv_python), *sys.argv])
-        sys.exit()
-
-
-# This check must be performed before other imports that might be missing.
-check_and_install_deps()
-
-import toml  # noqa: E402
-import typer  # noqa: E402
-from rich.console import Console  # noqa: E402
-from rich.panel import Panel  # noqa: E402
-
-# --- Configuration ---
-# The original template name to be replaced
-OLD_PROJECT_NAME_SNAKE = "analysis_template"
-OLD_PROJECT_NAME_KEBAB = "analysis-template"
-OLD_PROJECT_NAME_TITLE = "Analysis Template"
-
-# --- CLI Application Setup ---
-app = typer.Typer(
-    help="A utility CLI for managing this project.",
-    add_completion=False,
-    no_args_is_help=True,
-)
-console = Console()
-
-
-def to_snake_case(name: str) -> str:
-    """Converts a string to snake_case."""
-    return name.lower().replace("-", "_").replace(" ", "_")
-
-
-def to_kebab_case(name: str) -> str:
-    """Converts a string to kebab-case."""
-    return name.lower().replace("_", "-").replace(" ", "-")
-
-
-def to_title_case(name: str) -> str:
-    """Converts a string to Title Case, handling hyphens and underscores."""
-    return " ".join(word.capitalize() for word in name.replace("-", "_").split("_"))
-
-
-@app.command()
-def init(
-    new_name: str = typer.Argument(
-        ...,
-        help="The new name for the project (e.g., 'customer-churn-model').",
-    ),
-):
-    """
-    Initializes and renames the project template.
-    """
-    project_root = Path(__file__).parent.resolve()
-    old_src_path = project_root / "src" / OLD_PROJECT_NAME_SNAKE
-
-    # --- 1. Introduction ---
-    story = (
-        "You stand at the trailhead of a new analysis. Before you lies a well-marked path, a template forged "
-        "from past journeys. This script is your guide, ready to shape this path into a unique trail for your specific quest. "
-        "It will rename the trails, update the maps, and prepare your expedition for the discoveries that await."
-    )
-
-    haiku = """
-[bold green]Solid foundation,[/bold green]
-[bold green]New ideas now take root,[/bold green]
-[bold green]Growth is assured here.[/bold green]
-    """
-    console.print(
-        Panel(
-            f"{story}\n\n{haiku}",
-            title="Project Initialization",
-            border_style="blue",
-            expand=False,
+    # 1. Create venv and install dependencies if it doesn't exist
+    if not venv_python.exists():
+        print(f"[*] Creating bootstrap virtual environment in '{VENV_DIR}'...")
+        subprocess.run(
+            [sys.executable, "-m", "venv", venv_path],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
-    )
-
-    if not old_src_path.exists():
-        console.print(
-            f"\n[bold red]Error:[/bold red] Project already appears to be initialized. "
-            f"The directory '[cyan]{old_src_path.name}[/cyan]' was not found."
+        print(f"[*] Installing dependencies: {', '.join(DEPS)}")
+        subprocess.run(
+            [str(venv_python), "-m", "pip", "install", *DEPS],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
-        raise typer.Exit(code=1)
 
-    console.print(
-        f"\n🚀 Starting initialization with project name: [bold cyan]{new_name}[/bold cyan]"
-    )
+    # 2. Run the core script using the venv's python
+    # We pass all original command-line arguments to the core script
+    command = [str(venv_python), str(core_script_full_path), *sys.argv[1:]]
+    result = subprocess.run(command)
 
-    # --- 2. Derive New Names ---
-    new_snake_case = to_snake_case(new_name)
-    new_kebab_case = to_kebab_case(new_name)
-    new_title_case = to_title_case(new_name)
-    console.print(f"   - Package name: [green]{new_snake_case}[/green]")
-    console.print(f"   - Repo name: [green]{new_kebab_case}[/green]")
-
-    # --- 3. Rename Source Directory ---
-    new_src_path = project_root / "src" / new_snake_case
-    shutil.move(str(old_src_path), str(new_src_path))
-    console.print(f"✅ Renamed source directory to [cyan]{new_src_path.name}[/cyan]")
-
-    # --- 4. Update pyproject.toml ---
-    pyproject_path = project_root / "pyproject.toml"
-    if pyproject_path.exists():
-        try:
-            data = toml.load(pyproject_path)
-            if "project" not in data:
-                console.print(
-                    "[bold red]Error:[/bold red] '[cyan]pyproject.toml[/cyan]' is missing the required '[project]' table."
-                )
-                raise typer.Exit(code=1)
-
-            data["project"]["name"] = new_kebab_case
-
-            if "tool" in data and "ruff" in data.get("tool", {}):
-                data["tool"]["ruff"]["lint"]["isort"]["known-first-party"] = [
-                    new_snake_case
-                ]
-
-            with open(pyproject_path, "w") as f:
-                toml.dump(data, f)
-            console.print(
-                "✅ Updated [cyan]pyproject.toml[/cyan] with new project name."
-            )
-        except Exception as e:
-            console.print(f"[bold red]Error updating pyproject.toml:[/bold red] {e}")
-            raise typer.Exit(code=1)
-
-    # --- 5. Update Documentation Files ---
-    docs_path = project_root / "docs"
-    md_files = list(docs_path.rglob("*.md"))
-    files_changed_count = 0
-    for md_file in md_files:
-        try:
-            content = md_file.read_text(encoding="utf-8")
-            if OLD_PROJECT_NAME_KEBAB in content or OLD_PROJECT_NAME_TITLE in content:
-                content = content.replace(OLD_PROJECT_NAME_KEBAB, new_kebab_case)
-                content = content.replace(OLD_PROJECT_NAME_TITLE, new_title_case)
-                md_file.write_text(content, encoding="utf-8")
-                files_changed_count += 1
-        except Exception:
-            pass
-    console.print(f"✅ Scanned and updated {files_changed_count} documentation files.")
-
-    # --- 6. Final Message ---
-    console.print(
-        Panel(
-            "🎉 [bold green]Initialization Complete![/bold green] 🎉\n\n"
-            "Your project is ready. Next steps:\n"
-            "1. Initialize a new git repository (`git init`)\n"
-            "2. Install dependencies (`uv pip install -e .[dev]`)\n"
-            "3. Run the tests (`pytest`)",
-            title="Success",
-            border_style="green",
-            expand=False,
-        )
-    )
+    # 3. Propagate the exit code from the core script
+    sys.exit(result.returncode)
 
 
 if __name__ == "__main__":
-    app()
+    main()
