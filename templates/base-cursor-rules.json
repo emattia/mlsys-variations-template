@@ -1,0 +1,22 @@
+{
+  "rules": [
+    {
+      "name": "General Project Context",
+      "description": "This rule provides general context about the entire project structure.",
+      "include": [
+        "src/**"
+      ],
+      "exclude": [
+        "tests/**"
+      ]
+    },
+    {
+        "name": "Configuration",
+        "description": "How the application is configured.",
+        "include": [
+            "src/config/**",
+            "config.yaml"
+        ]
+    }
+  ]
+} 
