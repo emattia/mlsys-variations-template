@@ -1,0 +1,43 @@
+{
+  "name": "data-processing",
+  "description": "Data processing utilities and pipeline components",
+  "version": "1.0.0",
+  "component_type": "application",
+  "source_files": [
+    "src/data/loading.py",
+    "src/data/__init__.py",
+    "src/data/processing.py",
+    "src/data/validation.py"
+  ],
+  "config_files": [
+    "conf/data/default.yaml"
+  ],
+  "infrastructure_files": [
+    "Dockerfile",
+    "docker-compose.yml"
+  ],
+  "template_files": [],
+  "python_dependencies": [],
+  "system_dependencies": [],
+  "environment_variables": [],
+  "required_secrets": [],
+  "injection_points": {},
+  "merge_strategies": {
+    "conf/data/default.yaml": "replace"
+  },
+  "compatibility_matrix": {},
+  "conflicts_with": [],
+  "docker_requirements": {
+    "base_image": "python:3.11-slim",
+    "ports": [
+      "8000"
+    ],
+    "volumes": [],
+    "environment_files": []
+  },
+  "monitoring_endpoints": [],
+  "health_checks": [
+    "src/data/processing.py",
+    "src/data/validation.py"
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "name": "api-serving",
+  "description": "FastAPI-based production API server with security, monitoring, and scalability",
+  "version": "1.0.0",
+  "component_type": "infrastructure",
+  "source_files": [
+    "src/api/service.py",
+    "src/api/models.py",
+    "src/api/__init__.py",
+    "src/api/app.py",
+    "src/api/routes.py"
+  ],
+  "config_files": [
+    "conf/api/production.yaml",
+    "conf/api/development.yaml",
+    "conf/logging/default.yaml"
+  ],
+  "infrastructure_files": [
+    "Dockerfile",
+    "docker-compose.yml"
+  ],
+  "template_files": [],
+  "python_dependencies": [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic>=2.0.0"
+  ],
+  "system_dependencies": [],
+  "environment_variables": [
+    "REDIS_URL",
+    "API_WORKERS",
+    "API_PORT",
+    "MODEL_DIRECTORY"
+  ],
+  "required_secrets": [
+    "api_key_header"
+  ],
+  "injection_points": {
+    "app_creation": {
+      "file": "src/api/app.py",
+      "function": "create_app",
+      "location": "after_initialization"
+    },
+    "route_registration": {
+      "file": "src/api/app.py",
+      "location": "end_of_app_setup"
+    }
+  },
+  "merge_strategies": {
+    "conf/api/production.yaml": "enhance",
+    "conf/api/development.yaml": "merge",
+    "conf/logging/default.yaml": "replace"
+  },
+  "compatibility_matrix": {
+    "requires": [
+      "config-management"
+    ],
+    "enhances": [
+      "plugin-registry",
+      "monitoring"
+    ],
+    "optional": [
+      "caching",
+      "rate-limiting",
+      "authentication"
+    ]
+  },
+  "conflicts_with": [],
+  "docker_requirements": {
+    "base_image": "python:3.11-slim",
+    "ports": [
+      "8000"
+    ],
+    "volumes": [],
+    "environment_files": []
+  },
+  "monitoring_endpoints": [],
+  "health_checks": [
+    "src/api/service.py",
+    "src/api/models.py",
+    "src/api/__init__.py",
+    "src/api/app.py",
+    "src/api/routes.py"
+  ]
+}

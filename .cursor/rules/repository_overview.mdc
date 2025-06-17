@@ -1,77 +1,228 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
-# Repository Rules for analysis-template
+# Repository Rules for MLX Foundation Template
 
-This file outlines the structure and conventions of the `analysis-template` repository to facilitate development, especially when using an AI-powered tool like Cursor.
+This file outlines the structure and conventions of the MLX foundation repository, designed to facilitate development of production-ready ML systems and prepare for migration to the composable MLX platform.
 
 ## Repository Overview
 
-This repository is a template for building data analysis and machine learning projects. It includes a FastAPI service for model serving, a structured data processing pipeline, a plugin system for extensibility, and a robust testing setup.
+This repository serves dual purposes:
+1. **Standalone ML Template**: Production-ready ML systems with FastAPI, advanced configuration, and plugin architecture
+2. **MLX Foundation**: Source for extracting reusable components for the AI-enhanced composable ML platform
 
-### High-level commands
+### Key Capabilities
 
-- `make setup`: Installs dependencies.
-- `make unit-test`: Runs unit tests.
-- `make integration-test`: Runs integration tests.
-- `make format`: Formats the code.
-- `make lint`: Lints the code.
-- `make api`: Runs the FastAPI application.
+- **AI-Enhanced Features**: LLM integration, cost-optimized caching, intelligent rate limiting
+- **Enterprise Security**: Multi-service rate limiting, vulnerability scanning, secure configuration
+- **Advanced Configuration**: Hierarchical Hydra configs with Pydantic validation, experiment tracking
+- **Plugin Architecture**: Extensible system preparing for MLX component framework
+- **Production Hardening**: Docker optimization, CI/CD, comprehensive testing
+
+### High-level Commands
+
+Core development workflow:
+- `make install-dev`: Install dependencies + pre-commit hooks
+- `make all-checks`: Complete quality gate (lint + test + security)
+- `make run-api`: Start FastAPI service with auto-reload
+- `make test`: Full test suite with coverage reporting
+- `make build-docker`: Multi-stage optimized container build
+
+Advanced operations:
+- `make docs-serve`: Local documentation server
+- `make security-scan`: Vulnerability assessment
+- `make deploy-staging`: Deploy to staging environment
 
 ## Directory Structure
 
-Here's a breakdown of the key directories:
+Enhanced structure for MLX evolution:
 
-- `.github/`: CI/CD workflows for GitHub Actions.
-  - `workflows/`: Contains workflows for testing, including specific ones for plugins and blueprints.
-- `docs/`: Project documentation.
-- `src/`: All Python source code for the project.
-- `scripts/`: Utility and automation scripts.
-- `tests/`: Contains all tests.
+- `.github/`: CI/CD workflows with security scanning and component testing
+- `docs/`: Comprehensive documentation preparing for MLX platform
+- `src/`: Core ML system components (future MLX component sources)
+- `conf/`: Hierarchical configuration system with Hydra + Pydantic
+- `scripts/`: Automation and utility scripts
+- `tests/`: Multi-layered testing (unit/integration/contracts)
 
-## Source Code (`src/`)
+## Source Code (`src/`) - Future MLX Components
 
-- `api/`: The FastAPI application for serving models.
-  - `app.py`: FastAPI app setup.
-  - `routes.py`: API endpoints.
-  - `service.py`: Business logic for the API.
-  - `models.py`: Pydantic models for request/response validation.
-- `config/`: Configuration management using Hydra.
-  - `manager.py`: The main configuration manager.
-  - `models.py`: Pydantic models defining the configuration structure.
-- `data/`: Modules for data loading, processing, and validation.
-- `models/`: Modules for model training, evaluation, and inference.
-- `plugins/`: The core of the extension mechanism. See "Extensibility" section.
-- `utils/`: Common utility functions.
+### Core ML Components
+- `api/`: FastAPI application → **API Serving Component**
+  - `app.py`: FastAPI app with production hardening
+  - `routes.py`: Endpoints with rate limiting and validation
+  - `service.py`: Business logic with caching optimization
+  - `models.py`: Pydantic models for type safety
 
-## Testing (`tests/`)
+- `config/`: Configuration system → **Config Management Component**
+  - `manager.py`: Hydra-based configuration manager
+  - `models.py`: Pydantic schemas for type-safe validation
+  - `secrets.py`: Secure environment variable handling
 
-The repository uses a multi-layered testing strategy:
+- `data/`: Data processing → **Data Pipeline Components**
+  - Data loading, validation, and transformation modules
+  - Integration with various data sources and formats
 
-- `tests/unit/`: Unit tests for individual components. These should be fast and have no external dependencies.
-- `tests/integration/`: Integration tests that verify the interaction between different components.
-- `tests/contracts/`: Contract tests to enforce interfaces, especially for plugins.
+- `models/`: ML model management → **Model Training/Serving Components**
+  - Training pipelines, evaluation, and inference
+  - Model versioning and lifecycle management
 
-## Extensibility: Plugins and Blueprints
+### Plugin System → Component Framework
+- `plugins/`: Core extension mechanism → **MLX Component Registry**
+  - `registry.py`: Plugin discovery and management system
+  - `base.py`: Base plugin interfaces and contracts
+  - Domain-specific plugins (LLM providers, data processors, etc.)
 
-The template is designed to be extended using plugins and blueprints.
+### Utilities → Shared Components
+- `utils/`: Common functionality → **Cross-cutting MLX Components**
+  - Caching, rate limiting, monitoring utilities
+  - Shared patterns and helper functions
 
-- **Plugins (`src/plugins/`)**: Plugins are self-contained modules that can add new functionality. The `PluginRegistry` in `src/plugins/registry.py` discovers and loads them. To add a new plugin, you typically create a new sub-package in `src/plugins/`.
+## Configuration System (`conf/`) - MLX Config Management
 
-- **Blueprints**: A "blueprint" is a pre-packaged set of configurations, plugins, and potentially other code that sets up the template for a specific use case. Adding a new blueprint might involve adding a new configuration directory and a corresponding CI workflow in `.github/workflows/`.
+Advanced Hydra-based configuration preparing for MLX intelligent config:
 
-When extending the template, ensure that:
-1. New functionality is encapsulated in plugins where possible.
-2. New configurations are added following the existing structure.
-3. New tests are added to cover the new features, following the unit/integration/contract test separation.
+```
+conf/
+├── config.yaml              # Main configuration entry point
+├── defaults.yaml            # Default values and inheritance
+├── model/                   # Model-specific configurations
+│   ├── random_forest.yaml   # Scikit-learn configurations
+│   ├── xgboost.yaml         # XGBoost configurations
+│   └── neural_network.yaml  # Deep learning configurations
+├── api/                     # API service configurations
+│   ├── development.yaml     # Development settings
+│   ├── staging.yaml         # Staging environment
+│   └── production.yaml      # Production settings
+├── experiments/             # Experiment configurations
+│   ├── hyperparameter_tuning.yaml
+│   └── ablation_studies.yaml
+└── secrets.yaml.example     # Secure configuration template
+```
 
-## Project Customization
+### Configuration Features
+- **Type Safety**: Pydantic validation for all configurations
+- **Environment Inheritance**: Hierarchical configuration with overrides
+- **Secret Management**: Secure handling of sensitive data
+- **Experiment Tracking**: A/B testing and experiment management
+- **Runtime Overrides**: Dynamic configuration updates
 
-To customize this template for a new project (e.g., changing the project name, CLI name, etc.), you should look at:
+## Testing Strategy (`tests/`) - MLX Quality Assurance
 
-- `pyproject.toml`: For project metadata like package name.
-- `config/`: The Hydra configuration files would be the place for application-level naming and parameters. A central configuration file for project-wide names should be established.
+Multi-layered testing approach preparing for AI-enhanced testing:
 
-A `scripts/configure.py` script exists to help automate this process.
+- `tests/unit/`: Fast, isolated component tests
+- `tests/integration/`: Component interaction verification
+- `tests/contracts/`: Plugin interface compliance testing
+- `tests/performance/`: Load testing and benchmarking
+
+### Testing Philosophy
+1. **Component Isolation**: Each plugin/component tested independently
+2. **Interface Compliance**: Contract testing for all plugin interfaces
+3. **Integration Validation**: Component combinations tested systematically
+4. **Performance Monitoring**: Benchmark tracking for optimization
+
+## MLX Evolution Mapping
+
+Current template features mapping to future MLX components:
+
+### Plugin Architecture → Component Framework
+- Current: Plugin registry with runtime discovery
+- Future: MLX component marketplace with AI-driven composition
+
+### Configuration System → Intelligent Config Management
+- Current: Hydra + Pydantic validation
+- Future: AI-enhanced configuration with compatibility prediction
+
+### CI/CD Workflows → Smart Testing Infrastructure
+- Current: GitHub Actions with comprehensive testing
+- Future: AI-driven test selection and compatibility verification
+
+### Security Stack → Security Components
+- Current: Rate limiting, vulnerability scanning, secure configs
+- Future: Automated security hardening components
+
+## Extensibility: Plugins → MLX Components
+
+The plugin system serves as the foundation for MLX components:
+
+### Plugin Development
+```python
+# Current plugin structure
+from src.plugins.base import BasePlugin
+
+class CustomMLPlugin(BasePlugin):
+    def __init__(self):
+        self.name = "custom_ml_processor"
+        self.version = "1.0.0"
+    
+    def process(self, data, context):
+        # Custom ML processing logic
+        return processed_data
+    
+    def validate_config(self, config):
+        # Configuration validation
+        return True
+```
+
+### Component Migration Path
+1. **Extract** existing plugins as MLX component templates
+2. **Enhance** with AI-driven compatibility metadata
+3. **Package** with standardized MLX component schema
+4. **Distribute** via MLX component registry
+
+## Project Customization for MLX Migration
+
+Preparing for MLX platform integration:
+
+### Current Template Customization
+- `pyproject.toml`: Project metadata and dependencies
+- `conf/config.yaml`: Application-level configuration
+- `scripts/configure.py`: Automated project setup
+
+### MLX Migration Preparation
+- Component extraction scripts in `scripts/mlx/`
+- Compatibility matrix generation utilities
+- AI training data collection for component intelligence
+
+## Development Guidelines
+
+### Code Organization
+1. **Modular Design**: All functionality organized as plugins/components
+2. **Type Safety**: Comprehensive Pydantic validation throughout
+3. **Configuration-Driven**: All behavior controlled via Hydra configs
+4. **Test Coverage**: Multi-layered testing for reliability
+5. **Documentation**: Comprehensive docs for all components
+
+### MLX Readiness Checklist
+- [ ] Plugin interfaces clearly defined and tested
+- [ ] Configuration schemas validated with Pydantic
+- [ ] Component dependencies explicitly declared
+- [ ] Integration tests covering component interactions
+- [ ] Performance benchmarks established
+- [ ] Security scanning integrated
+- [ ] Documentation comprehensive and up-to-date
+
+## Future: AI-Enhanced Development
+
+Preparing for MLX's AI-driven capabilities:
+
+### Smart Composition
+- Component compatibility prediction using ML models
+- Automated dependency resolution with constraint satisfaction
+- Intelligent component recommendations based on project context
+
+### Intelligent Testing
+- AI-driven test selection to optimize CI/CD efficiency
+- Predictive compatibility analysis before integration
+- Automated performance optimization recommendations
+
+### Community Ecosystem
+- Component marketplace with quality scoring
+- AI-powered contribution guidance
+- Automated maintenance and security updates
+
+---
+
+*This repository is evolving from a production ML template into the foundation for the MLX composable ML platform, where AI enhances every aspect of ML system development.*

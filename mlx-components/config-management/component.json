@@ -1,0 +1,91 @@
+{
+  "name": "config-management",
+  "description": "Hydra + Pydantic configuration system with multi-environment support and secret management",
+  "version": "1.0.0",
+  "component_type": "infrastructure",
+  "source_files": [
+    "src/config/models.py",
+    "src/config/__init__.py",
+    "src/config/manager.py"
+  ],
+  "config_files": [
+    "conf/config.yaml",
+    "conf/ml_systems.yaml",
+    "conf/training/classification.yaml",
+    "conf/paths/default.yaml",
+    "conf/ml/default.yaml",
+    "conf/model/random_forest.yaml",
+    "conf/model/default.yaml",
+    "conf/prompts/prompt_templates.yaml",
+    "conf/api/production.yaml",
+    "conf/api/development.yaml",
+    "conf/data/default.yaml",
+    "conf/logging/default.yaml"
+  ],
+  "infrastructure_files": [
+    "Dockerfile",
+    "docker-compose.yml"
+  ],
+  "template_files": [],
+  "python_dependencies": [
+    "hydra-core>=1.3.0",
+    "pydantic>=2.0.0"
+  ],
+  "system_dependencies": [],
+  "environment_variables": [
+    "REDIS_URL",
+    "API_WORKERS",
+    "API_PORT",
+    "MODEL_DIRECTORY"
+  ],
+  "required_secrets": [
+    "api_key_header"
+  ],
+  "injection_points": {
+    "config_initialization": {
+      "file": "src/config/manager.py",
+      "class": "ConfigManager",
+      "location": "class_definition"
+    }
+  },
+  "merge_strategies": {
+    "conf/config.yaml": "replace",
+    "conf/ml_systems.yaml": "replace",
+    "conf/training/classification.yaml": "replace",
+    "conf/paths/default.yaml": "replace",
+    "conf/ml/default.yaml": "replace",
+    "conf/model/random_forest.yaml": "replace",
+    "conf/model/default.yaml": "replace",
+    "conf/prompts/prompt_templates.yaml": "replace",
+    "conf/api/production.yaml": "enhance",
+    "conf/api/development.yaml": "merge",
+    "conf/data/default.yaml": "replace",
+    "conf/logging/default.yaml": "replace"
+  },
+  "compatibility_matrix": {
+    "requires": [],
+    "enhances": [
+      "api-serving",
+      "plugin-registry",
+      "data-processing"
+    ],
+    "optional": [
+      "monitoring",
+      "logging"
+    ]
+  },
+  "conflicts_with": [],
+  "docker_requirements": {
+    "base_image": "python:3.11-slim",
+    "ports": [
+      "8000"
+    ],
+    "volumes": [],
+    "environment_files": []
+  },
+  "monitoring_endpoints": [],
+  "health_checks": [
+    "src/config/models.py",
+    "src/config/manager.py"
+  ]
+}

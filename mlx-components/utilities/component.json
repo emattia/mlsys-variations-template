@@ -1,0 +1,42 @@
+{
+  "name": "utilities",
+  "description": "Common utility functions and helper modules",
+  "version": "1.0.0",
+  "component_type": "utility",
+  "source_files": [
+    "src/utils/cache_manager.py",
+    "src/utils/rate_limiter.py",
+    "src/utils/__init__.py",
+    "src/utils/templates.py",
+    "src/utils/common.py"
+  ],
+  "config_files": [],
+  "infrastructure_files": [
+    "Dockerfile",
+    "docker-compose.yml"
+  ],
+  "template_files": [],
+  "python_dependencies": [],
+  "system_dependencies": [],
+  "environment_variables": [],
+  "required_secrets": [],
+  "injection_points": {},
+  "merge_strategies": {},
+  "compatibility_matrix": {},
+  "conflicts_with": [],
+  "docker_requirements": {
+    "base_image": "python:3.11-slim",
+    "ports": [
+      "8000"
+    ],
+    "volumes": [],
+    "environment_files": []
+  },
+  "monitoring_endpoints": [],
+  "health_checks": [
+    "src/utils/cache_manager.py",
+    "src/utils/rate_limiter.py",
+    "src/utils/templates.py",
+    "src/utils/common.py"
+  ]
+}

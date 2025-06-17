@@ -1,0 +1,56 @@
+{
+  "name": "plugin-registry",
+  "description": "Dynamic plugin discovery and loading system with security validation",
+  "version": "1.0.0",
+  "component_type": "application",
+  "source_files": [
+    "src/plugins/fine_tuning.py",
+    "src/plugins/registry.py",
+    "src/plugins/vector_stores.py",
+    "src/plugins/tools.py",
+    "src/plugins/llm_providers.py",
+    "src/plugins/__init__.py",
+    "src/plugins/agents.py",
+    "src/plugins/data_sources.py",
+    "src/plugins/base.py"
+  ],
+  "config_files": [],
+  "infrastructure_files": [
+    "Dockerfile",
+    "docker-compose.yml"
+  ],
+  "template_files": [],
+  "python_dependencies": [],
+  "system_dependencies": [],
+  "environment_variables": [],
+  "required_secrets": [],
+  "injection_points": {},
+  "merge_strategies": {},
+  "compatibility_matrix": {
+    "requires": [
+      "config-management"
+    ],
+    "enhances": [
+      "api-serving"
+    ],
+    "optional": [
+      "monitoring"
+    ]
+  },
+  "conflicts_with": [],
+  "docker_requirements": {
+    "base_image": "python:3.11-slim",
+    "ports": [
+      "8000"
+    ],
+    "volumes": [],
+    "environment_files": []
+  },
+  "monitoring_endpoints": [],
+  "health_checks": [
+    "src/plugins/fine_tuning.py",
+    "src/plugins/registry.py",
+    "src/plugins/__init__.py",
+    "src/plugins/base.py"
+  ]
+}

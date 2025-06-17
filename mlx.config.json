@@ -1,0 +1,31 @@
+{
+  "platform": {
+    "name": "mlx-foundation",
+    "version": "0.1.0",
+    "components": [
+      "api-serving",
+      "config-management",
+      "plugin-registry"
+    ],
+    "package_manager": "uv",
+    "existing_structure_preserved": true
+  },
+  "ai": {
+    "compatibility_prediction": true,
+    "smart_test_selection": true,
+    "optimization_suggestions": true
+  },
+  "development": {
+    "auto_component_synthesis": true,
+    "intelligent_cursor_rules": true,
+    "ai_enhanced_ci_cd": true,
+    "preserve_existing_tooling": true
+  },
+  "paths": {
+    "source": "src/",
+    "tests": "tests/",
+    "docs": "docs/",
+    "config": "conf/",
+    "scripts": "scripts/"
+  }
+}

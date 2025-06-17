@@ -1,0 +1,59 @@
+{
+  "registry_version": "1.0.0",
+  "source_structure_preserved": true,
+  "package_manager": "uv",
+  "components": {
+    "api-serving": {
+      "version": "1.0.0",
+      "type": "mlx-component",
+      "config": {
+        "framework": "fastapi",
+        "port": 8000,
+        "workers": 4,
+        "security_enabled": true,
+        "existing_source": "src/api/"
+      },
+      "dependencies": [],
+      "compatibility_score": 1.0,
+      "templates": [],
+      "source_path": "src/api_serving",
+      "extracted_from_existing": true
+    },
+    "config-management": {
+      "version": "1.0.0",
+      "type": "mlx-component",
+      "config": {
+        "framework": "hydra",
+        "validation": "pydantic",
+        "hierarchical": true,
+        "existing_source": "src/config/"
+      },
+      "dependencies": [],
+      "compatibility_score": 1.0,
+      "templates": [],
+      "source_path": "src/config_management",
+      "extracted_from_existing": true
+    },
+    "plugin-registry": {
+      "version": "1.0.0",
+      "type": "mlx-component",
+      "config": {
+        "discovery": "automatic",
+        "hot_reload": true,
+        "contract_testing": true,
+        "existing_source": "src/plugins/"
+      },
+      "dependencies": [],
+      "compatibility_score": 1.0,
+      "templates": [],
+      "source_path": "src/plugin_registry",
+      "extracted_from_existing": true
+    }
+  },
+  "compatibility_matrix": {},
+  "ai_metadata": {
+    "last_updated": "auto-generated",
+    "prediction_model_version": "1.0.0",
+    "existing_source_mapped": true
+  }
+}

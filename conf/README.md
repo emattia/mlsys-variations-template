@@ -1,6 +1,43 @@
 # MLOps Configuration System Guide
 
-This directory contains the hierarchical configuration system for the MLOps platform, powered by [Hydra](httpshttps://hydra.cc/) and [Pydantic](https://pydantic-docs.helpmanual.io/). This guide explains how to use the configuration system for common tasks.
+> **📁 Single Configuration Directory** - All configuration management consolidated here
+
+This directory contains the **complete hierarchical configuration system** for the MLOps platform, powered by [Hydra](https://hydra.cc/) and [Pydantic](https://pydantic-docs.helpmanual.io/). All configuration types are now unified in this single location.
+
+## 📋 **Configuration Architecture** 
+
+```
+conf/
+├── 📋 Base Configuration
+│   ├── config.yaml              # Main configuration entry point
+│   └── ml_systems.yaml          # ML system configurations
+│
+├── 🤖 ML Configuration
+│   ├── model/                   # Model-specific configs
+│   ├── data/                    # Data processing configs
+│   ├── training/                # Training configurations
+│   └── ml/                      # ML workflow settings
+│
+├── 🚀 Deployment Configuration
+│   ├── api/                     # API server configs
+│   ├── paths/                   # Path configurations
+│   └── logging/                 # Logging settings
+│
+├── 🧠 AI/LLM Configuration
+│   ├── prompts/                 # Prompt templates (moved from config/)
+│   │   └── prompt_templates.yaml
+│   └── llm/                     # LLM model configurations
+│
+└── 📝 Documentation
+    └── README.md                # This file
+```
+
+### **✅ Unified Configuration Benefits**
+- **Single source of truth** for all configuration
+- **Consistent Hydra-based** management
+- **Pydantic validation** across all config types
+- **Environment-aware** configuration for all components
+- **Version controlled** prompt templates alongside system configs
 
 ---
 
@@ -67,6 +104,24 @@ Now, run the training workflow by pointing to your experiment config:
 ```bash
 # The '-cn' flag tells Hydra to use your experiment file as the main config
 python -m workflows.model_training --config-name experiments/exp_001
+```
+
+### 4. Working with Prompt Templates
+
+**Example: Use a custom prompt for model analysis.**
+
+The prompt templates are now in `conf/prompts/prompt_templates.yaml`. You can reference them in your workflows:
+
+```python
+# In your Python code
+from src.config import load_config
+
+config = load_config()
+prompt = config.prompts.v1.classification_analysis.template.format(
+    dataset_name="customer_churn",
+    model_type="random_forest", 
+    metrics=model_metrics
+)
 ```
 
 ---
@@ -144,7 +199,9 @@ conf/
 ├── model/                   # Model-specific configs (e.g., random_forest.yaml)
 ├── data/                    # Data processing configs
 ├── training/                # Training configs
-└── api/                     # API server configs (development.yaml, production.yaml)
+├── api/                     # API server configs (development.yaml, production.yaml)
+├── prompts/                 # LLM prompt templates (moved from config/)
+└── logging/                 # Logging configurations
 ```
 
 ### How It Works
@@ -166,3 +223,12 @@ The `ConfigManager` class is the Python interface to the configuration system. I
 - Loading and composing the YAML files.
 - Validating the configuration with Pydantic.
 - Providing the validated `Config` object to the rest of the application.
+
+---
+
+## 🔄 **Migration from config/ Directory**
+
+**Note**: The separate `config/` directory has been consolidated into `conf/` for consistency:
+- ✅ `config/prompt_templates.yaml` → `conf/prompts/prompt_templates.yaml`
+- ✅ All configuration now uses consistent Hydra-based management
+- ✅ Single source of truth for all project configuration
