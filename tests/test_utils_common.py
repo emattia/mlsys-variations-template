@@ -246,7 +246,7 @@ def test_get_project_root():
     assert isinstance(root, Path)
     # Should be three levels up from src/utils/common.py
     # Handle both local development and CI environments
-    assert root.name in ["analysis-template", "mlsys-variations-template"]
+    assert root.name in ["analysis-template", "mlx-platform-template"]
 
 
 def test_get_data_path():

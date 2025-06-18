@@ -4,63 +4,91 @@
 
 A five-minute path from clone to running API.
 
-## Prerequisites
-* Python 3.9+
-* [uv](https://github.com/astral-sh/uv)
-* Git
-* Docker (optional)
+## 🚀 Installation
+
+### Prerequisites
+- Python 3.9+ (3.11+ recommended)
+- [uv](https://docs.astral.sh/uv/) package manager
+- Git
+
+### Quick Start
+
+```bash
+# Clone the unified template
+git clone <repo-url> my-ml-project
+cd my-ml-project
+
+# Personalize your project
+./mlx my_project_name
+
+# Add domain-specific plugins as needed
+uv add mlx-plugin-agentic        # For AI agents
+uv add mlx-plugin-transformers   # For LLM fine-tuning
+
+# Set up environment
+cp .env-example .env  # Edit with your configuration
+
+# Validate installation
+make all-checks
+
+# Start the API
+make run-api
+```
+
+### Domain-Specific Setup
+
+Choose your plugins based on your ML domain:
+
+**AI Agents & Multi-Agent Systems**
+```bash
+uv add mlx-plugin-agentic
+# Configure API keys in .env file
+```
+
+**LLM Fine-tuning & Deployment**
+```bash
+uv add mlx-plugin-transformers  
+# Set up GPU environment and Hugging Face access
+```
+
+**Real-time Feature Engineering**
+```bash
+uv add mlx-plugin-streaming
+# Configure streaming data sources
+```
+
+**Hybrid Systems**
+```bash
+# Compose multiple domains
+uv add mlx-plugin-agentic mlx-plugin-transformers mlx-plugin-streaming
+```
 
 ---
 
-## 1  Clone the Template
+## 🎉 You're Ready!
 
-```bash
-# General ML / analytics
-git clone <repo-url> my-project && cd my-project
+**Congratulations!** You now have a production-ready ML system that includes:
 
-# OR choose a specialization
-git clone -b agentic-ai-system       <repo-url> my-agentic-app
-git clone -b llm-finetuning-system   <repo-url> my-llm-app
-```
-
-## 2  Transform Packages & Configs
-```bash
-./mlsys my_project_name
-```
-The script renames import paths, rewrites configs and validates the environment.
-
-## 3  Add Environment Variables
-```bash
-cp .env-example .env
-# then edit values as required
-```
-Essential keys:
-```bash
-PROJECT_NAME=my_project_name
-ENVIRONMENT=development
-API_PORT=8000
-```
-
-## 4  Install Dependencies
-```bash
-make install-dev   # includes pre-commit hooks
-```
-
-## 5  Verify Everything
-```bash
-make all-checks    # lint, type-check, tests, security
-```
-
----
-
-### Run the API
-```bash
-make run-api   # http://localhost:8000/docs
-```
+- ✅ **Quality Assured**: Automated testing, linting, security scanning
+- ✅ **Production Ready**: Docker containers, CI/CD pipelines, monitoring
+- ✅ **Well Documented**: API docs, user guides, development guides
+- ✅ **Extensible**: Plugin architecture, configuration management
+- ✅ **Team Friendly**: Consistent patterns, automated quality checks
 
 ### Next Steps
-* Configure Hydra files in `conf/`
-* Add raw data into `data/raw/`
-* Build and push a Docker image via `make build-docker`
 
-For branch-specific setup and advanced workflows see `branching_strategy.md` and the rest of the documentation site.
+1. **📊 Explore the Demo**: `make demo-comprehensive`
+2. **📖 Read the Docs**: Browse `docs/` directory or visit the [documentation site](docs/index.md)
+3. **🔌 Check the APIs**: Visit `http://localhost:8000/docs`
+4. **🧪 Write Your First Test**: Add to `tests/` directory
+5. **🚀 Deploy**: Use Docker or cloud deployment guides
+
+### API Documentation
+
+Visit `http://localhost:8000/docs` to see:
+- Interactive API documentation
+- Available endpoints from your installed plugins
+- Request/response schemas
+- Try-it-out functionality
+
+**Happy Building!** 🚀

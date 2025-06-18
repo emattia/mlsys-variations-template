@@ -1,0 +1,413 @@
+{
+  "tasks": {
+    "api:dev": {
+      "name": "api:dev",
+      "description": "Start existing FastAPI development server with auto-reload",
+      "steps": [
+        {
+          "exec": "uvicorn src.api.app:app --reload --host 0.0.0.0 --port 8000"
+        }
+      ]
+    },
+    "api:prod": {
+      "name": "api:prod",
+      "description": "Start production FastAPI server",
+      "steps": [
+        {
+          "exec": "uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --workers 4"
+        }
+      ]
+    },
+    "build": {
+      "name": "build",
+      "description": "Full release build",
+      "steps": [
+        {
+          "spawn": "default"
+        },
+        {
+          "spawn": "pre-compile"
+        },
+        {
+          "spawn": "compile"
+        },
+        {
+          "spawn": "post-compile"
+        },
+        {
+          "spawn": "test"
+        },
+        {
+          "spawn": "package"
+        }
+      ]
+    },
+    "clobber": {
+      "name": "clobber",
+      "description": "hard resets to HEAD of origin and cleans the local repo",
+      "env": {
+        "BRANCH": "$(git branch --show-current)"
+      },
+      "steps": [
+        {
+          "exec": "git checkout -b scratch",
+          "name": "save current HEAD in \"scratch\" branch"
+        },
+        {
+          "exec": "git checkout $BRANCH"
+        },
+        {
+          "exec": "git fetch origin",
+          "name": "fetch latest changes from origin"
+        },
+        {
+          "exec": "git reset --hard origin/$BRANCH",
+          "name": "hard reset to origin commit"
+        },
+        {
+          "exec": "git clean -fdx",
+          "name": "clean all untracked files"
+        },
+        {
+          "say": "ready to rock! (unpushed commits are under the \"scratch\" branch)"
+        }
+      ],
+      "condition": "git diff --exit-code > /dev/null"
+    },
+    "compile": {
+      "name": "compile",
+      "description": "Only compile"
+    },
+    "default": {
+      "name": "default",
+      "description": "Synthesize project files",
+      "steps": [
+        {
+          "exec": "python .projenrc.py"
+        }
+      ]
+    },
+    "docs:build": {
+      "name": "docs:build",
+      "description": "Build static documentation",
+      "steps": [
+        {
+          "exec": "mkdocs build"
+        }
+      ]
+    },
+    "docs:organize": {
+      "name": "docs:organize",
+      "description": "Organize documentation files into docs/ directory structure",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/organize_docs.py"
+        }
+      ]
+    },
+    "docs:serve": {
+      "name": "docs:serve",
+      "description": "Serve documentation locally using existing mkdocs config",
+      "steps": [
+        {
+          "exec": "mkdocs serve"
+        }
+      ]
+    },
+    "docs:update-links": {
+      "name": "docs:update-links",
+      "description": "Update documentation cross-references after reorganization",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/update_doc_links.py"
+        }
+      ]
+    },
+    "eject": {
+      "name": "eject",
+      "description": "Remove projen from the project",
+      "env": {
+        "PROJEN_EJECTING": "true"
+      },
+      "steps": [
+        {
+          "spawn": "default"
+        }
+      ]
+    },
+    "format": {
+      "name": "format",
+      "description": "Format code and fix linting issues",
+      "steps": [
+        {
+          "exec": "ruff format src/ tests/ && ruff check --fix src/ tests/"
+        }
+      ]
+    },
+    "install": {
+      "name": "install",
+      "description": "Install and upgrade dependencies",
+      "steps": [
+        {
+          "exec": "python -m pip install --upgrade pip"
+        },
+        {
+          "exec": "pip install -r requirements.txt"
+        },
+        {
+          "exec": "pip install -r requirements-dev.txt"
+        }
+      ]
+    },
+    "lint": {
+      "name": "lint",
+      "description": "Run linting checks with ruff on existing structure",
+      "steps": [
+        {
+          "exec": "ruff check src/ tests/"
+        }
+      ]
+    },
+    "make:lint": {
+      "name": "make:lint",
+      "description": "Run linting using existing Makefile",
+      "steps": [
+        {
+          "exec": "make lint"
+        }
+      ]
+    },
+    "make:test": {
+      "name": "make:test",
+      "description": "Run tests using existing Makefile",
+      "steps": [
+        {
+          "exec": "make test"
+        }
+      ]
+    },
+    "mlx:add": {
+      "name": "mlx:add",
+      "description": "Add a component to the current project",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/component_injector.py"
+        }
+      ]
+    },
+    "mlx:extract-components": {
+      "name": "mlx:extract-components",
+      "description": "Extract production-ready components from existing source code",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/component_extractor.py"
+        }
+      ]
+    },
+    "mlx:info": {
+      "name": "mlx:info",
+      "description": "Get detailed information about a component",
+      "steps": [
+        {
+          "exec": "python -c \"import sys; sys.path.append('scripts/mlx'); from component_injector import ComponentInjector; from pathlib import Path; import json; injector = ComponentInjector(Path('.'), Path('mlx-components')); info = injector.get_component_info(sys.argv[1]); print(json.dumps(info, indent=2)) if info else print('Component not found')\""
+        }
+      ]
+    },
+    "mlx:list": {
+      "name": "mlx:list",
+      "description": "List available MLX components",
+      "steps": [
+        {
+          "exec": "python -c \"import sys; sys.path.append('scripts/mlx'); from component_injector import ComponentInjector; from pathlib import Path; injector = ComponentInjector(Path('.'), Path('mlx-components')); components = injector.list_available_components(); [print(f'📦 {c[\\\"name\\\"]}: {c[\\\"description\\\"]}') for c in components]\""
+        }
+      ]
+    },
+    "mlx:status": {
+      "name": "mlx:status",
+      "steps": [
+        {
+          "exec": "python -c \"print('📊 MLX Project Status'); import json; config = json.load(open('mlx.config.json')); print(f'Components: {config[\\\"platform\\\"][\\\"components\\\"]}'); print('✅ Project structure preserved')\""
+        }
+      ]
+    },
+    "mlx:synth-components": {
+      "name": "mlx:synth-components",
+      "description": "Synthesize components while preserving existing layout",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/synth_components.py --preserve-structure"
+        }
+      ]
+    },
+    "mlx:test-api-serving": {
+      "name": "mlx:test-api-serving",
+      "description": "Test api-serving component using existing tests",
+      "steps": [
+        {
+          "exec": "python -m pytest tests/ -k api-serving"
+        }
+      ]
+    },
+    "mlx:test-config-management": {
+      "name": "mlx:test-config-management",
+      "description": "Test config-management component using existing tests",
+      "steps": [
+        {
+          "exec": "python -m pytest tests/ -k config-management"
+        }
+      ]
+    },
+    "mlx:test-plugin-registry": {
+      "name": "mlx:test-plugin-registry",
+      "description": "Test plugin-registry component using existing tests",
+      "steps": [
+        {
+          "exec": "python -m pytest tests/ -k plugin-registry"
+        }
+      ]
+    },
+    "mlx:update-api-serving": {
+      "name": "mlx:update-api-serving",
+      "description": "Update api-serving component from existing source",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/update_component.py --component api-serving --source src/"
+        }
+      ]
+    },
+    "mlx:update-config-management": {
+      "name": "mlx:update-config-management",
+      "description": "Update config-management component from existing source",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/update_component.py --component config-management --source src/"
+        }
+      ]
+    },
+    "mlx:update-plugin-registry": {
+      "name": "mlx:update-plugin-registry",
+      "description": "Update plugin-registry component from existing source",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/update_component.py --component plugin-registry --source src/"
+        }
+      ]
+    },
+    "mlx:validate-components": {
+      "name": "mlx:validate-components",
+      "description": "Validate MLX component integrity and compatibility",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/validate_components.py --check-existing"
+        }
+      ]
+    },
+    "mlx:validate-registry": {
+      "name": "mlx:validate-registry",
+      "description": "Validate component registry",
+      "steps": [
+        {
+          "exec": "python -c \"import json; registry = json.load(open('mlx-components/registry.json')); print(f'✅ Registry valid: {len(registry[\\\"components\\\"])} components')\""
+        }
+      ]
+    },
+    "package": {
+      "name": "package",
+      "description": "Creates the distribution package"
+    },
+    "post-compile": {
+      "name": "post-compile",
+      "description": "Runs after successful compilation"
+    },
+    "pre-commit:install": {
+      "name": "pre-commit:install",
+      "description": "Install pre-commit hooks (uses existing config)",
+      "steps": [
+        {
+          "exec": "pre-commit install"
+        }
+      ]
+    },
+    "pre-compile": {
+      "name": "pre-compile",
+      "description": "Prepare the project for compilation"
+    },
+    "quality:all": {
+      "name": "quality:all",
+      "description": "Run all quality checks",
+      "steps": [
+        {
+          "exec": "projen lint && projen format && projen type-check && projen security:bandit"
+        }
+      ]
+    },
+    "security:bandit": {
+      "name": "security:bandit",
+      "description": "Run security checks with bandit",
+      "steps": [
+        {
+          "exec": "bandit -r src/ -f json"
+        }
+      ]
+    },
+    "security:trivy": {
+      "name": "security:trivy",
+      "description": "Run vulnerability scanning with trivy (uses existing .trivyignore)",
+      "steps": [
+        {
+          "exec": "trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL ."
+        }
+      ]
+    },
+    "test": {
+      "name": "test",
+      "description": "Run tests",
+      "steps": [
+        {
+          "exec": "pytest"
+        }
+      ]
+    },
+    "test:benchmark": {
+      "name": "test:benchmark",
+      "description": "Run performance benchmarks for existing components",
+      "steps": [
+        {
+          "exec": "python -m pytest tests/ -m benchmark --benchmark-only"
+        }
+      ]
+    },
+    "test:compatibility": {
+      "name": "test:compatibility",
+      "description": "Test component compatibility with existing plugins",
+      "steps": [
+        {
+          "exec": "python scripts/mlx/compatibility_tester.py --test-plugins src/plugins/"
+        }
+      ]
+    },
+    "test:smart": {
+      "name": "test:smart",
+      "description": "Run AI-selected optimal test suite from existing tests",
+      "steps": [
+        {
+          "exec": "python -m pytest tests/ --collect-only | python scripts/mlx/smart_test_selector.py"
+        }
+      ]
+    },
+    "type-check": {
+      "name": "type-check",
+      "description": "Run type checking with mypy on source code",
+      "steps": [
+        {
+          "exec": "mypy src/"
+        }
+      ]
+    }
+  },
+  "env": {
+    "VIRTUAL_ENV": "$(python -c \"import os; print('{0}/.env'.format(os.getcwd()))\")",
+    "PATH": "$(python -c \"import os, sys; python_dir = 'Scripts' if sys.platform == 'win32' else 'bin'; print('{0}/.env/{1}{2}{3}'.format(os.getcwd(), python_dir, os.pathsep, os.environ['PATH']))\")"
+  },
+  "//": "~~ Generated by projen. To modify, edit .projenrc.py and run \"npx projen\"."
+}

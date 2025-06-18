@@ -1,4 +1,20 @@
-# data-processing Component Installation Guide
+# Data Processing Components
+
+Production-ready data processing components with validation, transformation, and quality checks.
+
+## Quick Start
+
+Add data processing capabilities to your MLX project:
+
+```bash
+# Add via MLX CLI
+./mlx add data-processing
+
+# Or via uv package manager
+uv pip install mlx-data-processing
+```
+
+## Components
 
 ## Description
 Data processing utilities and pipeline components
@@ -16,11 +32,6 @@ Data processing utilities and pipeline components
 ### Environment Variables
 Required: 
 Secrets: 
-
-## Installation
-```bash
-./mlsys add data-processing
-```
 
 ## Configuration
 The component will be installed with the following merge strategies:

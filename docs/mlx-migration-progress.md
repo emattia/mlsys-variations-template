@@ -138,7 +138,7 @@ mlx add api-serving
 
 ### **✅ Directory Structure Fixed**
 ```
-mlsys-variations-template/
+mlx-platform-template/
 ├── src/                    # ← Components get injected HERE
 ├── mlx-components/         # ← Component templates (like shadcn registry)
 ├── scripts/mlx/           # ← MLX CLI implementation

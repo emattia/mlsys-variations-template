@@ -1,56 +1,129 @@
 [build-system]
-requires = ["poetry-core"]
+requires = [ "poetry-core",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "analysis-template"
+name = "assistant"
 version = "0.1.0"
 description = "Production-ready MLOps template for specialized ML systems"
-authors = ["Your Name <you@example.com>"]
+authors = [ "Your Name <you@example.com>",]
 readme = "README.md"
-packages = [
-    {include = "src"},
-    {include = "analysis_template", from = "src"}
-]
+[[tool.poetry.packages]]
+include = "src"
+
+[[tool.poetry.packages]]
+include = "analysis_template"
+from = "src"
+
+[tool.isort]
+profile = "black"
+known_first_party = [ "analysis_template",]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-typer = {extras = ["all"], version = "^0.9.0"}
 click = "8.1.3"
 rich = "^13.5.2"
 mkdocs = "^1.5.2"
 mkdocs-material = "^9.2.8"
-mkdocstrings = {extras = ["python"], version = "^0.25.1"}
-nbdoc = {version = "^0.0.8", optional = true}
 pymdown-extensions = "^10.2.1"
-radon = {version = "^5.1.0", optional = true}
-pytest = {version = "^8.1.1", optional = true}
-ruff = {version = "^0.3.2", optional = true}
-bandit = {version = "^1.7.8", optional = true}
-mypy = {version = "^1.8.0", optional = true}
-polars = {version = "^1.30.0", optional = true}
-asgi-lifespan = {version = "^2.1.0", optional = true}
-httpx = {version = "^0.27.0", optional = true}
-fastapi = {version = "^0.110.0", optional = true}
-uvicorn = {version = "^0.30.0", optional = true}
-hydra-core = {version = "^1.3.2", optional = true}
-pydantic-settings = {version = "^2.1.0", optional = true}
-joblib = {version = "^1.3.2", optional = true}
-numpy = {version = "^1.26.4", optional = true}
-pytest-cov = {version = "^5.0.0", optional = true}
-scikit-learn = {version = "^1.5.0", optional = true}
-matplotlib = {version = "^3.9.0", optional = true}
-pytest-asyncio = {version = "^0.23.7", optional = true}
 
 [tool.poetry.extras]
-dev = ["nbdoc", "radon", "pytest", "ruff", "bandit", "mypy", "polars", "asgi-lifespan", "httpx", "fastapi", "uvicorn", "hydra-core", "pydantic-settings", "joblib", "numpy", "pytest-cov", "scikit-learn", "matplotlib", "pytest-asyncio"]
+dev = [ "nbdoc", "radon", "pytest", "ruff", "bandit", "mypy", "polars", "asgi-lifespan", "httpx", "fastapi", "uvicorn", "hydra-core", "pydantic-settings", "joblib", "numpy", "pytest-cov", "scikit-learn", "matplotlib", "pytest-asyncio", "vulture", "unimport",]
 
 [tool.poetry.scripts]
 analysis-template = "analysis_template.cli:app"
 
-[tool.isort]
-profile = "black"
-known_first_party = ["analysis_template"]
-
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.poetry.dependencies.typer]
+extras = [ "all",]
+version = "^0.9.0"
+
+[tool.poetry.dependencies.mkdocstrings]
+extras = [ "python",]
+version = "^0.25.1"
+
+[tool.poetry.dependencies.nbdoc]
+version = "^0.0.8"
+optional = true
+
+[tool.poetry.dependencies.radon]
+version = "^5.1.0"
+optional = true
+
+[tool.poetry.dependencies.pytest]
+version = "^8.1.1"
+optional = true
+
+[tool.poetry.dependencies.ruff]
+version = "^0.3.2"
+optional = true
+
+[tool.poetry.dependencies.bandit]
+version = "^1.7.8"
+optional = true
+
+[tool.poetry.dependencies.mypy]
+version = "^1.8.0"
+optional = true
+
+[tool.poetry.dependencies.polars]
+version = "^1.30.0"
+optional = true
+
+[tool.poetry.dependencies.asgi-lifespan]
+version = "^2.1.0"
+optional = true
+
+[tool.poetry.dependencies.httpx]
+version = "^0.27.0"
+optional = true
+
+[tool.poetry.dependencies.fastapi]
+version = "^0.110.0"
+optional = true
+
+[tool.poetry.dependencies.uvicorn]
+version = "^0.30.0"
+optional = true
+
+[tool.poetry.dependencies.hydra-core]
+version = "^1.3.2"
+optional = true
+
+[tool.poetry.dependencies.pydantic-settings]
+version = "^2.1.0"
+optional = true
+
+[tool.poetry.dependencies.joblib]
+version = "^1.3.2"
+optional = true
+
+[tool.poetry.dependencies.numpy]
+version = "^1.26.4"
+optional = true
+
+[tool.poetry.dependencies.pytest-cov]
+version = "^5.0.0"
+optional = true
+
+[tool.poetry.dependencies.scikit-learn]
+version = "^1.5.0"
+optional = true
+
+[tool.poetry.dependencies.matplotlib]
+version = "^3.9.0"
+optional = true
+
+[tool.poetry.dependencies.pytest-asyncio]
+version = "^0.23.7"
+optional = true
+
+[tool.poetry.dependencies.vulture]
+version = "^2.0.0"
+optional = true
+
+[tool.poetry.dependencies.unimport]
+version = "^1.0.0"
+optional = true

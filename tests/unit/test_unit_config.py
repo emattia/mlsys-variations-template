@@ -171,7 +171,7 @@ class TestAppConfig:
         """Test default application configuration."""
         config = AppConfig()
 
-        assert config.app_name == "mlsys-variations-template"
+        assert config.app_name == "mlx-platform-template"
         assert config.environment == "development"
         assert config.num_workers == 4
 

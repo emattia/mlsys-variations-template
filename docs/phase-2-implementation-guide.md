@@ -65,14 +65,14 @@ docker/                 # Containerization
 
 ### ✅ **MLX Foundation Architecture**
 - **Fork-Based Model**: Teams fork MLX foundation, customize with projen
-- **Single CLI Gateway**: `./mlsys` handles all operations (NOT global tool)
+- **Single CLI Gateway**: `./mlx` handles all operations (NOT global tool)
 - **Unified Configuration**: `conf/` directory with Hydra-based management
 - **Projen-Driven**: Infrastructure as code with intelligent synthesis
 - **Production-Ready**: Docker, CI/CD, monitoring, security built-in
 
 ### ✅ **Repository Structure Ready for Phase 2**
 ```
-mlsys-variations-template/           # ← MLX Foundation (template)
+mlx-platform-template/           # ← MLX Foundation (template)
 ├── src/                            # ← Extract components FROM here
 │   ├── api/                        # → api-serving component
 │   ├── config/                     # → config-management component
@@ -531,7 +531,7 @@ if __name__ == "__main__":
   "version": "1.0.0",
   "metadata": {
     "generator": "MLX Component Extractor v1.0.0",
-    "extracted_from": "mlsys-variations-template",
+    "extracted_from": "mlx-platform-template",
     "extraction_date": "2024-12-17",
     "total_components": 6
   },
@@ -743,7 +743,7 @@ if __name__ == "__main__":
 - [ ] **Installation order determination** based on dependency graph
 
 ### **✅ Projen Integration** 
-- [ ] **MLX extraction tasks** integrated with projen (`./mlsys extract`)
+- [ ] **MLX extraction tasks** integrated with projen (`./mlx extract`)
 - [ ] **Registry validation** ensuring component integrity
 - [ ] **Template testing** verifying component injection works correctly
 

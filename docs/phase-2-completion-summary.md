@@ -39,16 +39,16 @@ We have successfully implemented **Phase 2** of the MLX Foundation - a **product
 - ✅ **System dependency management** - Docker services, databases, APIs
 - ✅ **Environment configuration** - Secrets, variables, multi-environment support
 
-### **3. Enhanced MLX Gateway**
-**File**: `mlsys` (updated to 292 lines)
+### **3. Enhanced Mlx Gateway**
+**File**: `mlx` (updated to 292 lines)
 
 **New Commands**:
 ```bash
-./mlsys extract        # Extract components from source code
-./mlsys add <component> # Add production-ready components  
-./mlsys list           # List available components
-./mlsys info <comp>    # Detailed component information
-./mlsys status         # Enhanced project health check
+./mlx extract        # Extract components from source code
+./mlx add <component> # Add production-ready components  
+./mlx list           # List available components
+./mlx info <comp>    # Detailed component information
+./mlx status         # Enhanced project health check
 ```
 
 ### **4. Projen Integration**
@@ -116,7 +116,7 @@ projen mlx:validate-registry  # Registry validation
 
 ### **✅ Extraction Engine**
 ```bash
-$ ./mlsys extract --force
+$ ./mlx extract --force
 🔍 MLX Component Extraction Engine
 ✅ api-serving: 5 files, 3 dependencies
 ✅ config-management: 3 files, 2 dependencies  
@@ -128,7 +128,7 @@ $ ./mlsys extract --force
 
 ### **✅ Component Listing**
 ```bash
-$ ./mlsys list
+$ ./mlx list
 📋 Available MLX Components
 ┌─────────────────┬──────────────┬─────────┬───────┬──────┐
 │ Component       │ Type         │ Version │ Files │ Deps │
@@ -141,8 +141,8 @@ $ ./mlsys list
 
 ### **✅ Project Status**
 ```bash
-$ ./mlsys status
-📊 MLX Project Status
+$ ./mlx status
+📊 Mlx Project Status
 ✅ Installed components: api-serving, config-management, plugin-registry
 📁 Project Structure:
   ✅ src/ (83 files)
@@ -212,34 +212,34 @@ Our Phase 2 implementation creates the perfect foundation for Phase 3:
 ### **Extract Components from Existing Project**
 ```bash
 # Analyze existing codebase and generate production-ready components
-./mlsys extract
+./mlx extract
 
 # Force re-extraction with updated analysis
-./mlsys extract --force
+./mlx extract --force
 ```
 
 ### **Browse Available Components**
 ```bash
 # List all available components
-./mlsys list
+./mlx list
 
 # Get detailed information about a component
-./mlsys info api-serving
+./mlx info api-serving
 ```
 
 ### **Add Components to Project**
 ```bash
 # Add a component with dependency checking
-./mlsys add config-management
+./mlx add config-management
 
 # Force add despite conflicts
-./mlsys add api-serving --force
+./mlx add api-serving --force
 ```
 
 ### **Project Management**
 ```bash
 # Check project health and installed components
-./mlsys status
+./mlx status
 
 # Validate component registry
 projen mlx:validate-registry

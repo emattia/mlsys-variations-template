@@ -1,4 +1,20 @@
-# plugin-registry Component Installation Guide
+# Plugin Registry Components
+
+Production-ready plugin system with dynamic loading, validation, and management capabilities.
+
+## Quick Start
+
+Add plugin registry capabilities to your MLX project:
+
+```bash
+# Add via MLX CLI
+./mlx add plugin-registry
+
+# Or via uv package manager
+uv pip install mlx-plugin-registry
+```
+
+## Components
 
 ## Description
 Dynamic plugin discovery and loading system with security validation
@@ -16,11 +32,6 @@ Dynamic plugin discovery and loading system with security validation
 ### Environment Variables
 Required: 
 Secrets: 
-
-## Installation
-```bash
-./mlsys add plugin-registry
-```
 
 ## Configuration
 The component will be installed with the following merge strategies:

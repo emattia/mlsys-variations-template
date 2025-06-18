@@ -1,0 +1,205 @@
+---
+description: When the CLI agent is being used. 
+globs: 
+alwaysApply: false
+---
+# MLX Assistant Development Rules
+
+## 🤖 MLX Assistant Architecture
+
+The MLX Assistant (`scripts/mlx_assistant.py`) is the unified, LLM-driven CLI tool that provides intelligent guidance through the MLX Platform Foundation. It addresses the fragmented user experience by consolidating all Phase 3 frameworks under a single interface.
+
+## 🎯 Core Design Principles
+
+### 1. **Unified Interface**
+- Single entry point for all MLX operations: `mlx assistant`
+- Rich Typer-based CLI with professional styling
+- Consistent command patterns across all frameworks
+- Interactive mode for exploration and guided workflows
+
+### 2. **Intelligent Guidance**
+- Context-aware recommendations based on project state
+- Project health analysis and diagnostics
+- Smart workflow suggestions
+- Real-time status reporting
+
+### 3. **Framework Integration**
+- Golden Repository Testing (`golden-repos`)
+- Security Hardening (`security`)  
+- Plugin Ecosystem (`plugins`)
+- Glossary & Standards (`glossary`)
+
+## 📋 Command Structure
+
+```bash
+# Main entry points
+mlx assistant                    # Dashboard view
+mlx assistant --interactive      # Interactive mode
+mlx assistant doctor            # Health check
+
+# Framework-specific commands
+mlx assistant golden-repos create standard
+mlx assistant security scan --level enhanced
+mlx assistant plugins create --name my-plugin
+mlx assistant glossary search "component"
+```
+
+## 🎨 Styling Guidelines
+
+### Rich Console Standards
+- Use consistent color scheme: `cyan` for commands, `green` for success, `red` for errors
+- Professional table layouts with proper spacing
+- Progress indicators for long-running operations
+- Panel borders for grouped information
+
+### Icons & Emojis
+- 🤖 Assistant operations
+- 🏗️ Golden repositories  
+- 🔒 Security operations
+- 🧩 Plugin operations
+- 📚 Documentation/Glossary
+- ✅ Success states
+- ❌ Error states
+- ⚠️ Warnings
+
+## 🔧 Development Patterns
+
+### 1. **Framework Integration**
+When adding new framework commands:
+```python
+@framework_group.command(name="action")
+def framework_action(
+    param: str = typer.Option(..., help="Parameter description")
+):
+    """📋 Action description with icon."""
+    with Progress(...) as progress:
+        # Show progress for long operations
+        task = progress.add_task("Performing action...", total=None)
+        
+        # Delegate to existing framework script
+        result = subprocess.run([
+            sys.executable, "path/to/framework_script.py", "action",
+            "--param", param
+        ], capture_output=True, text=True, cwd=assistant.project_root)
+        
+        # Rich output formatting
+        if result.returncode == 0:
+            console.print("✅ [green]Action completed successfully![/green]")
+        else:
+            console.print(f"❌ [red]Action failed:[/red] {result.stderr}")
+```
+
+### 2. **Project State Analysis**
+Always consider current project state for intelligent recommendations:
+```python
+def _analyze_project_state(self) -> Dict[str, Any]:
+    state = {
+        "is_mlx_project": (self.project_root / "mlx.config.json").exists(),
+        "has_components": (self.project_root / "mlx-components").exists(),
+        # ... other checks
+    }
+    state["recommendations"] = self._generate_recommendations(state)
+    return state
+```
+
+### 3. **Interactive Mode Design**
+Provide guided workflows for complex operations:
+```python
+def start_interactive_mode():
+    while True:
+        command = Prompt.ask("[bold bright_blue]mlx-assistant[/bold bright_blue]")
+        if command == "help":
+            show_interactive_help()
+        # Handle other commands...
+```
+
+## 🧠 AI Enhancement Opportunities
+
+### Future Phase 4 Integration Points
+- **Smart Dependency Analysis**: AI-powered dependency update recommendations
+- **Intelligent Plugin Suggestions**: ML-based plugin recommendations
+- **Automated Workflow Generation**: Generate workflows based on project analysis
+- **Natural Language Queries**: Allow users to ask questions in natural language
+
+### Context-Aware Features
+- Project history analysis for better recommendations
+- Usage pattern learning for personalized suggestions
+- Automated issue detection and resolution suggestions
+
+## 🔍 Debugging & Diagnostics
+
+### Health Check System
+The `doctor` command provides comprehensive health checking:
+- Framework availability verification
+- Project structure validation
+- Dependency status checking
+- Configuration verification
+
+### Error Handling
+- Graceful degradation when frameworks are unavailable
+- Clear error messages with suggested remediation
+- Fallback to direct framework scripts when needed
+
+## 📚 Documentation Integration
+
+### Glossary Integration
+- Real-time glossary search and reference
+- Terminology validation during operations
+- Context-sensitive help based on current operation
+
+### Help System
+- Multi-level help (quick, detailed, interactive)
+- Context-aware suggestions
+- Command completion and hints
+
+## 🧪 Testing Strategy
+
+### Framework Integration Tests
+- Test all framework delegations work correctly
+- Verify rich output formatting
+- Interactive mode functionality testing
+
+### User Experience Tests
+- Command discovery and discoverability
+- Error message clarity and usefulness
+- Performance of assistant operations
+
+## 🚀 Performance Considerations
+
+### Lazy Loading
+- Import frameworks only when needed
+- Cache project state analysis results
+- Minimize startup time for quick operations
+
+### Responsive Design
+- Show progress for operations >1 second
+- Provide cancellation for long-running operations
+- Rich formatting without performance impact
+
+## 🔗 Integration Points
+
+### Main mlsys Script
+The assistant integrates with the main `mlsys` script through:
+- `mlx assistant` - Launch assistant
+- `mlx doctor` - Run health checks
+- `mlx frameworks` - Show framework status
+
+### Framework Scripts
+Direct integration with existing Phase 3 scripts:
+- `tests/golden_repos.py`
+- `scripts/security/security_hardening.py`
+- `scripts/mlx/plugin_ecosystem.py`
+
+## 📈 Success Metrics
+
+### User Experience
+- Reduced time to discover available functionality
+- Fewer support questions about platform capabilities
+- Increased adoption of Phase 3 frameworks
+
+### Technical Excellence
+- Consistent CLI patterns across all operations
+- Professional presentation quality
+- Reliable framework integration
+
+This assistant represents the culmination of Phase 3 hardening efforts, providing a production-ready interface for the complete MLX platform foundation. 

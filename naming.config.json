@@ -1,0 +1,15 @@
+{
+  "platform_name": "mlx",
+  "platform_full_name": "MLX Platform Foundation",
+  "platform_description": "Production-grade ML platform component system",
+  "main_cli": "mlx",
+  "evaluation_cli": "mlx-eval",
+  "package_prefix": "mlx",
+  "module_namespace": "mlx",
+  "config_file": "mlx.config.json",
+  "components_dir": "mlx-components",
+  "metadata_dir": ".mlx",
+  "assistant_command": "mlx assistant",
+  "docker_network": "mlx-network",
+  "template_name": "mlx-variations-template"
+}

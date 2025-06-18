@@ -2,58 +2,119 @@
   "registry_version": "1.0.0",
   "source_structure_preserved": true,
   "package_manager": "uv",
+  "template_type": "production_mlops_foundation",
   "components": {
     "api-serving": {
       "version": "1.0.0",
-      "type": "mlx-component",
+      "type": "production-component",
+      "description": "Production-hardened FastAPI service with rate limiting, validation, and monitoring",
       "config": {
         "framework": "fastapi",
         "port": 8000,
         "workers": 4,
         "security_enabled": true,
+        "rate_limiting": true,
+        "monitoring": true,
         "existing_source": "src/api/"
       },
-      "dependencies": [],
+      "dependencies": ["config-management"],
       "compatibility_score": 1.0,
-      "templates": [],
-      "source_path": "src/api_serving",
+      "production_ready": true,
+      "source_path": "src/api/",
       "extracted_from_existing": true
     },
     "config-management": {
       "version": "1.0.0",
-      "type": "mlx-component",
+      "type": "production-component",
+      "description": "Hierarchical configuration system with Hydra and Pydantic validation",
       "config": {
         "framework": "hydra",
         "validation": "pydantic",
         "hierarchical": true,
+        "environment_aware": true,
+        "secret_management": true,
         "existing_source": "src/config/"
       },
       "dependencies": [],
       "compatibility_score": 1.0,
-      "templates": [],
-      "source_path": "src/config_management",
+      "production_ready": true,
+      "source_path": "src/config/",
       "extracted_from_existing": true
     },
     "plugin-registry": {
       "version": "1.0.0",
-      "type": "mlx-component",
+      "type": "production-component",
+      "description": "Extensible plugin system with runtime discovery and contract validation",
       "config": {
         "discovery": "automatic",
         "hot_reload": true,
         "contract_testing": true,
+        "type_safe": true,
         "existing_source": "src/plugins/"
+      },
+      "dependencies": ["config-management"],
+      "compatibility_score": 1.0,
+      "production_ready": true,
+      "source_path": "src/plugins/",
+      "extracted_from_existing": true
+    },
+    "data-processing": {
+      "version": "1.0.0",
+      "type": "production-component",
+      "description": "Data processing pipelines with validation and error handling",
+      "config": {
+        "validation": "pydantic",
+        "error_handling": true,
+        "monitoring": true,
+        "existing_source": "src/data/"
+      },
+      "dependencies": ["config-management"],
+      "compatibility_score": 1.0,
+      "production_ready": true,
+      "source_path": "src/data/",
+      "extracted_from_existing": true
+    },
+    "utilities": {
+      "version": "1.0.0",
+      "type": "production-component",
+      "description": "Production utilities including caching, rate limiting, and monitoring",
+      "config": {
+        "caching": true,
+        "rate_limiting": true,
+        "monitoring": true,
+        "existing_source": "src/utils/"
       },
       "dependencies": [],
       "compatibility_score": 1.0,
-      "templates": [],
-      "source_path": "src/plugin_registry",
+      "production_ready": true,
+      "source_path": "src/utils/",
       "extracted_from_existing": true
     }
   },
-  "compatibility_matrix": {},
-  "ai_metadata": {
+  "compatibility_matrix": {
+    "api-serving": {
+      "config-management": "required",
+      "plugin-registry": "compatible",
+      "utilities": "recommended"
+    },
+    "plugin-registry": {
+      "config-management": "required"
+    },
+    "data-processing": {
+      "config-management": "required",
+      "utilities": "recommended"
+    }
+  },
+  "production_metadata": {
     "last_updated": "auto-generated",
-    "prediction_model_version": "1.0.0",
-    "existing_source_mapped": true
+    "template_version": "1.0.0",
+    "existing_source_mapped": true,
+    "production_patterns": [
+      "error_handling",
+      "monitoring",
+      "rate_limiting",
+      "type_safety",
+      "security_hardening"
+    ]
   }
 }

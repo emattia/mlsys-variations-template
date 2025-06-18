@@ -6,50 +6,36 @@
 
 This guide transforms you from template curious to production ready in under 10 minutes.
 
-## 🎯 Quick Decision Matrix
+## 🎯 Architecture: One Template, Composable Capabilities
 
-**Choose your path based on your ML system type:**
+**Instead of separate branches, this template uses composable plugins:**
 
-| If you're building... | Use this branch | Key capabilities |
-|---------------------|----------------|-----------------|
-| 🤖 **AI Agents, Multi-agent systems, Tool-calling AI** | `agentic-ai-system` | LangChain, AutoGen, tool integration, safety |
-| 🧠 **LLM Fine-tuning, Language model deployment** | `llm-finetuning-system` | Transformers, LoRA/QLoRA, distributed training |
-| 🏗️ **Real-time features, Data transformation pipelines** | `chalk-feature-engineering` | Chalk integration, streaming, monitoring |
-| 📊 **Traditional ML, Data science, Experimentation** | `main` (general branch) | Scikit-learn, notebooks, analysis workflows |
+✅ **One codebase** - easier maintenance and updates  
+✅ **Mix & match** - combine AI agents with streaming features  
+✅ **Community focus** - all contributions benefit everyone  
+✅ **Plugin ecosystem** - extend capabilities as needed  
 
 ## 🚀 The 3-Command Setup
 
-### Command 1: Clone Your Chosen Specialization
+### Command 1: Clone the Foundation Template
 
 ```bash
-# 🤖 Agentic AI Systems
-git clone -b agentic-ai-system https://github.com/yourusername/debug-toml-test.git my-agent-project
-cd my-agent-project
-
-# 🧠 LLM Fine-tuning Systems
-git clone -b llm-finetuning-system https://github.com/yourusername/debug-toml-test.git my-llm-project
-cd my-llm-project
-
-# 🏗️ Feature Engineering Systems
-git clone -b chalk-feature-engineering https://github.com/yourusername/debug-toml-test.git my-feature-project
-cd my-feature-project
-
-# 📊 General ML/Data Science
-git clone https://github.com/yourusername/debug-toml-test.git my-analysis-project
-cd my-analysis-project
+# Clone the unified template
+git clone <repo-url> my-ml-project
+cd my-ml-project
 ```
 
-### Command 2: Transform with mlsys
+### Command 2: Transform with mlx
 
 ```bash
 # 🎭 Transform template into your personalized project
-./mlsys your-project-name
+./mlx your-project-name
 
 # Examples:
-./mlsys customer-churn-predictor
-./mlsys financial-risk-model
-./mlsys document-qa-system
-./mlsys real-time-recommender
+./mlx customer-churn-predictor
+./mlx financial-risk-model
+./mlx document-qa-system
+./mlx real-time-recommender
 ```
 
 **⚡ What happens during transformation:**
@@ -79,14 +65,16 @@ cd my-analysis-project
    - Verifies imports resolve correctly
    - Confirms project structure integrity
 
-### Command 3: Activate & Validate
+### Command 3: Add Domain Capabilities
 
 ```bash
 # 🌟 Activate your personalized environment
 source .venv/bin/activate
 
-# 🎯 Verify everything works perfectly
-make verify-setup
+# 🎯 Add domain-specific plugins as needed
+uv add mlx-plugin-agentic      # For AI agents
+uv add mlx-plugin-transformers # For LLM fine-tuning
+uv add mlx-plugin-streaming    # For real-time features
 
 # 🚀 Run comprehensive checks
 make all-checks
@@ -95,9 +83,66 @@ make all-checks
 make demo-comprehensive
 ```
 
+## Domain-Specific Setup
+
+Choose your ML domain and install the corresponding plugins:
+
+| Domain | Plugin Package | Key Technologies |
+|--------|---------------|-----------------|
+| 📊 **General ML/Analytics, Classification, Regression** | `mlx-plugin-sklearn` | Scikit-learn, Pandas, Jupyter |
+| 🤖 **AI Agents, Multi-agent systems, Tool-calling AI** | `mlx-plugin-agentic` | LangChain, AutoGen, tool integration, safety |
+| 🧠 **LLM Fine-tuning, Language model deployment** | `mlx-plugin-transformers` | 🤗 Transformers, LoRA/QLoRA, distributed training |
+| 🏗️ **Real-time features, Data transformation pipelines** | `mlx-plugin-streaming` | Kafka, streaming, monitoring |
+
+### Base Template Setup
+```bash
+# Clone and customize the base template
+git clone <repo-url> my-ml-project
+cd my-ml-project
+./mlx my_ml_project  # Customizes project name and structure
+```
+
+### Add Domain Capabilities via Plugins
+
+#### AI Agents & Multi-Agent Systems
+```bash
+# Install agentic AI capabilities
+uv add mlx-plugin-agentic
+
+# Plugins auto-register - restart your API to see new endpoints
+make run-api
+```
+
+#### LLM Fine-tuning & Deployment
+```bash
+# Install transformer capabilities
+uv add mlx-plugin-transformers
+
+# Configure for your specific model
+# Edit conf/model/transformers.yaml as needed
+```
+
+#### Real-time Feature Engineering  
+```bash
+# Install streaming capabilities
+uv add mlx-plugin-streaming
+
+# Configure streaming sources
+# Edit conf/data/streaming.yaml as needed
+```
+
+### Hybrid Systems: Compose Multiple Domains
+```bash
+# Install multiple domain plugins
+uv add mlx-plugin-agentic mlx-plugin-transformers mlx-plugin-streaming
+
+# The plugin system automatically discovers and integrates all capabilities
+# Access via unified API endpoints and configuration
+```
+
 ## ✅ Success Validation Checklist
 
-After running the three commands, verify your setup:
+After running the setup commands, verify your configuration:
 
 ```bash
 # 🔍 Environment Check
@@ -121,28 +166,37 @@ curl http://localhost:8000/health
 # 🎯 Project Personalization
 grep -r "your-project-name" src/
 # Expected: Your project name appears in imports, configs
+
+# 🧩 Plugin Discovery
+python -c "
+from src.plugins import PluginRegistry
+registry = PluginRegistry()
+registry.discover_plugins()
+print('Discovered plugins:', registry.list_plugins())
+"
 ```
 
 ## 🛠️ Advanced Configuration
 
-### Branch-Specific Setup
+### Plugin-Specific Setup
 
 #### 🤖 Agentic AI Systems
 ```bash
-# After basic setup, configure AI providers
+# After installing mlx-plugin-agentic, configure AI providers
 cp .env-example .env
 # Edit .env with your API keys:
 # OPENAI_API_KEY=your-key
 # ANTHROPIC_API_KEY=your-key
 # LANGSMITH_API_KEY=your-key
 
-# Install additional dependencies if needed
-uv pip install langchain-experimental crewai autogen
+# Plugin automatically provides additional endpoints:
+# /v1/agents/chat - Multi-agent conversations
+# /v1/agents/tools - Tool calling capabilities
 ```
 
 #### 🧠 LLM Fine-tuning Systems
 ```bash
-# Configure GPU environment
+# After installing mlx-plugin-transformers, configure GPU environment
 nvidia-smi  # Verify GPU availability
 
 # Set up model cache directory
@@ -151,17 +205,21 @@ export HF_HOME=~/.cache/huggingface
 
 # Login to Hugging Face (for gated models)
 huggingface-cli login
+
+# Plugin provides training endpoints:
+# /v1/models/train - Start fine-tuning jobs
+# /v1/models/status - Monitor training progress
 ```
 
 #### 🏗️ Feature Engineering Systems
 ```bash
-# Configure Chalk integration
-cp conf/features/chalk_example.yaml conf/features/chalk.yaml
-# Edit with your Chalk project details
-
-# Set up data connections
-export SNOWFLAKE_CONNECTION="your-connection-string"
+# After installing mlx-plugin-streaming, configure data connections
 export KAFKA_SERVERS="your-kafka-servers"
+export REDIS_URL="your-redis-url"
+
+# Plugin provides streaming endpoints:
+# /v1/features/stream - Real-time feature ingestion
+# /v1/features/query - Feature retrieval
 ```
 
 ### Development Workflow Setup
@@ -185,11 +243,11 @@ make security-scan-local
 
 ### Common Issues & Solutions
 
-**Issue**: `mlsys` command not found
+**Issue**: `mlx` command not found
 ```bash
 # Solution: Ensure file is executable
-chmod +x mlsys
-./mlsys your-project-name
+chmod +x mlx
+./mlx your-project-name
 ```
 
 **Issue**: Dependencies not installing
@@ -199,53 +257,21 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source ~/.bashrc  # or restart terminal
 ```
 
-**Issue**: Tests failing after transformation
+**Issue**: Plugin not discovered
 ```bash
-# Solution: Check import paths
-make lint  # Will show any import issues
-# Fix imports manually or re-run mlsys
+# Solution: Verify plugin installation and restart
+uv list | grep mlx-plugin
+make run-api  # Restart API to discover new plugins
 ```
 
-**Issue**: Docker build failing
+**Issue**: Configuration conflicts between plugins
 ```bash
-# Solution: Check Docker is running
-docker --version
-make docker-build
+# Solution: Check plugin compatibility
+python -c "
+from src.plugins import PluginRegistry
+registry = PluginRegistry()
+registry.validate_plugin_compatibility()
+"
 ```
-
-### Branch-Specific Troubleshooting
-
-#### 🤖 Agentic AI Issues
-- **API Key Errors**: Verify `.env` file configuration
-- **Tool Import Errors**: Run `uv pip install -e ".[agents]"`
-- **Memory Issues**: Adjust agent concurrency in `conf/agentic/`
-
-#### 🧠 LLM Fine-tuning Issues
-- **CUDA Errors**: Verify GPU setup with `nvidia-smi`
-- **Memory Errors**: Reduce batch size in training configs
-- **Model Access**: Ensure Hugging Face authentication
-
-#### 🏗️ Feature Engineering Issues
-- **Chalk Connection**: Verify API keys and project configuration
-- **Data Source Errors**: Check connection strings in `.env`
-- **Feature Validation**: Run `make demo-data` to test pipelines
-
-## 🎉 You're Ready!
-
-**Congratulations!** You now have a production-ready ML system that includes:
-
-- ✅ **Quality Assured**: Automated testing, linting, security scanning
-- ✅ **Production Ready**: Docker containers, CI/CD pipelines, monitoring
-- ✅ **Well Documented**: API docs, user guides, development guides
-- ✅ **Extensible**: Plugin architecture, configuration management
-- ✅ **Team Friendly**: Consistent patterns, automated quality checks
-
-### Next Steps
-
-1. **📊 Explore the Demo**: `make demo-comprehensive`
-2. **📖 Read the Docs**: Browse `docs/` directory
-3. **🔌 Check the APIs**: Visit `http://localhost:8000/docs`
-4. **🧪 Write Your First Test**: Add to `tests/` directory
-5. **🚀 Deploy**: Use Docker or cloud deployment guides
 
 **Happy Building!** 🚀

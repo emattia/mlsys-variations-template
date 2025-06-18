@@ -1,9 +1,25 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
-When creating a new plugin, use the following structure.
+When creating a new plugin, use the following structure and **CRITICAL requirements**.
+
+**🏷️ CRITICAL: MLX Naming Standards**
+All new plugins MUST follow MLX naming consistency standards:
+- Plugin names MUST use format: `mlx-plugin-{name}` (e.g., `mlx-plugin-sklearn`)
+- Main module MUST follow MLX branding patterns
+- Configuration MUST use MLX naming conventions
+- Documentation MUST reference current platform naming (use `mlx assistant naming status` to verify)
+- **VALIDATE** plugin naming with `python scripts/test_naming_system.py` after creation
+
+**🧹 CRITICAL: Code Quality Standards**
+All new plugins MUST meet museum-quality standards:
+- **NO DEAD CODE**: Every function must be used and tested
+- **NO UNUSED IMPORTS**: Optimize all import statements
+- **COMPREHENSIVE DOCUMENTATION**: Every function, class, and module documented
+- **ERROR HANDLING**: Production-grade exception handling and logging
+- **TYPE SAFETY**: Full type hints and Pydantic validation
 
 First, create a new directory for your plugin under `src/plugins/`. For example, `src/plugins/my_new_plugin`.
 
@@ -16,3 +32,58 @@ You must also add a contract test for your new plugin. Create a test file in `te
 
 Here is a template for the test file.
 @scripts/templates/plugin_test_skeleton.py.jinja
+
+**📋 Post-Creation Checklist**
+After creating your plugin, MUST complete these steps:
+
+1. **Naming Validation**:
+   ```bash
+   python scripts/test_naming_system.py
+   mlx assistant naming validate --detailed
+   ```
+
+2. **Code Quality Check**:
+   ```bash
+   python -m vulture . --min-confidence 80  # Check for dead code
+   python -m unimport --check --diff         # Check for unused imports
+   ```
+
+3. **Test Coverage**:
+   ```bash
+   python -m pytest tests/contracts/test_your_plugin.py -v
+   python -m pytest --cov=src/plugins/your_plugin --cov-report=term-missing
+   ```
+
+4. **Documentation Quality**:
+   - Ensure README.md follows MLX branding
+   - Verify all functions have docstrings
+   - Check that examples use current CLI names
+
+5. **Integration Test**:
+   ```bash
+   mlx assistant doctor  # Verify plugin doesn't break system health
+   ```
+
+**🚨 Plugin Rejection Criteria**
+Your plugin will be rejected if:
+- Contains naming inconsistencies (use MLX Assistant to verify)
+- Has dead code or unused imports
+- Missing comprehensive tests
+- Documentation doesn't follow MLX standards
+- Breaks existing naming consistency (< 95% score)
+
+**🎯 Plugin Excellence Standards**
+Your plugin achieves excellence when:
+- ✅ 100% MLX naming consistency
+- ✅ Zero dead code or unused imports  
+- ✅ Comprehensive test coverage (>95%)
+- ✅ Production-grade error handling
+- ✅ Clear, purpose-driven documentation
+- ✅ Seamless integration with MLX ecosystem
+
+**💡 Pro Tips for Plugin Development**
+1. **Start with Naming**: Use `mlx assistant naming status` to understand current conventions
+2. **Follow Patterns**: Study existing plugins for established patterns
+3. **Test Early**: Write tests as you develop, not after
+4. **Document Intent**: Every function should clearly state its purpose
+5. **Validate Often**: Run naming and quality checks frequently during development

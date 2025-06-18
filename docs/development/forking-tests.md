@@ -2,7 +2,7 @@
 
 > "Program testing can be used to show the presence of bugs, but never to show their absence!" — Edsger W. Dijkstra
 
-This document explains the testing infrastructure for validating the mlsys forking procedure.
+This document explains the testing infrastructure for validating the mlx forking procedure.
 
 ## Overview
 
@@ -27,7 +27,7 @@ make validate-forking
 ```
 
 **What it tests:**
-- ✅ mlsys script execution
+- ✅ mlx script execution
 - ✅ Directory renaming (`src/analysis_template` → `src/project_name`)
 - ✅ pyproject.toml updates (project name, packages)
 - ✅ Make command compatibility
@@ -51,7 +51,7 @@ pytest tests/integration/test_forking_procedure.py::TestForkingProcedure::test_m
 - 📝 Documentation updates across multiple files
 - 🔍 Import integrity after transformation
 - ⚙️ Configuration file validation
-- 🔄 Idempotency (running mlsys twice)
+- 🔄 Idempotency (running mlx twice)
 - 🚀 Full workflow integration (transform → install → test)
 
 ### 3. CI/CD Integration (`.github/workflows/forking-tests.yml`)
@@ -68,7 +68,7 @@ Automated testing across multiple Python versions and scenarios.
 ## Test Validation Criteria
 
 ### Basic Validation
-1. **Script Execution**: mlsys runs without errors
+1. **Script Execution**: mlx runs without errors
 2. **Directory Structure**: Old directory removed, new directory created
 3. **Configuration Updates**: pyproject.toml reflects new project name
 4. **Make Compatibility**: `make help` works after transformation
@@ -139,7 +139,7 @@ Warning: Could not parse pyproject.toml: Expected '=' after a key in a key/value
 ```
 ❌ Error: Project already appears to be initialized
 ```
-**Explanation**: The mlsys script was already run in this directory. Start with a fresh copy of the template.
+**Explanation**: The mlx script was already run in this directory. Start with a fresh copy of the template.
 
 #### Import Errors
 ```
@@ -165,7 +165,7 @@ def test_custom_scenario(self, temp_project_dir: Path):
 
     # Run transformation
     result = subprocess.run(
-        [str(temp_project_dir / "mlsys"), project_name],
+        [str(temp_project_dir / "mlx"), project_name],
         cwd=temp_project_dir,
         capture_output=True,
         text=True,
@@ -196,7 +196,7 @@ make test-forking-custom NAME=new-pattern-test
 ```
 
 ### Updating Tests
-When modifying the mlsys script:
+When modifying the mlx script:
 
 1. **Run Smoke Test**: `make test-forking-smoke`
 2. **Run Full Suite**: `make test-forking-full`
@@ -213,9 +213,9 @@ pip install pytest tomli-w toml
 # Check Python version
 python3 --version  # Should be 3.10+
 
-# Verify mlsys permissions
-ls -la mlsys
-chmod +x mlsys  # If not executable
+# Verify mlx permissions
+ls -la mlx
+chmod +x mlx  # If not executable
 ```
 
 ### CI/CD Issues
@@ -234,7 +234,7 @@ chmod +x mlsys  # If not executable
 2. **Use Descriptive Names**: Test with realistic project names
 3. **Clean Environment**: Start with fresh template copies
 4. **Monitor CI**: Watch for regressions in automated tests
-5. **Document Changes**: Update tests when modifying mlsys behavior
+5. **Document Changes**: Update tests when modifying mlx behavior
 
 ---
 

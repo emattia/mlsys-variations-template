@@ -1,4 +1,20 @@
-# utilities Component Installation Guide
+# Utilities Components
+
+Production-ready utility components for caching, monitoring, rate limiting, and common operations.
+
+## Quick Start
+
+Add utility capabilities to your MLX project:
+
+```bash
+# Add via MLX CLI
+./mlx add utilities
+
+# Or via uv package manager
+uv pip install mlx-utilities
+```
+
+## Components
 
 ## Description
 Common utility functions and helper modules
@@ -16,11 +32,6 @@ Common utility functions and helper modules
 ### Environment Variables
 Required: 
 Secrets: 
-
-## Installation
-```bash
-./mlsys add utilities
-```
 
 ## Configuration
 The component will be installed with the following merge strategies:

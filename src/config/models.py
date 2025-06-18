@@ -406,7 +406,7 @@ class AppConfig(BaseSettings):
 
     # Application metadata
     app_name: str = Field(
-        default="mlsys-variations-template", description="Application name"
+        default="mlx-platform-template", description="Application name"
     )
     app_version: str = Field(default="0.1.0", description="Application version")
     environment: str = Field(

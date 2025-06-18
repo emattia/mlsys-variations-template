@@ -1,7 +1,7 @@
 """
-Integration tests for the mlsys forking and transformation procedure.
+Integration tests for the mlx forking and transformation procedure.
 
-These tests validate that the mlsys script correctly transforms a template
+These tests validate that the mlx script correctly transforms a template
 into a personalized project while maintaining functionality.
 """
 
@@ -42,22 +42,22 @@ def temp_project_dir() -> Path:
             ),
         )
 
-        # Ensure mlsys is executable
-        mlsys_path = temp_path / "mlsys"
+        # Ensure mlx is executable
+        mlsys_path = temp_path / "mlx"
         mlsys_path.chmod(0o755)
 
         yield temp_path
 
 
 class TestForkingProcedure:
-    """Test suite for validating the mlsys forking and transformation procedure."""
+    """Test suite for validating the mlx forking and transformation procedure."""
 
     def test_mlsys_script_exists_and_executable(self, temp_project_dir: Path):
-        """Test that the mlsys script exists and is executable."""
-        mlsys_path = temp_project_dir / "mlsys"
+        """Test that the mlx script exists and is executable."""
+        mlsys_path = temp_project_dir / "mlx"
 
-        assert mlsys_path.exists(), "mlsys script should exist"
-        assert os.access(mlsys_path, os.X_OK), "mlsys script should be executable"
+        assert mlsys_path.exists(), "mlx script should exist"
+        assert os.access(mlsys_path, os.X_OK), "mlx script should be executable"
 
     def test_original_structure_exists(self, temp_project_dir: Path):
         """Test that the original template structure exists before transformation."""
@@ -71,25 +71,25 @@ class TestForkingProcedure:
         assert (temp_project_dir / "Makefile").exists()
 
     def test_mlsys_transformation_basic(self, temp_project_dir: Path):
-        """Test basic mlsys transformation functionality."""
+        """Test basic mlx transformation functionality."""
         project_name = "test-project-basic"
 
-        # Run mlsys transformation
+        # Run mlx transformation
         result = subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
             timeout=120,  # 2 minutes timeout
         )
 
-        assert result.returncode == 0, f"mlsys failed: {result.stderr}"
+        assert result.returncode == 0, f"mlx failed: {result.stderr}"
 
         # Verify transformation results
         self._verify_transformation_results(temp_project_dir, project_name)
 
     def test_mlsys_transformation_complex_name(self, temp_project_dir: Path):
-        """Test mlsys transformation with complex project names."""
+        """Test mlx transformation with complex project names."""
         test_cases = [
             "customer-churn-model",
             "financial_risk_analyzer",
@@ -105,7 +105,7 @@ class TestForkingProcedure:
 
                 # Run transformation
                 result = subprocess.run(
-                    [str(test_path / "mlsys"), project_name],
+                    [str(test_path / "mlx"), project_name],
                     cwd=test_path,
                     capture_output=True,
                     text=True,
@@ -114,7 +114,7 @@ class TestForkingProcedure:
 
                 assert (
                     result.returncode == 0
-                ), f"mlsys failed for {project_name}: {result.stderr}"
+                ), f"mlx failed for {project_name}: {result.stderr}"
                 self._verify_transformation_results(test_path, project_name)
 
     def test_directory_renaming(self, temp_project_dir: Path):
@@ -123,7 +123,7 @@ class TestForkingProcedure:
 
         # Run transformation
         subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
@@ -151,7 +151,7 @@ class TestForkingProcedure:
 
         # Run transformation
         subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
@@ -184,7 +184,7 @@ class TestForkingProcedure:
 
         # Run transformation
         subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
@@ -213,7 +213,7 @@ class TestForkingProcedure:
 
         # Run transformation
         subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
@@ -245,7 +245,7 @@ class TestForkingProcedure:
 
         # Run transformation
         subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
@@ -277,7 +277,7 @@ class TestForkingProcedure:
 
         # Run transformation
         subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
@@ -304,36 +304,36 @@ class TestForkingProcedure:
 
         # Run transformation
         result = subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
             timeout=120,
         )
 
-        assert result.returncode == 0, f"mlsys failed: {result.stderr}"
+        assert result.returncode == 0, f"mlx failed: {result.stderr}"
 
         # Bootstrap venv may be created in home directory, but transformation should succeed
         # We don't assert its existence as it might be cleaned up automatically
 
     def test_transformation_idempotency(self, temp_project_dir: Path):
-        """Test that running mlsys twice doesn't break the project."""
+        """Test that running mlx twice doesn't break the project."""
         project_name = "test-idempotency"
 
         # Run transformation first time
         result1 = subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
             timeout=120,
         )
 
-        assert result1.returncode == 0, f"First mlsys run failed: {result1.stderr}"
+        assert result1.returncode == 0, f"First mlx run failed: {result1.stderr}"
 
         # Run transformation second time - should fail gracefully
         result2 = subprocess.run(
-            [str(temp_project_dir / "mlsys"), f"{project_name}-v2"],
+            [str(temp_project_dir / "mlx"), f"{project_name}-v2"],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
@@ -343,7 +343,7 @@ class TestForkingProcedure:
         # Second run should fail because analysis_template no longer exists
         assert (
             result2.returncode != 0
-        ), "Second mlsys run should fail when source dir is missing"
+        ), "Second mlx run should fail when source dir is missing"
         assert (
             "already appears to be initialized" in result2.stdout
             or "was not found" in result2.stdout
@@ -380,14 +380,14 @@ class TestForkingProcedure:
 
         # Step 1: Run transformation
         result = subprocess.run(
-            [str(temp_project_dir / "mlsys"), project_name],
+            [str(temp_project_dir / "mlx"), project_name],
             cwd=temp_project_dir,
             capture_output=True,
             text=True,
             timeout=120,
         )
 
-        assert result.returncode == 0, f"mlsys transformation failed: {result.stderr}"
+        assert result.returncode == 0, f"mlx transformation failed: {result.stderr}"
 
         # Step 2: Try to install dependencies (if uv is available)
         uv_check = subprocess.run(["which", "uv"], capture_output=True)

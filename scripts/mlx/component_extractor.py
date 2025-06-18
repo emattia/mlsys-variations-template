@@ -609,7 +609,7 @@ class ProductionComponentExtractor:
             
             # Template variable substitutions
             template_content = content
-            template_content = re.sub(r'mlsys-variations-template', '{{PROJECT_NAME}}', template_content)
+            template_content = re.sub(r'mlx-platform-template', '{{PROJECT_NAME}}', template_content)
             template_content = re.sub(r'localhost:8000', '{{API_HOST}}:{{API_PORT}}', template_content)
             
             # Create template file
@@ -643,7 +643,7 @@ Secrets: {', '.join(metadata.required_secrets)}
 
 ## Installation
 ```bash
-./mlsys add {metadata.name}
+./mlx add {metadata.name}
 ```
 
 ## Configuration
@@ -735,7 +735,7 @@ def main():
         "version": "1.0.0",
         "metadata": {
             "generator": "MLX Component Extractor v1.0.0",
-            "extracted_from": "mlsys-variations-template",
+            "extracted_from": "mlx-platform-template",
             "extraction_date": "2024-12-17",
             "total_components": len(components)
         },
@@ -754,7 +754,7 @@ def main():
         print(f"   📦 {name}: {len(meta.source_files)} files, {len(meta.python_dependencies)} dependencies")
     
     print(f"\n📋 Registry saved to: {registry_path}")
-    print(f"🎯 Components ready for: ./mlsys add <component-name>")
+    print(f"🎯 Components ready for: ./mlx add <component-name>")
 
 
 if __name__ == "__main__":

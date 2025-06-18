@@ -84,7 +84,7 @@ uv pip install -r requirements.txt
 
 ### 2. Dependency Files
 
-The MLX project uses these dependency files:
+The mlx project uses these dependency files:
 
 ```
 requirements.txt      # Production dependencies
@@ -166,7 +166,7 @@ uv pip install -r requirements.txt --concurrent-downloads 10
 
 ## 📊 Performance Comparison
 
-Based on MLX project dependencies:
+Based on mlx project dependencies:
 
 | Operation | pip | uv | Speedup |
 |-----------|-----|----| --------|
@@ -444,7 +444,7 @@ uv pip install -r requirements.txt
 
 ### Projen Integration
 
-The MLX project uses projen for configuration. UV works seamlessly:
+The mlx project uses projen for configuration. UV works seamlessly:
 
 ```python
 # In .projenrc.py

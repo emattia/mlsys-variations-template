@@ -50,28 +50,24 @@ This template is the foundation for **MLX**, transforming ML development from te
 
 ## 🎭 Specializations
 
-Choose from pre-configured domain specializations:
-
-| Branch | Purpose | Key Technologies | Use Cases |
-|--------|---------|------------------|-----------|
-| `main` | General ML/Analytics | Scikit-learn, Pandas | Classification, regression |
-| `agentic-ai-system` | Multi-agent AI | LangChain, AutoGen | Reasoning, tool calling |
-| `llm-finetuning-system` | LLM training | Transformers, PyTorch | Custom model training |
-| `chalk-feature-engineering` | Real-time features | Chalk, streaming | Feature stores |
+**This template now uses a plugin-based architecture instead of branches. See the plugin section below.**
 
 ## 🚀 Quick Setup
 
 ```bash
-# 1. Clone your specialization
-git clone -b agentic-ai-system <repo-url> my-agent-project
+# 1. Clone the unified template
+git clone <repo-url> my-ml-project
 
 # 2. Transform to your project
-./mlsys my-awesome-project
+./mlx my-awesome-project
 
-# 3. Configure environment
+# 3. Add domain capabilities via plugins
+uv add mlx-plugin-agentic mlx-plugin-transformers
+
+# 4. Configure environment  
 cp .env-example .env  # Edit as needed
 
-# 4. Start development
+# 5. Start development
 make all-checks && make run-api
 ```
 
@@ -235,3 +231,72 @@ MIT License - see [LICENSE](../LICENSE)
 ---
 
 *Building towards a future where ML systems are composed, not templated.*
+
+## 🧩 Domain Specializations via Plugins
+
+Instead of separate branches, this template uses **composable plugins** for domain-specific functionality:
+
+| Plugin Package | Domain Focus | Key Technologies | Installation |
+|---------------|--------------|-----------------|--------------|
+| `mlx-plugin-sklearn` | General ML/Analytics | Scikit-learn, Pandas | `uv add mlx-plugin-sklearn` |
+| `mlx-plugin-agentic` | Multi-agent AI | LangChain, AutoGen | `uv add mlx-plugin-agentic` |
+| `mlx-plugin-transformers` | LLM training/serving | 🤗 Transformers, PyTorch | `uv add mlx-plugin-transformers` |
+| `mlx-plugin-streaming` | Real-time features | Kafka, streaming | `uv add mlx-plugin-streaming` |
+
+### Composable Architecture Benefits
+
+✅ **Mix and Match**: Combine agentic AI with streaming features in one project  
+✅ **Single Codebase**: One template, multiple capabilities via plugins  
+✅ **Community Focus**: All contributions go to one main repository  
+✅ **Easy Updates**: Plugin updates don't require template rebasing  
+
+### Example: Multi-Domain Project
+```bash
+# Create project with multiple domain capabilities
+git clone <repo-url> my-hybrid-project && cd my-hybrid-project
+./mlx my_hybrid_project
+
+# Add domain-specific plugins as needed
+uv add mlx-plugin-agentic mlx-plugin-streaming mlx-plugin-transformers
+
+# Configure in your project
+python -c "
+from src.plugins import PluginRegistry
+registry = PluginRegistry()
+registry.discover_plugins()  # Auto-discovers installed plugins
+"
+```
+
+## Get Started
+
+### Clone & Setup
+```bash
+# Clone the foundation template
+git clone <repo-url> my-project && cd my-project
+
+# Personalize your project
+./mlx my_project_name
+
+# Add plugins for your domain
+uv add mlx-plugin-<domain>
+```
+
+### Quick Demo
+```bash
+# Run all quality checks
+make all-checks
+
+# Start the API server  
+make run-api
+```
+
+## 🧩 Plugin-Based Architecture
+
+This template uses **composable plugins** instead of separate branches for domain specializations. The unified approach provides:
+
+✅ **Single codebase** - easier maintenance and community focus  
+✅ **True composability** - mix and match capabilities  
+✅ **No branch divergence** - consistent base template  
+✅ **Plugin ecosystem** - extend capabilities as needed  
+
+See the [Domain Specializations via Plugins](#-domain-specializations-via-plugins) section below for available plugins.
