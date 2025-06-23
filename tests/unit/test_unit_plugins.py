@@ -1,6 +1,6 @@
 """Unit tests for plugin architecture."""
 
-from src.plugins.base import MLOpsComponent
+from src.plugins.base import MLOpsComponent, ExecutionContext
 from src.plugins.registry import PluginRegistry
 
 
@@ -15,7 +15,7 @@ class MockPlugin(MLOpsComponent):
         """Plugin version."""
         return "1.0.0"
 
-    def initialize(self, context=None):
+    def initialize(self, context: ExecutionContext):
         """Initialize the plugin."""
         return True
 
@@ -23,9 +23,13 @@ class MockPlugin(MLOpsComponent):
         """Validate plugin configuration."""
         return True
 
-    def execute(self, context):
+    def execute(self, context: ExecutionContext):
         """Mock execute method."""
         return {"status": "success", "context": context}
+
+    def cleanup(self, context: ExecutionContext):
+        """Clean up resources after execution."""
+        pass
 
 
 class TestPluginRegistry:
