@@ -4,7 +4,7 @@
 
 This directory contains the **complete hierarchical configuration system** for the MLOps platform, powered by [Hydra](https://hydra.cc/) and [Pydantic](https://pydantic-docs.helpmanual.io/). All configuration types are now unified in this single location.
 
-## 📋 **Configuration Architecture** 
+## 📋 **Configuration Architecture**
 
 ```
 conf/
@@ -119,7 +119,7 @@ from src.config import load_config
 config = load_config()
 prompt = config.prompts.v1.classification_analysis.template.format(
     dataset_name="customer_churn",
-    model_type="random_forest", 
+    model_type="random_forest",
     metrics=model_metrics
 )
 ```

@@ -10,7 +10,7 @@ Add API serving capabilities to your MLX project:
 # Add via MLX CLI
 ./mlx add api-serving
 
-# Or via uv package manager  
+# Or via uv package manager
 uv pip install mlx-api-serving
 ```
 
@@ -43,4 +43,4 @@ The component will be installed with the following merge strategies:
 
 ## Monitoring
 Health checks: src/api/service.py, src/api/models.py, src/api/__init__.py, src/api/app.py, src/api/routes.py
-Endpoints: 
+Endpoints:

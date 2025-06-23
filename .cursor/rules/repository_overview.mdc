@@ -1,12 +1,12 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: false
 ---
 # Repository Rules for Production ML Foundation Template
 
 **🚨 CRITICAL: Package Management**
-This project uses **UV** for package management, not pip! 
+This project uses **UV** for package management, not pip!
 - Use `uv pip install <package>` instead of `pip install <package>`
 - The project has Poetry configuration but uses UV runtime
 - Virtual environment: `.venv` (pre-configured with UV)
@@ -165,7 +165,7 @@ Production-focused structure with naming management and automated maintenance:
 # 1. Check current status
 mlx assistant naming status
 
-# 2. Analyze current state  
+# 2. Analyze current state
 python scripts/migrate_platform_naming.py analyze
 
 # 3. Preview changes (ALWAYS do this first)
@@ -208,7 +208,7 @@ mlx assistant naming validate --detailed
 # 1. Dead Code Analysis
 python -m vulture . --min-confidence 80
 
-# 2. Import Analysis  
+# 2. Import Analysis
 python -m unimport --check --diff
 
 # 3. Backup Management
@@ -320,7 +320,7 @@ class ProductionMLPlugin(BasePlugin):
         self.name = "production_ml_processor"
         self.version = "1.0.0"
         self._initialize_monitoring()
-    
+
     def process(self, data, context):
         try:
             # Production ML processing with monitoring
@@ -330,7 +330,7 @@ class ProductionMLPlugin(BasePlugin):
         except Exception as e:
             self._handle_error(e, context)
             raise
-    
+
     def validate_config(self, config):
         # Comprehensive configuration validation
         return self._validate_production_config(config)

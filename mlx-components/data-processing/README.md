@@ -30,8 +30,8 @@ Data processing utilities and pipeline components
 
 
 ### Environment Variables
-Required: 
-Secrets: 
+Required:
+Secrets:
 
 ## Configuration
 The component will be installed with the following merge strategies:
@@ -39,4 +39,4 @@ The component will be installed with the following merge strategies:
 
 ## Monitoring
 Health checks: src/data/processing.py, src/data/validation.py
-Endpoints: 
+Endpoints:

@@ -8,17 +8,19 @@ Users should never need to use projen or other CLIs directly.
 Phase 2: Production-grade component extraction and injection system
 """
 
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 # Add scripts/mlx to path
 scripts_path = Path(__file__).parent / "scripts" / "mlx"
 sys.path.insert(0, str(scripts_path))
 
+
 def is_mlx_project() -> bool:
     """Check if current directory is an mlx project."""
     return Path("mlx.config.json").exists() or Path(".projenrc.py").exists()
+
 
 def run_projen_task(task: str, *args):
     """Run a projen task with arguments."""
@@ -33,61 +35,68 @@ def run_projen_task(task: str, *args):
         print("❌ Projen not found. Make sure you're in an mlx project directory.")
         return False
 
+
 def transform_project(project_name: str) -> bool:
     """Transform the current template project to a named project."""
     try:
         import shutil
-        
+
         # Try to import toml, install if missing
         try:
             import toml
         except ImportError:
             print("📦 Installing missing 'toml' dependency...")
             import subprocess
+
             subprocess.check_call([sys.executable, "-m", "pip", "install", "toml"])
             import toml
-        
+
         # Convert names
         snake_case = project_name.replace("-", "_")
         kebab_case = project_name.replace("_", "-")
-        
+
         # Check if analysis_template exists
         old_src = Path("src/analysis_template")
         new_src = Path(f"src/{snake_case}")
-        
+
         if not old_src.exists():
             print("❌ Source template directory 'src/analysis_template' not found.")
             print("   Project may have already been transformed.")
             return False
-        
+
         if new_src.exists():
             print(f"❌ Target directory 'src/{snake_case}' already exists.")
             return False
-        
+
         # 1. Rename source directory
         print(f"📁 Renaming src/analysis_template → src/{snake_case}")
         shutil.move(str(old_src), str(new_src))
-        
+
         # 2. Update pyproject.toml
         pyproject_path = Path("pyproject.toml")
         if pyproject_path.exists():
             print("📝 Updating pyproject.toml")
             data = toml.load(pyproject_path)
-            
+
             # Update project name
             if "project" in data:
                 data["project"]["name"] = kebab_case
             elif "tool" in data and "poetry" in data["tool"]:
                 data["tool"]["poetry"]["name"] = kebab_case
-            
+
             # Update ruff configuration
             if "tool" in data and "ruff" in data["tool"]:
-                if "lint" in data["tool"]["ruff"] and "isort" in data["tool"]["ruff"]["lint"]:
-                    data["tool"]["ruff"]["lint"]["isort"]["known-first-party"] = [snake_case]
-            
+                if (
+                    "lint" in data["tool"]["ruff"]
+                    and "isort" in data["tool"]["ruff"]["lint"]
+                ):
+                    data["tool"]["ruff"]["lint"]["isort"]["known-first-party"] = [
+                        snake_case
+                    ]
+
             with open(pyproject_path, "w") as f:
                 toml.dump(data, f)
-        
+
         # 3. Update Dockerfile
         dockerfile_path = Path("Dockerfile")
         if dockerfile_path.exists():
@@ -96,10 +105,10 @@ def transform_project(project_name: str) -> bool:
             # Add a marker to indicate the project has been transformed
             updated_content = content.replace(
                 "# Multi-stage Dockerfile for MLOps Template API",
-                f"# Multi-stage Dockerfile for {project_name} API\n# Project: {project_name}"
+                f"# Multi-stage Dockerfile for {project_name} API\n# Project: {project_name}",
             )
             dockerfile_path.write_text(updated_content)
-        
+
         # 4. Update GitHub workflows
         workflows_dir = Path(".github/workflows")
         if workflows_dir.exists():
@@ -108,19 +117,21 @@ def transform_project(project_name: str) -> bool:
                 try:
                     content = workflow_file.read_text()
                     updated_content = content.replace("analysis_template", snake_case)
-                    updated_content = updated_content.replace("src/analysis_template", f"src/{snake_case}")
+                    updated_content = updated_content.replace(
+                        "src/analysis_template", f"src/{snake_case}"
+                    )
                     workflow_file.write_text(updated_content)
                     print(f"🔄 Updated {workflow_file}")
                 except Exception as e:
                     print(f"⚠️  Warning: Could not update {workflow_file}: {e}")
-        
+
         # 5. Update any import references in the codebase
         files_to_update = [
             "src/config/models.py",
-            "tests/unit/test_config.py", 
-            "tests/test_utils_common.py"
+            "tests/unit/test_config.py",
+            "tests/test_utils_common.py",
         ]
-        
+
         for file_path_str in files_to_update:
             file_path = Path(file_path_str)
             if file_path.exists():
@@ -131,94 +142,107 @@ def transform_project(project_name: str) -> bool:
                     file_path.write_text(updated_content)
                 except Exception as e:
                     print(f"⚠️  Warning: Could not update {file_path}: {e}")
-        
+
         # 6. Update any remaining references in Python files
         print("🔄 Updating Python imports...")
         for py_file in Path("src").rglob("*.py"):
             try:
                 content = py_file.read_text()
-                if "from analysis_template" in content or "import analysis_template" in content:
+                if (
+                    "from analysis_template" in content
+                    or "import analysis_template" in content
+                ):
                     updated_content = content.replace("analysis_template", snake_case)
                     py_file.write_text(updated_content)
                     print(f"🔄 Updated imports in {py_file}")
             except Exception:
                 pass  # Skip files that can't be read/written
-        
+
         # 7. Update configuration files
         config_files = [
             "conf/config.yaml",
             "conf/ml_systems.yaml",
             "mkdocs.yml",
-            "README.md"
+            "README.md",
         ]
-        
+
         for config_file_str in config_files:
             config_file = Path(config_file_str)
             if config_file.exists():
                 try:
                     content = config_file.read_text()
                     if "analysis_template" in content:
-                        updated_content = content.replace("analysis_template", snake_case)
+                        updated_content = content.replace(
+                            "analysis_template", snake_case
+                        )
                         config_file.write_text(updated_content)
                         print(f"🔄 Updated {config_file}")
                 except Exception as e:
                     print(f"⚠️  Warning: Could not update {config_file}: {e}")
-        
+
         # 8. Create a test file to verify imports work
         test_import_file = new_src / "__init__.py"
         if not test_import_file.exists():
             test_import_file.write_text(f'"""Package {snake_case}."""\n')
             print(f"📝 Created {test_import_file}")
-        
-        print(f"✅ Transformation completed successfully!")
+
+        print("✅ Transformation completed successfully!")
         return True
-        
+
     except Exception as e:
         print(f"❌ Project transformation failed: {e}")
         return False
 
+
 try:
-    from create_project import app as create_app
     import typer
-    from rich.console import Console
-    from rich.panel import Panel
-    from rich.table import Table
-    
+
     # Import Phase 2 modules
     from component_extractor import ProductionComponentExtractor
     from component_injector import ComponentInjector
-    
+    from create_project import app as create_app
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.table import Table
+
     console = Console()
-    
+
     # Main MLX CLI app
     app = typer.Typer(
         help="Mlx Gateway - Production-grade ML platform component system",
         add_completion=False,
         no_args_is_help=True,
     )
-    
+
     # Add the create commands from create_project.py
     app.add_typer(create_app, name="create")
-    
+
     @app.command("transform")
     def transform_command(
         project_name: str = typer.Argument(..., help="New name for the project"),
-        force: bool = typer.Option(False, "--force", "-f", help="Force transformation even if already transformed")
+        force: bool = typer.Option(
+            False,
+            "--force",
+            "-f",
+            help="Force transformation even if already transformed",
+        ),
     ):
         """Transform the template project to a named project."""
         if not is_mlx_project():
             console.print("[red]Error:[/red] Not in an mlx project directory.")
             raise typer.Exit(1)
-        
+
         console.print(f"🎭 Transforming project to: [cyan]{project_name}[/cyan]")
-        
+
         # Check if already transformed
         src_dir = Path("src")
         if not (src_dir / "analysis_template").exists() and not force:
-            console.print("[yellow]Warning:[/yellow] Project appears to already be transformed.")
+            console.print(
+                "[yellow]Warning:[/yellow] Project appears to already be transformed."
+            )
             console.print("Use --force to transform anyway.")
             raise typer.Exit(1)
-        
+
         if transform_project(project_name):
             console.print(f"✅ Project transformed to [green]{project_name}[/green]!")
             console.print("\n📋 Next steps:")
@@ -226,128 +250,154 @@ try:
             console.print("2. Update dependencies: [cyan]make install-dev[/cyan]")
             console.print("3. Run tests: [cyan]./mlx test[/cyan]")
         else:
-            console.print(f"❌ Failed to transform project to [red]{project_name}[/red]")
+            console.print(
+                f"❌ Failed to transform project to [red]{project_name}[/red]"
+            )
             raise typer.Exit(1)
-    
+
     @app.command("add")
     def add_component(
-        component: str = typer.Argument(..., help="Component to add (e.g., 'api-serving')"),
-        force: bool = typer.Option(False, "--force", "-f", help="Force add even if conflicts exist")
+        component: str = typer.Argument(
+            ..., help="Component to add (e.g., 'api-serving')"
+        ),
+        force: bool = typer.Option(
+            False, "--force", "-f", help="Force add even if conflicts exist"
+        ),
     ):
         """Add a component to the current mlx project."""
         if not is_mlx_project():
-            console.print("[red]Error:[/red] Not in an mlx project directory. Use 'mlx create' first.")
+            console.print(
+                "[red]Error:[/red] Not in an mlx project directory. Use 'mlx create' first."
+            )
             raise typer.Exit(1)
-        
+
         console.print(f"🧩 Adding component: [cyan]{component}[/cyan]")
-        
+
         # Use Phase 2 component injection system
         try:
             project_root = Path(".")
             components_dir = Path("mlx-components")
-            
+
             injector = ComponentInjector(project_root, components_dir)
-            
+
             if injector.add_component(component, force):
-                console.print(f"✅ Component [green]{component}[/green] added successfully!")
-                
+                console.print(
+                    f"✅ Component [green]{component}[/green] added successfully!"
+                )
+
                 # Show what was added
                 comp_info = injector.get_component_info(component)
                 if comp_info:
-                    console.print(f"📦 Type: {comp_info.get('component_type', 'unknown')}")
+                    console.print(
+                        f"📦 Type: {comp_info.get('component_type', 'unknown')}"
+                    )
                     console.print(f"📁 Files: {len(comp_info.get('source_files', []))}")
-                    console.print(f"🔗 Dependencies: {len(comp_info.get('python_dependencies', []))}")
+                    console.print(
+                        f"🔗 Dependencies: {len(comp_info.get('python_dependencies', []))}"
+                    )
             else:
                 console.print(f"❌ Failed to add component [red]{component}[/red]")
-                raise typer.Exit(1)
-                
+                raise typer.Exit(1) from None
+
         except ImportError:
             console.print("⚠️  Phase 2 system not available, falling back to projen...")
             if run_projen_task("mlx:add", component):
-                console.print(f"✅ Component [green]{component}[/green] added successfully!")
+                console.print(
+                    f"✅ Component [green]{component}[/green] added successfully!"
+                )
             else:
                 console.print(f"❌ Failed to add component [red]{component}[/red]")
-                raise typer.Exit(1)
-    
+                raise typer.Exit(1) from None
+
     @app.command("extract")
     def extract_components(
-        output_dir: str = typer.Option("mlx-components", "--output", "-o", help="Output directory for components"),
-        force: bool = typer.Option(False, "--force", "-f", help="Force extraction even if output exists")
+        output_dir: str = typer.Option(
+            "mlx-components", "--output", "-o", help="Output directory for components"
+        ),
+        force: bool = typer.Option(
+            False, "--force", "-f", help="Force extraction even if output exists"
+        ),
     ):
         """Extract components from existing source code (Phase 2)."""
         if not is_mlx_project():
             console.print("[red]Error:[/red] Not in an mlx project directory.")
             raise typer.Exit(1)
-        
+
         console.print("🔍 [bold]MLX Component Extraction Engine[/bold]")
         console.print("Analyzing source code for production-ready components...")
-        
+
         try:
             source_dir = Path(".")
             output_path = Path(output_dir)
-            
+
             if output_path.exists() and not force:
-                console.print(f"❌ Output directory '{output_dir}' already exists. Use --force to overwrite.")
+                console.print(
+                    f"❌ Output directory '{output_dir}' already exists. Use --force to overwrite."
+                )
                 raise typer.Exit(1)
-            
+
             # Run Phase 2 extraction
             extractor = ProductionComponentExtractor(source_dir, output_path)
             components = extractor.extract_all_components()
-            
+
             if not components:
                 console.print("❌ No components found to extract")
                 raise typer.Exit(1)
-            
+
             # Display results
             console.print("\n✅ [bold green]Extraction Complete![/bold green]")
-            
+
             table = Table(title="Extracted Components")
             table.add_column("Component", style="cyan")
             table.add_column("Type", style="magenta")
             table.add_column("Files", justify="right")
             table.add_column("Dependencies", justify="right")
             table.add_column("Description", style="dim")
-            
+
             for name, meta in components.items():
                 table.add_row(
                     name,
                     meta.component_type,
                     str(len(meta.source_files)),
                     str(len(meta.python_dependencies)),
-                    meta.description[:50] + "..." if len(meta.description) > 50 else meta.description
+                    meta.description[:50] + "..."
+                    if len(meta.description) > 50
+                    else meta.description,
                 )
-            
+
             console.print(table)
-            console.print(f"\n📋 Registry saved to: [cyan]{output_path / 'registry.json'}[/cyan]")
-            console.print(f"🎯 Ready for: [green]./mlx add <component-name>[/green]")
-            
-        except ImportError:
+            console.print(
+                f"\n📋 Registry saved to: [cyan]{output_path / 'registry.json'}[/cyan]"
+            )
+            console.print("🎯 Ready for: [green]./mlx add <component-name>[/green]")
+
+        except ImportError as e:
             console.print("⚠️  Phase 2 system not available, falling back to projen...")
             if run_projen_task("mlx:extract-components"):
                 console.print("✅ Component extraction completed!")
             else:
                 console.print("❌ Failed to extract components")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from e
         except Exception as e:
             console.print(f"❌ Extraction failed: {e}")
-            raise typer.Exit(1)
-    
+            raise typer.Exit(1) from e
+
     @app.command("list")
     def list_components():
         """List available MLX components."""
         console.print("📋 [bold]Available MLX Components[/bold]")
-        
+
         try:
             project_root = Path(".")
             components_dir = Path("mlx-components")
-            
+
             injector = ComponentInjector(project_root, components_dir)
             components = injector.list_available_components()
-            
+
             if not components:
                 console.print("❌ No components available. Run 'mlx extract' first.")
                 return
-            
+
             table = Table()
             table.add_column("Component", style="cyan")
             table.add_column("Type", style="magenta")
@@ -355,7 +405,7 @@ try:
             table.add_column("Files", justify="right")
             table.add_column("Deps", justify="right")
             table.add_column("Description", style="dim")
-            
+
             for comp in components:
                 table.add_row(
                     comp["name"],
@@ -363,43 +413,52 @@ try:
                     comp["version"],
                     str(comp["files"]),
                     str(comp["dependencies"]),
-                    comp["description"][:60] + "..." if len(comp["description"]) > 60 else comp["description"]
+                    comp["description"][:60] + "..."
+                    if len(comp["description"]) > 60
+                    else comp["description"],
                 )
-            
+
             console.print(table)
-            
+
         except ImportError:
             console.print("⚠️  Phase 2 system not available, falling back to projen...")
             run_projen_task("mlx:list")
         except Exception as e:
             console.print(f"❌ Failed to list components: {e}")
-    
+            raise typer.Exit(1) from e
+
     @app.command("status")
     def project_status():
         """Show mlx project health and status."""
         if not is_mlx_project():
             console.print("[red]Error:[/red] Not in an mlx project directory.")
             raise typer.Exit(1)
-        
+
         console.print("📊 [bold]Mlx Project Status[/bold]")
-        
+
         try:
             # Show installed components
             project_root = Path(".")
             components_dir = Path("mlx-components")
-            
+
             if not components_dir.exists():
-                console.print("⚠️  No components directory found. Run 'mlx extract' first.")
+                console.print(
+                    "⚠️  No components directory found. Run 'mlx extract' first."
+                )
                 return
-            
+
             injector = ComponentInjector(project_root, components_dir)
-            installed = injector.project_config.get("platform", {}).get("components", [])
-            
+            installed = injector.project_config.get("platform", {}).get(
+                "components", []
+            )
+
             if installed:
-                console.print(f"✅ Installed components: [green]{', '.join(installed)}[/green]")
+                console.print(
+                    f"✅ Installed components: [green]{', '.join(installed)}[/green]"
+                )
             else:
                 console.print("📦 No components installed yet")
-            
+
             # Show project structure
             console.print("\n📁 Project Structure:")
             key_paths = ["src/", "conf/", "tests/", "mlx-components/"]
@@ -413,73 +472,77 @@ try:
                         console.print(f"  ✅ {path}")
                 else:
                     console.print(f"  ❌ {path} (missing)")
-            
+
         except Exception as e:
             console.print(f"⚠️  Error checking status: {e}")
             # Fall back to projen
             run_projen_task("mlx:status")
-    
+
     @app.command("dev")
     def start_dev_server():
         """Start the development server."""
         if not is_mlx_project():
             console.print("[red]Error:[/red] Not in an mlx project directory.")
             raise typer.Exit(1)
-        
+
         console.print("🚀 Starting development server...")
         run_projen_task("api:dev")
-    
+
     @app.command("test")
     def run_tests(
-        smart: bool = typer.Option(False, "--smart", "-s", help="Run AI-selected smart tests")
+        smart: bool = typer.Option(
+            False, "--smart", "-s", help="Run AI-selected smart tests"
+        ),
     ):
         """Run project tests."""
         if not is_mlx_project():
             console.print("[red]Error:[/red] Not in an mlx project directory.")
             raise typer.Exit(1)
-        
+
         if smart:
             console.print("🧠 Running smart tests...")
             run_projen_task("test:smart")
         else:
             console.print("🧪 Running all tests...")
             run_projen_task("test")
-    
+
     @app.command("info")
     def component_info(
-        component: str = typer.Argument(..., help="Component name to get info about")
+        component: str = typer.Argument(..., help="Component name to get info about"),
     ):
         """Get detailed information about a specific component."""
         try:
             project_root = Path(".")
             components_dir = Path("mlx-components")
-            
+
             injector = ComponentInjector(project_root, components_dir)
             info = injector.get_component_info(component)
-            
+
             if not info:
                 console.print(f"❌ Component '{component}' not found")
                 raise typer.Exit(1)
-            
+
             console.print(f"📦 [bold]{component}[/bold] Component Information")
             console.print(f"Description: {info.get('description', 'N/A')}")
             console.print(f"Type: {info.get('component_type', 'N/A')}")
             console.print(f"Version: {info.get('version', 'N/A')}")
-            
+
             # Dependencies
             python_deps = info.get("python_dependencies", [])
             if python_deps:
                 console.print(f"\n🐍 Python Dependencies ({len(python_deps)}):")
                 for dep in python_deps:
                     console.print(f"  • {dep}")
-            
+
             # System dependencies
             system_deps = info.get("system_dependencies", [])
             if system_deps:
                 console.print(f"\n🔧 System Dependencies ({len(system_deps)}):")
                 for dep in system_deps:
-                    console.print(f"  • {dep.get('name', 'unknown')} ({dep.get('type', 'unknown')})")
-            
+                    console.print(
+                        f"  • {dep.get('name', 'unknown')} ({dep.get('type', 'unknown')})"
+                    )
+
             # Files
             source_files = info.get("source_files", [])
             if source_files:
@@ -488,178 +551,241 @@ try:
                     console.print(f"  • {file}")
                 if len(source_files) > 10:
                     console.print(f"  ... and {len(source_files) - 10} more")
-            
+
             # Environment variables
             env_vars = info.get("environment_variables", [])
             secrets = info.get("required_secrets", [])
             if env_vars or secrets:
-                console.print(f"\n🔐 Environment Variables:")
+                console.print("\n🔐 Environment Variables:")
                 for var in env_vars:
                     console.print(f"  • {var}")
                 if secrets:
                     console.print(f"  Secrets: {', '.join(secrets)}")
-            
+
         except Exception as e:
             console.print(f"❌ Failed to get component info: {e}")
-            raise typer.Exit(1)
-    
+            raise typer.Exit(1) from e
+
     @app.command("config")
     def manage_config(
         show: bool = typer.Option(False, "--show", help="Show current configuration"),
-        edit: bool = typer.Option(False, "--edit", help="Edit configuration")
+        edit: bool = typer.Option(False, "--edit", help="Edit configuration"),
     ):
         """Manage mlx project configuration."""
         if not is_mlx_project():
             console.print("[red]Error:[/red] Not in an mlx project directory.")
             raise typer.Exit(1)
-        
+
         if show:
             console.print("⚙️ [bold]Current MLX Configuration[/bold]:")
             # Show mlx.config.json and key settings
             config_file = Path("mlx.config.json")
             if config_file.exists():
                 import json
+
                 with open(config_file) as f:
                     config = json.load(f)
                 console.print_json(data=config)
             else:
                 console.print("[yellow]No MLX config found[/yellow]")
-        
+
         if edit:
             console.print("📝 Opening configuration editor...")
             # Could open editor or run projen config task
             run_projen_task("config:edit")
-    
+
     @app.command("doctor")
     def run_doctor():
         """🩺 Run comprehensive mlx platform health check."""
         console.print("🩺 [bold]Mlx Platform Health Check[/bold]")
-        
+
         # Run the MLX Assistant doctor command
         try:
             import subprocess
-            result = subprocess.run([
-                sys.executable, "scripts/mlx_assistant.py", "doctor"
-            ], cwd=Path("."))
-            
+
+            result = subprocess.run(
+                [sys.executable, "scripts/mlx_assistant.py", "doctor"], cwd=Path(".")
+            )
+
             if result.returncode != 0:
-                console.print("⚠️ [yellow]Some health checks failed. See output above.[/yellow]")
+                console.print(
+                    "⚠️ [yellow]Some health checks failed. See output above.[/yellow]"
+                )
         except Exception as e:
             console.print(f"❌ Error running health check: {e}")
-    
-    @app.command("assistant", context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+
+    @app.command(
+        "assistant",
+        context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+    )
     def launch_assistant(
         ctx: typer.Context,
-        interactive: bool = typer.Option(False, "--interactive", "-i", help="Start interactive mode")
+        interactive: bool = typer.Option(
+            False, "--interactive", "-i", help="Start interactive mode"
+        ),
     ):
         """🤖 Launch the MLX Assistant for guided operations."""
-        console.print("🚀 [bold bright_blue]Launching MLX Assistant...[/bold bright_blue]")
-        
+        console.print(
+            "🚀 [bold bright_blue]Launching MLX Assistant...[/bold bright_blue]"
+        )
+
         try:
             import subprocess
+
             cmd = [sys.executable, "scripts/mlx_assistant.py"]
-            
+
             # Pass through any remaining arguments from the context
             if ctx.args:
                 cmd.extend(ctx.args)
-            
+
             # Pass through interactive flag if set
             if interactive:
                 cmd.append("--interactive")
-            
+
             result = subprocess.run(cmd, cwd=Path("."))
             return result.returncode == 0
         except Exception as e:
             console.print(f"❌ Error launching assistant: {e}")
             return False
-    
+
     @app.command("frameworks")
     def show_frameworks():
         """🛠️ Show available MLX frameworks and their status."""
         console.print("🛠️ [bold]Mlx Platform Frameworks[/bold]\n")
-        
+
         frameworks_table = Table(title="Available Frameworks", show_header=True)
         frameworks_table.add_column("Framework", style="cyan")
         frameworks_table.add_column("Status", justify="center")
         frameworks_table.add_column("Description", style="dim")
         frameworks_table.add_column("Quick Access", style="green")
-        
+
         frameworks = [
-            ("🏗️ Golden Repositories", "✅ Ready", "Reference implementations for testing", "mlx assistant golden-repos"),
-            ("🔒 Security Hardening", "✅ Ready", "Comprehensive security scanning", "mlx assistant security"),
-            ("🧩 Plugin Ecosystem", "✅ Ready", "Plugin development & management", "mlx assistant plugins"),
-            ("📚 Glossary & Standards", "✅ Ready", "Platform terminology & conventions", "mlx assistant glossary"),
+            (
+                "🏗️ Golden Repositories",
+                "✅ Ready",
+                "Reference implementations for testing",
+                "mlx assistant golden-repos",
+            ),
+            (
+                "🔒 Security Hardening",
+                "✅ Ready",
+                "Comprehensive security scanning",
+                "mlx assistant security",
+            ),
+            (
+                "🧩 Plugin Ecosystem",
+                "✅ Ready",
+                "Plugin development & management",
+                "mlx assistant plugins",
+            ),
+            (
+                "📚 Glossary & Standards",
+                "✅ Ready",
+                "Platform terminology & conventions",
+                "mlx assistant glossary",
+            ),
         ]
-        
+
         for name, status, desc, cmd in frameworks:
             frameworks_table.add_row(name, status, desc, f"[cyan]{cmd}[/cyan]")
-        
+
         console.print(frameworks_table)
-        console.print(f"\n💡 [dim]Launch unified interface:[/dim] [cyan]mlx assistant[/cyan]")
-    
+        console.print(
+            "\n💡 [dim]Launch unified interface:[/dim] [cyan]mlx assistant[/cyan]"
+        )
+
     @app.callback(invoke_without_command=True)
     def main(ctx: typer.Context):
         """Mlx Gateway - Production-grade ML platform component system."""
         # Show upgrade message with Phase 2 features
         if len(sys.argv) == 1:
-            console.print(Panel(
-                "🚀 [bold]Mlx Gateway - Phase 2 Ready![/bold]\n\n"
-                "[green]Project Transformation:[/green]\n"
-                "• [cyan]./mlx transform my-project[/cyan] - Transform template to named project\n"
-                "• [cyan]./mlx my-project[/cyan] - Legacy shorthand (same as above)\n\n"
-                "[green]Component Management:[/green]\n"
-                "• [cyan]./mlx extract[/cyan] - Extract components from source code\n"
-                "• [cyan]./mlx add api-serving[/cyan] - Add production-ready components\n"
-                "• [cyan]./mlx list[/cyan] - List available components\n"
-                "• [cyan]./mlx info <component>[/cyan] - Component details\n\n"
-                "[green]Project Management:[/green]\n"
-                "• [cyan]./mlx create my-project[/cyan] - Create new projects\n"
-                "• [cyan]./mlx status[/cyan] - Check project health\n"
-                "• [cyan]./mlx dev[/cyan] - Start development server\n\n"
-                "Run [bold]./mlx --help[/bold] to see all commands.",
-                title="Mlx Gateway v2.0",
-                border_style="blue"
-            ))
-    
+            console.print(
+                Panel(
+                    "🚀 [bold]Mlx Gateway - Phase 2 Ready![/bold]\n\n"
+                    "[green]Project Transformation:[/green]\n"
+                    "• [cyan]./mlx transform my-project[/cyan] - Transform template to named project\n"
+                    "• [cyan]./mlx my-project[/cyan] - Legacy shorthand (same as above)\n\n"
+                    "[green]Component Management:[/green]\n"
+                    "• [cyan]./mlx extract[/cyan] - Extract components from source code\n"
+                    "• [cyan]./mlx add api-serving[/cyan] - Add production-ready components\n"
+                    "• [cyan]./mlx list[/cyan] - List available components\n"
+                    "• [cyan]./mlx info <component>[/cyan] - Component details\n\n"
+                    "[green]Project Management:[/green]\n"
+                    "• [cyan]./mlx create my-project[/cyan] - Create new projects\n"
+                    "• [cyan]./mlx status[/cyan] - Check project health\n"
+                    "• [cyan]./mlx dev[/cyan] - Start development server\n\n"
+                    "Run [bold]./mlx --help[/bold] to see all commands.",
+                    title="Mlx Gateway v2.0",
+                    border_style="blue",
+                )
+            )
+
     if __name__ == "__main__":
         # Handle legacy behavior before typer processes commands
         if len(sys.argv) > 1:
             possible_project_name = sys.argv[1]
-            known_commands = {'add', 'extract', 'list', 'status', 'dev', 'test', 'info', 'config', 'create', 'transform', 'doctor', 'assistant', 'frameworks', '--help', '-h'}
-            
+            known_commands = {
+                "add",
+                "extract",
+                "list",
+                "status",
+                "dev",
+                "test",
+                "info",
+                "config",
+                "create",
+                "transform",
+                "doctor",
+                "assistant",
+                "frameworks",
+                "--help",
+                "-h",
+            }
+
             # If it's not a known command and looks like a project name, intercept it
-            if (not possible_project_name.startswith('-') 
+            if (
+                not possible_project_name.startswith("-")
                 and possible_project_name not in known_commands
-                and any(c.isalnum() or c in '-_' for c in possible_project_name)):
-                
-                console.print(f"🎭 [bold]Legacy Mode:[/bold] Transforming project to [cyan]{possible_project_name}[/cyan]")
-                console.print("💡 [dim]Tip: Use 'mlx transform <name>' for the modern syntax[/dim]\n")
-                
+                and any(c.isalnum() or c in "-_" for c in possible_project_name)
+            ):
+                console.print(
+                    f"🎭 [bold]Legacy Mode:[/bold] Transforming project to [cyan]{possible_project_name}[/cyan]"
+                )
+                console.print(
+                    "💡 [dim]Tip: Use 'mlx transform <name>' for the modern syntax[/dim]\n"
+                )
+
                 if not is_mlx_project():
                     console.print("[red]Error:[/red] Not in an mlx project directory.")
                     sys.exit(1)
-                
+
                 if transform_project(possible_project_name):
-                    console.print(f"✅ Project transformed to [green]{possible_project_name}[/green]!")
+                    console.print(
+                        f"✅ Project transformed to [green]{possible_project_name}[/green]!"
+                    )
                     console.print("\n📋 Next steps:")
                     console.print("1. Review updated configuration files")
-                    console.print("2. Update dependencies: [cyan]make install-dev[/cyan]")
+                    console.print(
+                        "2. Update dependencies: [cyan]make install-dev[/cyan]"
+                    )
                     console.print("3. Run tests: [cyan]./mlx test[/cyan]")
                     sys.exit(0)
                 else:
-                    console.print(f"❌ Failed to transform project to [red]{possible_project_name}[/red]")
+                    console.print(
+                        f"❌ Failed to transform project to [red]{possible_project_name}[/red]"
+                    )
                     sys.exit(1)
-        
+
         app()
-        
+
 except ImportError as e:
     print("❌ MLX dependencies not found.")
     print("   Installing required dependencies...")
-    
+
     try:
-        subprocess.check_call([
-            sys.executable, "-m", "pip", "install", "typer[all]", "rich", "pyyaml"
-        ])
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "typer[all]", "rich", "pyyaml"]
+        )
         print("✅ Dependencies installed! Please run the command again.")
     except subprocess.CalledProcessError:
         print(f"   Failed to install dependencies. Error: {e}")

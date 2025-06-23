@@ -9,8 +9,10 @@ This page explains the organization and structure of the Debug Toml Test.
 The template follows a structured organization designed to promote best practices in data science projects:
 
 ```
+├── .env/               # Environment variables directory
 ├── .github/            # GitHub configuration (Actions workflows)
-├── conf/              # Hydra & project configuration files
+├── .projen/            # Projen configuration and generated files
+├── conf/               # Hydra & project configuration files
 ├── data/               # Data files
 │   ├── raw/            # Original, immutable data
 │   ├── processed/      # Cleaned, transformed data
@@ -18,20 +20,59 @@ The template follows a structured organization designed to promote best practice
 │   └── external/       # Data from external sources
 ├── docs/               # Project documentation (MkDocs)
 ├── endpoints/          # API endpoints and services
+├── mlx-components/     # MLX component registry and extracted components
 ├── models/             # Trained models and model artifacts
 │   ├── trained/        # Saved model files
 │   └── evaluation/     # Model evaluation results
 ├── notebooks/          # Jupyter notebooks
+├── plugins/            # Plugin system and custom plugins
 ├── reports/            # Generated analysis reports
 │   ├── figures/        # Generated graphics and figures
 │   └── tables/         # Generated tables
 ├── src/                # Source code for use in this project
+├── templates/          # Project templates and scaffolding
 ├── tests/              # Test suite
 └── workflows/          # Data and model workflows
     └── tests/          # Workflow tests
 ```
 
 ## Key Directories
+
+### .env
+
+The `.env/` directory contains a Python virtual environment for the project. This directory is created when setting up the development environment and contains the Python interpreter and installed packages for the project.
+
+### .projen/
+
+The `.projen/` directory contains projen-generated configuration files and build artifacts. This directory is managed automatically by projen and should not be manually edited.
+
+### mlx-components/
+
+The `mlx-components/` directory contains the MLX component registry and extracted reusable components:
+
+- **registry.json**: Component metadata and registry
+- **extracted/**: Extracted components from source code
+- **templates/**: Component templates for scaffolding
+
+This directory is created when running `mlx extract` and is used by the MLX component system.
+
+### plugins/
+
+The `plugins/` directory contains the plugin system implementation and custom plugins:
+
+- **core/**: Core plugin infrastructure
+- **custom/**: Project-specific plugins
+- **registry/**: Plugin registry and metadata
+- **examples/**: Example plugin implementations
+
+### templates/
+
+The `templates/` directory contains project templates, scaffolding files, and code generation templates:
+
+- **project/**: Project structure templates
+- **component/**: Component templates
+- **config/**: Configuration file templates
+- **docs/**: Documentation templates
 
 ### data/
 

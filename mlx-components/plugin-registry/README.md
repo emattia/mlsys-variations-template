@@ -30,8 +30,8 @@ Dynamic plugin discovery and loading system with security validation
 
 
 ### Environment Variables
-Required: 
-Secrets: 
+Required:
+Secrets:
 
 ## Configuration
 The component will be installed with the following merge strategies:
@@ -39,4 +39,4 @@ The component will be installed with the following merge strategies:
 
 ## Monitoring
 Health checks: src/plugins/fine_tuning.py, src/plugins/registry.py, src/plugins/__init__.py, src/plugins/base.py
-Endpoints: 
+Endpoints:

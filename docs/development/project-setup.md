@@ -10,10 +10,10 @@ This guide transforms you from template curious to production ready in under 10 
 
 **Instead of separate branches, this template uses composable plugins:**
 
-✅ **One codebase** - easier maintenance and updates  
-✅ **Mix & match** - combine AI agents with streaming features  
-✅ **Community focus** - all contributions benefit everyone  
-✅ **Plugin ecosystem** - extend capabilities as needed  
+✅ **One codebase** - easier maintenance and updates
+✅ **Mix & match** - combine AI agents with streaming features
+✅ **Community focus** - all contributions benefit everyone
+✅ **Plugin ecosystem** - extend capabilities as needed
 
 ## 🚀 The 3-Command Setup
 
@@ -122,7 +122,7 @@ uv add mlx-plugin-transformers
 # Edit conf/model/transformers.yaml as needed
 ```
 
-#### Real-time Feature Engineering  
+#### Real-time Feature Engineering
 ```bash
 # Install streaming capabilities
 uv add mlx-plugin-streaming

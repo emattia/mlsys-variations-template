@@ -36,7 +36,7 @@ This document establishes **reserved namespaces**, **naming conventions**, and *
 #### **Package Prefixes**
 ```
 mlx-*           # Official MLX packages (reserved)
-mlx-plugin-*    # Plugin packages  
+mlx-plugin-*    # Plugin packages
 mlx-component-* # Component packages
 mlx-template-*  # Template variations
 ```
@@ -60,7 +60,7 @@ MLX_*           # Global constants
 #### **Component Names** (kebab-case)
 ```
 ✅ api-serving
-✅ config-management  
+✅ config-management
 ✅ plugin-registry
 ✅ data-processing
 ✅ model-training
@@ -100,7 +100,7 @@ MLX_ENVIRONMENT=production
 MLX_LOG_LEVEL=info
 MLX_PLUGIN_PATH=/path/to/plugins
 
-# Component-specific variables  
+# Component-specific variables
 API_HOST=localhost
 API_PORT=8000
 DATABASE_URL=postgresql://...
@@ -121,7 +121,7 @@ SKLEARN_CACHE_DIR=/cache
   }
 }
 
-# conf/config.yaml - Application configuration  
+# conf/config.yaml - Application configuration
 mlx:
   environment: ${oc.env:MLX_ENVIRONMENT,development}
   log_level: ${oc.env:MLX_LOG_LEVEL,info}
@@ -141,7 +141,7 @@ api:
 project-name/                    # kebab-case project names
 ├── .mlx/                       # MLX metadata (reserved)
 │   ├── components.json         # Installed components
-│   ├── plugins.json           # Active plugins  
+│   ├── plugins.json           # Active plugins
 │   └── manifest.json          # Project manifest
 ├── mlx-components/            # Component registry
 │   ├── registry.json         # Component catalog
@@ -376,7 +376,7 @@ api-serving:1.0.0
 config-management:1.2.0
 plugin-registry:1.0.0
 
-# Plugins  
+# Plugins
 mlx-plugin-transformers:1.0.0
 mlx-plugin-sklearn:2.1.0
 ```
@@ -431,7 +431,7 @@ mlx-plugin-sklearn:2.1.0
 ### **For Component Developers**
 
 1. **Follow naming conventions** strictly
-2. **Use reserved namespaces** appropriately  
+2. **Use reserved namespaces** appropriately
 3. **Include proper metadata** in all components
 4. **Implement required interfaces** for compatibility
 5. **Document configuration keys** thoroughly
@@ -441,7 +441,7 @@ mlx-plugin-sklearn:2.1.0
 1. **Prefix plugin names** with `mlx-plugin-`
 2. **Use domain-specific naming** for clarity
 3. **Implement BasePlugin interface** completely
-4. **Include comprehensive tests** 
+4. **Include comprehensive tests**
 5. **Document plugin capabilities** clearly
 
 ### **For Template Users**
@@ -462,7 +462,7 @@ mlx-plugin-sklearn:2.1.0
 # Naming convention validation
 make validate-naming
 
-# Reserved namespace checking  
+# Reserved namespace checking
 make check-namespaces
 
 # Component/plugin compliance
@@ -497,4 +497,4 @@ When contributing to the MLX ecosystem:
 
 ---
 
-**This glossary is a living document that evolves with the mlx platform. When in doubt, consistency is key!** 
+**This glossary is a living document that evolves with the mlx platform. When in doubt, consistency is key!**

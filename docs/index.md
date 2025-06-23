@@ -31,7 +31,7 @@ This template is the foundation for **MLX**, transforming ML development from te
 
 ### Production-Grade Configuration System
 - **Hierarchical configurations** with environment inheritance
-- **Type-safe validation** using Pydantic models  
+- **Type-safe validation** using Pydantic models
 - **Secret management** with secure environment resolution
 - **Experiment tracking** with A/B testing capabilities
 - **Runtime overrides** for dynamic configuration
@@ -64,7 +64,7 @@ git clone <repo-url> my-ml-project
 # 3. Add domain capabilities via plugins
 uv add mlx-plugin-agentic mlx-plugin-transformers
 
-# 4. Configure environment  
+# 4. Configure environment
 cp .env-example .env  # Edit as needed
 
 # 5. Start development
@@ -107,7 +107,7 @@ my-project/
 make install-dev          # Install deps + pre-commit hooks
 make setup-env            # Configure environment
 
-# Development workflow  
+# Development workflow
 make lint                 # Code quality (ruff + mypy + security)
 make test                 # Full test suite with coverage
 make test-unit            # Fast unit tests only
@@ -172,7 +172,7 @@ result = llm.generate(prompt, context)
 Multi-layered testing approach for reliability:
 
 - **Unit Tests**: Fast, isolated component testing
-- **Integration Tests**: Component interaction verification  
+- **Integration Tests**: Component interaction verification
 - **Contract Tests**: Plugin interface compliance
 - **End-to-End Tests**: Full workflow validation
 - **Performance Tests**: Load and benchmark testing
@@ -245,10 +245,10 @@ Instead of separate branches, this template uses **composable plugins** for doma
 
 ### Composable Architecture Benefits
 
-✅ **Mix and Match**: Combine agentic AI with streaming features in one project  
-✅ **Single Codebase**: One template, multiple capabilities via plugins  
-✅ **Community Focus**: All contributions go to one main repository  
-✅ **Easy Updates**: Plugin updates don't require template rebasing  
+✅ **Mix and Match**: Combine agentic AI with streaming features in one project
+✅ **Single Codebase**: One template, multiple capabilities via plugins
+✅ **Community Focus**: All contributions go to one main repository
+✅ **Easy Updates**: Plugin updates don't require template rebasing
 
 ### Example: Multi-Domain Project
 ```bash
@@ -286,7 +286,7 @@ uv add mlx-plugin-<domain>
 # Run all quality checks
 make all-checks
 
-# Start the API server  
+# Start the API server
 make run-api
 ```
 
@@ -294,9 +294,9 @@ make run-api
 
 This template uses **composable plugins** instead of separate branches for domain specializations. The unified approach provides:
 
-✅ **Single codebase** - easier maintenance and community focus  
-✅ **True composability** - mix and match capabilities  
-✅ **No branch divergence** - consistent base template  
-✅ **Plugin ecosystem** - extend capabilities as needed  
+✅ **Single codebase** - easier maintenance and community focus
+✅ **True composability** - mix and match capabilities
+✅ **No branch divergence** - consistent base template
+✅ **Plugin ecosystem** - extend capabilities as needed
 
 See the [Domain Specializations via Plugins](#-domain-specializations-via-plugins) section below for available plugins.

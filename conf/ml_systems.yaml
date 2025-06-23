@@ -3,21 +3,21 @@
 
 rate_limiting:
   enabled: true
-  
+
   # OpenAI API rate limits
   openai:
     requests_per_minute: 3500
     requests_per_hour: 10000
     requests_per_day: 200000
     cost_limit_per_day: 100.0  # USD
-    
-  # HuggingFace API rate limits  
+
+  # HuggingFace API rate limits
   huggingface:
     requests_per_minute: 1000
     requests_per_hour: 10000
     requests_per_day: 100000
     cost_limit_per_day: 50.0
-    
+
   # Local inference rate limits
   local:
     requests_per_minute: 100
@@ -27,24 +27,24 @@ rate_limiting:
 
 caching:
   enabled: true
-  
+
   # Memory cache settings
   memory:
     max_size: 1000
     ttl_seconds: 3600  # 1 hour
-    
-  # Disk cache settings  
+
+  # Disk cache settings
   disk:
     enabled: true
     cache_dir: "data/cache"
     max_size_mb: 1000
     ttl_seconds: 86400  # 24 hours
-    
+
   # Response caching
   responses:
     enabled: true
     ttl_seconds: 3600
-    
+
   # Cost tracking
   cost_tracking:
     enabled: true
@@ -52,23 +52,23 @@ caching:
 
 template_management:
   enabled: true
-  
+
   # Template configuration
   config_path: "config/prompt_templates.yaml"
-  
+
   # A/B testing
   ab_testing:
     enabled: true
     default_split: 0.5  # 50/50 split
-    
+
   # Analytics
   analytics:
     enabled: true
     track_usage: true
     track_performance: true
-    
+
   # Template versioning
   versioning:
     enabled: true
     auto_rollback: true
-    performance_threshold: 0.1  # 10% performance drop triggers rollback 
+    performance_threshold: 0.1  # 10% performance drop triggers rollback

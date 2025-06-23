@@ -144,17 +144,17 @@ class TestMLSystemsIntegration:
         # Assertions
         assert len(results) == 3
         successful_results = [r for r in results if "response" in r]
-        assert len(successful_results) >= 2, (
-            f"Expected at least 2 successful results, got {len(successful_results)}"
-        )
+        assert (
+            len(successful_results) >= 2
+        ), f"Expected at least 2 successful results, got {len(successful_results)}"
 
         # Check rate limiter status
         status = components["rate_limiter"].get_status("test_llm")
         # Should show 2-3 requests depending on cache hits
         request_count = int(status["requests"]["minute"].split("/")[0])
-        assert request_count >= 2 and request_count <= 3, (
-            f"Expected 2-3 requests, got {request_count}"
-        )
+        assert (
+            request_count >= 2 and request_count <= 3
+        ), f"Expected 2-3 requests, got {request_count}"
 
         # Check cache statistics
         cache_stats = components["cache_manager"].get_stats()
@@ -361,9 +361,9 @@ class TestMLSystemsIntegration:
 
         # With reduced load, most requests should succeed (within rate limits of 10/min)
         success_rate = successful_requests / total_requests
-        assert success_rate >= 0.7, (
-            f"Success rate too low: {success_rate:.2%} (expected >= 70%)"
-        )
+        assert (
+            success_rate >= 0.7
+        ), f"Success rate too low: {success_rate:.2%} (expected >= 70%)"
 
         # Some requests should be cached (repeated prompts)
         cached_requests = sum(1 for r in flat_results if r.get("cached", False))
@@ -390,9 +390,9 @@ class TestMLSystemsIntegration:
 
         # In concurrent scenarios, caching may not be as effective due to timing
         # So we allow for the cost to be equal (no caching) or reduced (some caching)
-        assert total_cost <= max_possible_cost, (
-            f"Cost should not exceed maximum: {total_cost} vs {max_possible_cost}"
-        )
+        assert (
+            total_cost <= max_possible_cost
+        ), f"Cost should not exceed maximum: {total_cost} vs {max_possible_cost}"
 
         # Log caching statistics for debugging
         print("\nCaching stats:")
@@ -569,14 +569,14 @@ class TestMLSystemsIntegration:
         # Verify error handling worked as expected
         for result in results:
             if "Template not found" in result["test"]:
-                assert result["result"] == "template_failed", (
-                    f"Template error should be handled: {result}"
-                )
+                assert (
+                    result["result"] == "template_failed"
+                ), f"Template error should be handled: {result}"
 
             # System should remain stable even with failures
-            assert "error" not in result or isinstance(result["error"], str), (
-                "Errors should be properly formatted"
-            )
+            assert "error" not in result or isinstance(
+                result["error"], str
+            ), "Errors should be properly formatted"
 
 
 @pytest.mark.integration
@@ -713,17 +713,17 @@ class TestProductionScenarios:
 
         assert success_rate > 0.8, f"Success rate too low: {success_rate}"
         assert cache_hit_rate > 0.3, f"Cache hit rate too low: {cache_hit_rate}"
-        assert total_cost < total_requests * 0.02 * 0.7, (
-            "Cost savings from caching should be significant"
-        )
+        assert (
+            total_cost < total_requests * 0.02 * 0.7
+        ), "Cost savings from caching should be significant"
 
         # System health checks
         cache_stats = components["cache_manager"].get_stats()
         _rate_status = components["rate_limiter"].get_status("openai")
 
-        assert float(cache_stats["hit_rate"].rstrip("%")) > 30, (
-            "Cache hit rate should be healthy"
-        )
+        assert (
+            float(cache_stats["hit_rate"].rstrip("%")) > 30
+        ), "Cache hit rate should be healthy"
         print("Production test results:")
         print(f"  Success rate: {success_rate:.2%}")
         print(f"  Cache hit rate: {cache_hit_rate:.2%}")
@@ -757,9 +757,9 @@ class TestProductionScenarios:
         # Budget should be enforced
         assert total_cost <= 1.0, f"Cost limit exceeded: ${total_cost}"
         assert blocked_requests > 0, "Some requests should have been blocked"
-        assert requests_made <= 50, (
-            f"Too many requests allowed: {requests_made}"
-        )  # 50 * $0.02 = $1.00
+        assert (
+            requests_made <= 50
+        ), f"Too many requests allowed: {requests_made}"  # 50 * $0.02 = $1.00
 
         print("Budget enforcement test:")
         print(f"  Requests made: {requests_made}")

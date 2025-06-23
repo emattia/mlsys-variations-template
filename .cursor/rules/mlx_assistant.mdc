@@ -1,6 +1,6 @@
 ---
-description: When the CLI agent is being used. 
-globs: 
+description: When the CLI agent is being used.
+globs:
 alwaysApply: false
 ---
 # MLX Assistant Development Rules
@@ -25,7 +25,7 @@ The MLX Assistant (`scripts/mlx_assistant.py`) is the unified, LLM-driven CLI to
 
 ### 3. **Framework Integration**
 - Golden Repository Testing (`golden-repos`)
-- Security Hardening (`security`)  
+- Security Hardening (`security`)
 - Plugin Ecosystem (`plugins`)
 - Glossary & Standards (`glossary`)
 
@@ -54,7 +54,7 @@ mlx assistant glossary search "component"
 
 ### Icons & Emojis
 - 🤖 Assistant operations
-- 🏗️ Golden repositories  
+- 🏗️ Golden repositories
 - 🔒 Security operations
 - 🧩 Plugin operations
 - 📚 Documentation/Glossary
@@ -75,13 +75,13 @@ def framework_action(
     with Progress(...) as progress:
         # Show progress for long operations
         task = progress.add_task("Performing action...", total=None)
-        
+
         # Delegate to existing framework script
         result = subprocess.run([
             sys.executable, "path/to/framework_script.py", "action",
             "--param", param
         ], capture_output=True, text=True, cwd=assistant.project_root)
-        
+
         # Rich output formatting
         if result.returncode == 0:
             console.print("✅ [green]Action completed successfully![/green]")
@@ -202,4 +202,4 @@ Direct integration with existing Phase 3 scripts:
 - Professional presentation quality
 - Reliable framework integration
 
-This assistant represents the culmination of Phase 3 hardening efforts, providing a production-ready interface for the complete MLX platform foundation. 
+This assistant represents the culmination of Phase 3 hardening efforts, providing a production-ready interface for the complete MLX platform foundation.

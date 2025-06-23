@@ -51,4 +51,4 @@ The component will be installed with the following merge strategies:
 
 ## Monitoring
 Health checks: src/config/models.py, src/config/manager.py
-Endpoints: 
+Endpoints:

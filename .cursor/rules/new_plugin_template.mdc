@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: false
 ---
 When creating a new plugin, use the following structure and **CRITICAL requirements**.
@@ -75,7 +75,7 @@ Your plugin will be rejected if:
 **🎯 Plugin Excellence Standards**
 Your plugin achieves excellence when:
 - ✅ 100% MLX naming consistency
-- ✅ Zero dead code or unused imports  
+- ✅ Zero dead code or unused imports
 - ✅ Comprehensive test coverage (>95%)
 - ✅ Production-grade error handling
 - ✅ Clear, purpose-driven documentation

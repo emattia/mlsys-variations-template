@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 # MLX Foundation - Auto-generated Cursor Rules
@@ -9,7 +9,7 @@ alwaysApply: true
 This is an MLX Foundation project using projen for configuration management while maintaining the original repository structure.
 
 ### Core Directories (Existing Structure Maintained)
-- `src/api/`: FastAPI application components  
+- `src/api/`: FastAPI application components
 - `src/config/`: Configuration management
 - `src/plugins/`: Plugin architecture and registry
 - `src/cli/`: Command-line interface
@@ -42,7 +42,7 @@ This is an MLX Foundation project using projen for configuration management whil
 ### Common Commands (Preserved & Enhanced)
 - `projen` - Synthesize project configuration
 - `projen test:smart` - Run AI-selected tests from existing test suite
-- `projen mlx:status` - Check project health 
+- `projen mlx:status` - Check project health
 - `projen api:dev` - Start existing FastAPI development server
 - `make test` - Use existing Makefile (preserved)
 - `uv pip install package` - Add dependencies with UV

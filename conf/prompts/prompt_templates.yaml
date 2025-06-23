@@ -6,54 +6,54 @@ prompts:
     classification_analysis:
       template: |
         You are an expert data scientist analyzing classification results.
-        
+
         Dataset: {dataset_name}
         Model: {model_type}
         Metrics: {metrics}
-        
+
         Provide a detailed analysis of:
         1. Model performance interpretation
         2. Key insights from the results
         3. Recommendations for improvement
-        
+
         Analysis:
       version: "1.0.0"
       created: "2024-01-01"
       description: "Standard classification analysis prompt"
-      
+
     rag_query:
       template: |
         Based on the following context, answer the question accurately and concisely.
-        
+
         Context:
         {context}
-        
+
         Question: {question}
-        
+
         Instructions:
         - Use only information from the provided context
         - If the answer isn't in the context, say "I don't have enough information"
         - Cite relevant parts of the context in your response
-        
+
         Answer:
-      version: "1.0.0" 
+      version: "1.0.0"
       created: "2024-01-01"
       description: "RAG question answering prompt"
-      
+
     code_generation:
       template: |
         Generate Python code for the following ML task:
-        
+
         Task: {task_description}
         Requirements: {requirements}
         Data Schema: {data_schema}
-        
+
         Provide:
         1. Complete, runnable code
         2. Proper error handling
         3. Comments explaining key steps
         4. Unit tests if applicable
-        
+
         Code:
       version: "1.0.0"
       created: "2024-01-01"
@@ -71,7 +71,7 @@ metadata:
   default_version: "v1"
   versioning_strategy: "semantic"
   backup_versions: 3
-  
+
 # Model-specific prompt configurations
 model_configs:
   gpt-4:
@@ -81,4 +81,4 @@ model_configs:
   gpt-3.5-turbo:
     max_tokens: 1500
     temperature: 0.2
-    top_p: 0.95 
+    top_p: 0.95

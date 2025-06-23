@@ -9,7 +9,7 @@ This section documents the production-ready ML systems components that provide e
 The ML systems components provide:
 
 - **Rate Limiting**: Production-ready rate limiting with cost control and multi-service support
-- **Intelligent Caching**: Multi-level caching for optimal performance and cost savings  
+- **Intelligent Caching**: Multi-level caching for optimal performance and cost savings
 - **Template Management**: Versioned prompt templates with A/B testing and analytics
 
 ## Rate Limiter
@@ -46,7 +46,7 @@ async def call_openai_api(prompt: str):
     # Your API call here
     pass
 
-# Use caching decorator  
+# Use caching decorator
 @cache_manager.cache_response("llm_responses")
 async def get_llm_response(prompt: str):
     # Your LLM call here
@@ -61,4 +61,4 @@ template = template_manager.get_template_for_user("classification", "user123")
 - **70% cost savings** through intelligent caching
 - **Zero API overruns** through rate limiting
 - **Data-driven optimization** through A/B testing
-- **Enterprise reliability** through comprehensive error handling 
+- **Enterprise reliability** through comprehensive error handling

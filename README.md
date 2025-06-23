@@ -98,10 +98,10 @@ This template uses **composable MLX plugins** for domain-specific functionality 
 
 ### Why Plugins Instead of Branches?
 
-✅ **True Composability**: Mix and match capabilities in one project  
-✅ **Single Codebase**: One template, maintained community focus  
-✅ **Easy Updates**: Plugin updates without template rebasing  
-✅ **No Lock-in**: Add/remove domain capabilities as needed  
+✅ **True Composability**: Mix and match capabilities in one project
+✅ **Single Codebase**: One template, maintained community focus
+✅ **Easy Updates**: Plugin updates without template rebasing
+✅ **No Lock-in**: Add/remove domain capabilities as needed
 ✅ **Consistent Branding**: All plugins follow MLX naming standards
 
 ### Example: Hybrid ML System
@@ -149,7 +149,7 @@ result = llm_provider.generate(prompt, config.llm)
 
 ### Production Features
 - **Cost-optimized caching** (70% LLM cost reduction)
-- **Multi-service rate limiting** with budget enforcement  
+- **Multi-service rate limiting** with budget enforcement
 - **Template versioning** with A/B testing capabilities
 - **Automated prompt optimization** with performance tracking
 - **Comprehensive monitoring** with metrics and health checks

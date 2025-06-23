@@ -18,7 +18,7 @@ npx shadcn-ui@latest add button
 ```bash
 mlx add api-serving
 # → Injects FastAPI components into src/api/
-# → Code becomes part of YOUR project  
+# → Code becomes part of YOUR project
 # → Customizable, owned by you
 ```
 
@@ -69,7 +69,7 @@ your-project/
     "description": "FastAPI application with security & monitoring",
     "files": [
       "src/api/app.py",
-      "src/api/middleware.py", 
+      "src/api/middleware.py",
       "src/api/models.py"
     ],
     "dependencies": ["fastapi>=0.110.0", "uvicorn[standard]>=0.30.0"],
@@ -133,7 +133,7 @@ src/plugins/      → mlx-components/plugin-registry/
 ```bash
 # Implement shadcn-style CLI
 mlx add api-serving
-mlx add caching 
+mlx add caching
 mlx remove rate-limiting
 mlx list
 mlx status
@@ -145,7 +145,7 @@ mlx status
 mlx add vector-store
 # → AI: "⚠️  This conflicts with existing caching. Suggest: mlx add vector-store --merge-cache"
 
-# Smart recommendations  
+# Smart recommendations
 mlx status
 # → AI: "💡 Your API could benefit from rate limiting. Run: mlx add rate-limiting"
 ```
@@ -189,7 +189,7 @@ src/
 
 1. **Code Ownership**: Components become part of YOUR codebase (like shadcn)
 2. **Customizable**: Modify injected code however you want
-3. **Composable**: Components enhance each other intelligently  
+3. **Composable**: Components enhance each other intelligently
 4. **AI-Powered**: Smart compatibility and recommendations
 5. **Production-Ready**: All components are enterprise-grade
 
@@ -215,4 +215,4 @@ app = create_app()  # YOUR code, modify however you want
 
 ---
 
-**Next Step**: Remove the confusing `mlx/` directory and implement the injection model properly in Phase 2. 
+**Next Step**: Remove the confusing `mlx/` directory and implement the injection model properly in Phase 2.

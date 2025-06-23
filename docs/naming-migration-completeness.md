@@ -25,7 +25,7 @@ python scripts/migrate_platform_naming.py validate
 # Option A: MLX Platform (ML-focused branding)
 python scripts/migrate_platform_naming.py set-preset mlx
 
-# Option B: MLSys Platform (Systems-focused branding)  
+# Option B: MLSys Platform (Systems-focused branding)
 python scripts/migrate_platform_naming.py set-preset mlsys
 
 # Option C: Custom Platform (your own branding)
@@ -87,7 +87,7 @@ mlx assistant naming validate --detailed
 - [ ] **Environment Variables**: Platform-specific env vars
 
 ### **Validation Metrics**
-- [ ] **Consistency Score**: ≥95% (excellent) 
+- [ ] **Consistency Score**: ≥95% (excellent)
 - [ ] **File Coverage**: All critical files found and updated
 - [ ] **Pattern Consistency**: No old naming patterns detected
 - [ ] **CLI Functionality**: All commands work with new names
@@ -132,7 +132,7 @@ mlx assistant naming validate --detailed
 ### **Consistency Score Interpretation**
 ```
 95-100%: ✅ Excellent - Production ready
-85-94%:  ⚠️ Good - Minor issues remain  
+85-94%:  ⚠️ Good - Minor issues remain
 70-84%:  🔄 Needs Work - Significant inconsistencies
 <70%:    ❌ Poor - Major problems, review required
 ```
@@ -157,7 +157,7 @@ Command: python scripts/migrate_platform_naming.py migrate --apply
 ```
 Issue: "CLI commands failing"
 Solution: Check script permissions and imports
-Commands: 
+Commands:
   chmod +x {new_cli_name}
   python -c "import sys; print(sys.path)"
 ```
@@ -202,12 +202,12 @@ def _check_custom_patterns(self, file_path: Path, content: str):
 ## 🎯 **Success Criteria**
 
 ### **Migration is Complete When:**
-✅ **Validation Score**: ≥95% consistency  
-✅ **File Coverage**: All critical files found and updated  
-✅ **CLI Functional**: All commands work with new names  
-✅ **Tests Pass**: `python scripts/test_naming_system.py` succeeds  
-✅ **Integration Works**: Docker, CI/CD, etc. all functional  
-✅ **No Warnings**: Validation shows no critical issues  
+✅ **Validation Score**: ≥95% consistency
+✅ **File Coverage**: All critical files found and updated
+✅ **CLI Functional**: All commands work with new names
+✅ **Tests Pass**: `python scripts/test_naming_system.py` succeeds
+✅ **Integration Works**: Docker, CI/CD, etc. all functional
+✅ **No Warnings**: Validation shows no critical issues
 
 ### **Post-Migration Best Practices**
 1. **Test All Workflows**: Run through major platform workflows
@@ -247,13 +247,13 @@ mlx assistant interactive
 
 ### **Common Support Scenarios**
 
-**Q: Migration seems stuck at 85% consistency**  
+**Q: Migration seems stuck at 85% consistency**
 **A:** This often indicates manual file renaming needed. Check validation details for specific files requiring attention.
 
-**Q: CLI commands not working after migration**  
+**Q: CLI commands not working after migration**
 **A:** Check script permissions and Python path. Recreate virtual environment if needed.
 
-**Q: Docker services failing with new names**  
+**Q: Docker services failing with new names**
 **A:** Update docker-compose.yml network names and rebuild containers.
 
 ---
@@ -263,11 +263,11 @@ mlx assistant interactive
 When you achieve **95%+ consistency** with all integration points working, your migration is complete! The platform will have:
 
 - **Professional Branding**: Consistent naming throughout
-- **Functional CLI**: All commands work with new names  
+- **Functional CLI**: All commands work with new names
 - **Clean Codebase**: No naming inconsistencies
 - **Production Ready**: Safe for deployment and use
 
-**Remember**: The goal is not just changing names, but ensuring **complete platform consistency** for a professional, maintainable codebase. 
+**Remember**: The goal is not just changing names, but ensuring **complete platform consistency** for a professional, maintainable codebase.
 
 ---
 
@@ -278,7 +278,7 @@ When you achieve **95%+ consistency** with all integration points working, your 
 # Step 1: Check current status
 mlx assistant naming status
 
-# Step 2: Comprehensive validation 
+# Step 2: Comprehensive validation
 mlx assistant naming validate --detailed
 
 # Step 3: If issues found, run migration
@@ -298,11 +298,11 @@ mlx assistant naming validate --detailed              # Full completeness report
 ```
 
 ### **Success Indicators**
-✅ **Consistency Score**: 95%+ (excellent)  
-✅ **Validation Output**: "Migration validation passed with excellent results!"  
-✅ **CLI Commands**: All work with new naming  
-✅ **No Warnings**: Validation shows no critical issues  
-✅ **File Coverage**: All expected files found and updated  
+✅ **Consistency Score**: 95%+ (excellent)
+✅ **Validation Output**: "Migration validation passed with excellent results!"
+✅ **CLI Commands**: All work with new naming
+✅ **No Warnings**: Validation shows no critical issues
+✅ **File Coverage**: All expected files found and updated
 
 ---
 
@@ -329,4 +329,4 @@ mlx assistant naming validate --detailed              # Full completeness report
 - **Guided Workflow**: Step-by-step migration assistance
 - **Intelligent Triage**: Knows when to stop and ask for help
 
-This system eliminates the guesswork from naming migrations and provides confidence that changes are complete and correct! 🚀 
+This system eliminates the guesswork from naming migrations and provides confidence that changes are complete and correct! 🚀

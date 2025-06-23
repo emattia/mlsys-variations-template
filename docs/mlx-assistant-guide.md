@@ -46,7 +46,7 @@ mlx assistant golden-repos validate standard
 
 **Available Repository Types:**
 - `minimal` - Basic MLOps template with essential components
-- `standard` - Full-featured template with core components  
+- `standard` - Full-featured template with core components
 - `advanced` - Complex multi-component setup
 - `plugin_heavy` - Multiple plugins for integration testing
 - `performance` - Optimized for benchmarking
@@ -62,7 +62,7 @@ mlx assistant security scan
 # Run enterprise-level security scan
 mlx assistant security scan --level enterprise
 
-# Generate Software Bill of Materials (SBOM) 
+# Generate Software Bill of Materials (SBOM)
 mlx assistant security sbom
 
 # Security scan with HTML report
@@ -125,7 +125,7 @@ mlx assistant --interactive
 
 **Interactive Commands:**
 - `help` - Show available commands
-- `status` - Display detailed project status  
+- `status` - Display detailed project status
 - `analyze` - Analyze current project state
 - `recommend` - Get intelligent recommendations
 - `exit` - Exit interactive mode
@@ -170,7 +170,7 @@ Provides insights on:
 ### Icons & Visual Cues
 - 🤖 Assistant operations
 - 🏗️ Golden repositories
-- 🔒 Security operations  
+- 🔒 Security operations
 - 🧩 Plugin operations
 - 📚 Documentation
 - ✅ Success states
@@ -257,7 +257,7 @@ python tests/golden_repos.py create --spec standard
 python scripts/security/security_hardening.py scan
 
 # Unified assistant access (recommended)
-mlx assistant golden-repos create standard  
+mlx assistant golden-repos create standard
 mlx assistant security scan
 ```
 
@@ -309,7 +309,7 @@ mlx assistant golden-repos validate advanced
 ```bash
 # Progressive security hardening
 mlx assistant security scan --level basic
-mlx assistant security scan --level enhanced  
+mlx assistant security scan --level enhanced
 mlx assistant security scan --level enterprise
 mlx assistant security sbom
 ```
@@ -353,7 +353,7 @@ Integrate assistant commands in your CI/CD pipeline:
 - name: MLX Health Check
   run: mlx assistant doctor
 
-- name: Security Scan  
+- name: Security Scan
   run: mlx assistant security scan --level enterprise
 
 - name: Plugin Validation
@@ -413,4 +413,4 @@ echo $TERM
 
 ---
 
-The MLX Assistant represents the culmination of Phase 3 "Core Hardening" efforts, providing a production-ready, intelligent interface for the complete Mlx Platform Foundation. It transforms the fragmented CLI experience into a unified, professional, and user-friendly system that guides you through complex MLOps workflows with confidence. 
+The MLX Assistant represents the culmination of Phase 3 "Core Hardening" efforts, providing a production-ready, intelligent interface for the complete Mlx Platform Foundation. It transforms the fragmented CLI experience into a unified, professional, and user-friendly system that guides you through complex MLOps workflows with confidence.

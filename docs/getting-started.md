@@ -47,7 +47,7 @@ uv add mlx-plugin-agentic
 
 **LLM Fine-tuning & Deployment**
 ```bash
-uv add mlx-plugin-transformers  
+uv add mlx-plugin-transformers
 # Set up GPU environment and Hugging Face access
 ```
 

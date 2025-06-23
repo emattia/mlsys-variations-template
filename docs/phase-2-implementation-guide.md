@@ -1,6 +1,6 @@
 # Phase 2 Implementation Guide: MLX Component Extraction Framework
 
-> **For Next Chat Agent** | **Phase 2**: Component Extraction  
+> **For Next Chat Agent** | **Phase 2**: Component Extraction
 > **Estimated Duration**: 4-6 hours | **Complexity**: HIGH | **Priority**: CRITICAL
 
 ## 🎯 **Mission: Build ML Platform Component System**
@@ -42,7 +42,7 @@ src/api/                 # Application code
 
 conf/api/               # Configuration
 ├── development.yaml    # Dev environment
-├── staging.yaml        # Staging environment 
+├── staging.yaml        # Staging environment
 └── production.yaml     # Production settings
 
 scripts/api/            # Infrastructure
@@ -96,7 +96,7 @@ Build `scripts/mlx/extract_component.py` that:
 - **Manages secrets and environment variables** across components
 - **Creates mergeable templates** for intelligent component injection
 
-### **2.2 Production-Ready Component Registry** (CRITICAL)  
+### **2.2 Production-Ready Component Registry** (CRITICAL)
 Build `mlx-components/registry.json` that:
 - **Catalogs infrastructure requirements** (databases, APIs, cloud services)
 - **Defines environment variable dependencies** (API keys, credentials)
@@ -136,7 +136,7 @@ Infrastructure Analysis:
 Dependency Analysis:
 ├── Database: PostgreSQL/SQLite
 ├── Cache: Redis
-├── Monitoring: Prometheus + Grafana  
+├── Monitoring: Prometheus + Grafana
 ├── Secrets: API keys, database credentials
 └── External APIs: Rate limiting, authentication services
 ```
@@ -217,32 +217,32 @@ class ComponentDependency:
     configuration_path: Optional[str] = None
     required_for: List[str] = None  # environments where this is required
 
-@dataclass 
+@dataclass
 class ComponentMetadata:
     """Complete component metadata for production deployment."""
     name: str
     description: str
     version: str
     component_type: str  # "infrastructure", "application", "utility"
-    
+
     # File mappings
     source_files: List[str]
-    config_files: List[str] 
+    config_files: List[str]
     infrastructure_files: List[str]
     template_files: List[str]
-    
+
     # Dependencies and requirements
     python_dependencies: List[str]
     system_dependencies: List[ComponentDependency]
     environment_variables: List[str]
     required_secrets: List[str]
-    
+
     # Integration and compatibility
     injection_points: Dict[str, str]
     merge_strategies: Dict[str, str]
     compatibility_matrix: Dict[str, List[str]]
     conflicts_with: List[str]
-    
+
     # Deployment and infrastructure
     docker_requirements: Optional[Dict[str, str]]
     monitoring_endpoints: List[str]
@@ -250,22 +250,22 @@ class ComponentMetadata:
 
 class ProductionComponentExtractor:
     """Extract production-ready components with full infrastructure analysis."""
-    
+
     def __init__(self, source_dir: Path, output_dir: Path):
         self.source_dir = source_dir
         self.output_dir = output_dir
         self.environment_vars = self._extract_environment_variables()
         self.docker_config = self._analyze_docker_setup()
-    
+
     def extract_all_components(self) -> Dict[str, ComponentMetadata]:
         """Extract all components with complete production metadata."""
         components = {}
-        
+
         # Define component extraction mappings
         component_mappings = {
             "api-serving": {
                 "source_paths": ["src/api"],
-                "config_paths": ["conf/api", "conf/logging"], 
+                "config_paths": ["conf/api", "conf/logging"],
                 "infrastructure_paths": ["docker", "scripts/api"],
                 "type": "infrastructure"
             },
@@ -279,42 +279,42 @@ class ProductionComponentExtractor:
                 "source_paths": ["src/plugins"],
                 "config_paths": ["conf/plugins"],
                 "infrastructure_paths": ["scripts/plugins"],
-                "type": "application" 
+                "type": "application"
             }
         }
-        
+
         for component_name, mapping in component_mappings.items():
             metadata = self._extract_component(component_name, mapping)
             if metadata:
                 components[component_name] = metadata
                 self._generate_component_template(metadata)
-        
+
         return components
-    
+
     def _extract_component(self, name: str, mapping: Dict) -> Optional[ComponentMetadata]:
         """Extract a single component with full analysis."""
-        
+
         # Analyze source code
         source_analysis = self._analyze_source_code(mapping["source_paths"])
         if not source_analysis["files"]:
             return None
-            
+
         # Analyze configuration
         config_analysis = self._analyze_configuration(mapping["config_paths"])
-        
+
         # Analyze infrastructure
         infra_analysis = self._analyze_infrastructure(mapping["infrastructure_paths"])
-        
+
         # Extract dependencies
         dependencies = self._extract_component_dependencies(source_analysis)
-        
+
         # Determine injection points and merge strategies
         injection_points = self._determine_injection_points(source_analysis, name)
         merge_strategies = self._determine_merge_strategies(config_analysis, name)
-        
+
         # Build compatibility matrix
         compatibility = self._build_compatibility_matrix(name, dependencies)
-        
+
         return ComponentMetadata(
             name=name,
             description=f"Production-ready {name} component",
@@ -336,7 +336,7 @@ class ProductionComponentExtractor:
             monitoring_endpoints=source_analysis["endpoints"],
             health_checks=source_analysis["health_checks"]
         )
-    
+
     def _analyze_source_code(self, source_paths: List[str]) -> Dict:
         """Comprehensive source code analysis using AST parsing."""
         analysis = {
@@ -347,32 +347,32 @@ class ProductionComponentExtractor:
             "env_var_usage": [],
             "external_calls": []
         }
-        
+
         for path_str in source_paths:
             path = self.source_dir / path_str
             if not path.exists():
                 continue
-                
+
             for py_file in path.rglob("*.py"):
                 analysis["files"].append(str(py_file.relative_to(self.source_dir)))
-                
+
                 # Parse AST for detailed analysis
                 with open(py_file) as f:
                     try:
                         tree = ast.parse(f.read())
                         visitor = ComponentAnalysisVisitor()
                         visitor.visit(tree)
-                        
+
                         analysis["imports"].extend(visitor.imports)
                         analysis["endpoints"].extend(visitor.endpoints)
                         analysis["env_var_usage"].extend(visitor.env_vars)
                         analysis["external_calls"].extend(visitor.external_calls)
-                        
+
                     except SyntaxError:
                         continue  # Skip files with syntax errors
-        
+
         return analysis
-    
+
     def _analyze_configuration(self, config_paths: List[str]) -> Dict:
         """Analyze Hydra configuration files and dependencies."""
         analysis = {
@@ -381,15 +381,15 @@ class ProductionComponentExtractor:
             "secrets": [],
             "external_services": []
         }
-        
+
         for path_str in config_paths:
             path = self.source_dir / path_str
             if not path.exists():
                 continue
-                
+
             for config_file in path.rglob("*.yaml"):
                 analysis["files"].append(str(config_file.relative_to(self.source_dir)))
-                
+
                 # Parse YAML for environment variables and secrets
                 with open(config_file) as f:
                     try:
@@ -397,28 +397,28 @@ class ProductionComponentExtractor:
                         self._extract_config_dependencies(config_data, analysis)
                     except yaml.YAMLError:
                         continue
-        
+
         return analysis
-    
+
     def _extract_config_dependencies(self, config_data: Dict, analysis: Dict):
         """Extract dependencies from configuration data."""
         if not isinstance(config_data, dict):
             return
-            
+
         for key, value in config_data.items():
             if isinstance(value, str):
                 # Look for environment variable patterns: ${oc.env:VAR_NAME,default}
                 env_pattern = r'\$\{oc\.env:([^,}]+)'
                 matches = re.findall(env_pattern, value)
                 analysis["env_vars"].extend(matches)
-                
+
                 # Look for secret patterns
                 if any(secret_word in key.lower() for secret_word in ['secret', 'key', 'token', 'password']):
                     analysis["secrets"].append(key)
-                    
+
             elif isinstance(value, dict):
                 self._extract_config_dependencies(value, analysis)
-    
+
     def _analyze_infrastructure(self, infra_paths: List[str]) -> Dict:
         """Analyze infrastructure files (Docker, scripts, etc.)."""
         analysis = {
@@ -427,7 +427,7 @@ class ProductionComponentExtractor:
             "scripts": [],
             "monitoring": []
         }
-        
+
         # Check for Docker configuration
         docker_files = ["Dockerfile", "docker-compose.yml", "docker/"]
         for docker_file in docker_files:
@@ -437,48 +437,48 @@ class ProductionComponentExtractor:
                     analysis["files"].append(docker_file)
                 else:
                     analysis["files"].extend([
-                        str(f.relative_to(self.source_dir)) 
+                        str(f.relative_to(self.source_dir))
                         for f in docker_path.rglob("*") if f.is_file()
                     ])
-        
+
         return analysis
-    
+
     def _generate_component_template(self, metadata: ComponentMetadata):
         """Generate component template files for injection."""
         component_dir = self.output_dir / metadata.name
         component_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Generate component metadata file
         metadata_file = component_dir / "component.json"
         with open(metadata_file, 'w') as f:
             json.dump(asdict(metadata), f, indent=2)
-        
+
         # Copy and templatize source files
         for source_file in metadata.source_files:
             source_path = self.source_dir / source_file
             if source_path.exists():
                 self._templatize_file(source_path, component_dir, metadata)
-        
+
         # Generate installation instructions
         self._generate_installation_guide(component_dir, metadata)
 
 class ComponentAnalysisVisitor(ast.NodeVisitor):
     """AST visitor for detailed Python code analysis."""
-    
+
     def __init__(self):
         self.imports = []
         self.endpoints = []
         self.env_vars = []
         self.external_calls = []
-    
+
     def visit_Import(self, node):
         for alias in node.names:
             self.imports.append(alias.name)
-    
+
     def visit_ImportFrom(self, node):
         if node.module:
             self.imports.append(node.module)
-    
+
     def visit_FunctionDef(self, node):
         # Look for FastAPI route decorators
         for decorator in node.decorator_list:
@@ -486,18 +486,18 @@ class ComponentAnalysisVisitor(ast.NodeVisitor):
                 if hasattr(decorator.func, 'attr'):
                     if decorator.func.attr in ['get', 'post', 'put', 'delete']:
                         self.endpoints.append(node.name)
-        
+
         self.generic_visit(node)
-    
+
     def visit_Call(self, node):
         # Look for os.environ or os.getenv calls
         if isinstance(node.func, ast.Attribute):
-            if (hasattr(node.func.value, 'id') and 
-                node.func.value.id == 'os' and 
+            if (hasattr(node.func.value, 'id') and
+                node.func.value.id == 'os' and
                 node.func.attr in ['getenv', 'environ']):
                 if node.args and isinstance(node.args[0], ast.Str):
                     self.env_vars.append(node.args[0].s)
-        
+
         self.generic_visit(node)
 
 # Usage
@@ -506,19 +506,19 @@ if __name__ == "__main__":
         source_dir=Path("src"),
         output_dir=Path("mlx-components")
     )
-    
+
     components = extractor.extract_all_components()
-    
+
     # Generate master registry
     registry = {
-        "version": "1.0.0", 
+        "version": "1.0.0",
         "schema": "https://mlx.dev/registry.schema.json",
         "components": {name: asdict(meta) for name, meta in components.items()}
     }
-    
+
     with open("mlx-components/registry.json", 'w') as f:
         json.dump(registry, f, indent=2)
-    
+
     print(f"✅ Extracted {len(components)} production-ready components")
 ```
 
@@ -535,14 +535,14 @@ if __name__ == "__main__":
     "extraction_date": "2024-12-17",
     "total_components": 6
   },
-  
+
   "components": {
     "api-serving": {
       "name": "Production API Server",
       "description": "FastAPI-based production API server with security, monitoring, and scalability",
       "version": "1.0.0",
       "type": "infrastructure",
-      
+
       "files": [
         {
           "source": "mlx-components/api-serving/app.py.template",
@@ -552,7 +552,7 @@ if __name__ == "__main__":
         },
         {
           "source": "mlx-components/api-serving/middleware.py",
-          "target": "src/api/middleware.py", 
+          "target": "src/api/middleware.py",
           "merge_strategy": "replace"
         },
         {
@@ -561,7 +561,7 @@ if __name__ == "__main__":
           "merge_strategy": "merge"
         }
       ],
-      
+
       "dependencies": {
         "python": [
           "fastapi>=0.110.0",
@@ -578,7 +578,7 @@ if __name__ == "__main__":
             "docker_image": "redis:7-alpine"
           },
           {
-            "name": "postgresql", 
+            "name": "postgresql",
             "type": "database",
             "required_for": ["production"],
             "environment_variables": ["DATABASE_URL", "DB_PASSWORD"],
@@ -586,11 +586,11 @@ if __name__ == "__main__":
           }
         ]
       },
-      
+
       "environment_variables": {
         "required": [
           "API_PORT",
-          "API_HOST", 
+          "API_HOST",
           "ENVIRONMENT"
         ],
         "optional": [
@@ -604,7 +604,7 @@ if __name__ == "__main__":
           "DATABASE_URL"
         ]
       },
-      
+
       "infrastructure": {
         "docker": {
           "base_image": "python:3.11-slim",
@@ -614,7 +614,7 @@ if __name__ == "__main__":
         },
         "monitoring": {
           "health_endpoint": "/health",
-          "metrics_endpoint": "/metrics", 
+          "metrics_endpoint": "/metrics",
           "prometheus_config": "monitoring/api.yml"
         },
         "deployment": {
@@ -626,14 +626,14 @@ if __name__ == "__main__":
           }
         }
       },
-      
+
       "compatibility": {
         "requires": ["config-management"],
         "enhances": ["plugin-registry", "monitoring"],
         "optional": ["caching", "rate-limiting", "authentication"],
         "conflicts": []
       },
-      
+
       "injection_points": {
         "middleware_stack": {
           "file": "src/api/app.py",
@@ -641,7 +641,7 @@ if __name__ == "__main__":
           "location": "after_cors_setup"
         },
         "route_registration": {
-          "file": "src/api/app.py", 
+          "file": "src/api/app.py",
           "function": "register_routes",
           "location": "end_of_function"
         },
@@ -652,13 +652,13 @@ if __name__ == "__main__":
         }
       }
     },
-    
+
     "config-management": {
       "name": "Configuration Management",
       "description": "Hydra + Pydantic configuration system with multi-environment support and secret management",
-      "version": "1.0.0", 
+      "version": "1.0.0",
       "type": "infrastructure",
-      
+
       "files": [
         {
           "source": "mlx-components/config-management/manager.py.template",
@@ -666,7 +666,7 @@ if __name__ == "__main__":
           "merge_strategy": "enhance"
         },
         {
-          "source": "mlx-components/config-management/models.py.template", 
+          "source": "mlx-components/config-management/models.py.template",
           "target": "src/config/models.py",
           "merge_strategy": "merge"
         },
@@ -676,7 +676,7 @@ if __name__ == "__main__":
           "merge_strategy": "merge"
         }
       ],
-      
+
       "dependencies": {
         "python": [
           "hydra-core>=1.3.0",
@@ -685,13 +685,13 @@ if __name__ == "__main__":
         ],
         "system": []
       },
-      
+
       "environment_variables": {
         "required": ["ENVIRONMENT"],
         "optional": ["CONFIG_PATH", "LOG_LEVEL"],
         "secrets": ["SECRET_KEY", "ENCRYPTION_KEY"]
       },
-      
+
       "compatibility": {
         "requires": [],
         "enhances": ["api-serving", "plugin-registry", "data-processing"],
@@ -700,15 +700,15 @@ if __name__ == "__main__":
       }
     }
   },
-  
+
   "installation_order": [
     "config-management",
-    "api-serving", 
+    "api-serving",
     "plugin-registry",
     "monitoring",
     "caching"
   ],
-  
+
   "environment_templates": {
     "development": {
       "required_services": ["redis"],
@@ -742,7 +742,7 @@ if __name__ == "__main__":
 - [ ] **Deployment configuration** with Docker and Kubernetes specifications
 - [ ] **Installation order determination** based on dependency graph
 
-### **✅ Projen Integration** 
+### **✅ Projen Integration**
 - [ ] **MLX extraction tasks** integrated with projen (`./mlx extract`)
 - [ ] **Registry validation** ensuring component integrity
 - [ ] **Template testing** verifying component injection works correctly
@@ -766,7 +766,7 @@ MLX components are **complex system integrations** requiring:
 ### **2. Focus on Production Readiness**
 Every extracted component must be **production-deployable**:
 - **Docker containers** with proper resource limits
-- **Health checks** and monitoring endpoints  
+- **Health checks** and monitoring endpoints
 - **Security configurations** with proper authentication
 - **Scaling parameters** for cloud deployment
 
@@ -783,7 +783,7 @@ Components need **smart templating**:
 
 Your Phase 2 extraction engine enables Phase 3 capabilities:
 - **AI-powered component recommendation** based on existing codebase analysis
-- **Intelligent conflict resolution** when components have overlapping functionality  
+- **Intelligent conflict resolution** when components have overlapping functionality
 - **Automated infrastructure provisioning** with cloud resource management
 - **Component marketplace** with community-contributed components
 
@@ -791,4 +791,4 @@ Your Phase 2 extraction engine enables Phase 3 capabilities:
 
 ---
 
-**Ready to build the future of ML platform composition? The foundation is solid, the architecture is clear, and the path is mapped. Let's build something remarkable! 🚀** 
+**Ready to build the future of ML platform composition? The foundation is solid, the architecture is clear, and the path is mapped. Let's build something remarkable! 🚀**

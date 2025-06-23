@@ -30,8 +30,8 @@ Common utility functions and helper modules
 
 
 ### Environment Variables
-Required: 
-Secrets: 
+Required:
+Secrets:
 
 ## Configuration
 The component will be installed with the following merge strategies:
@@ -39,4 +39,4 @@ The component will be installed with the following merge strategies:
 
 ## Monitoring
 Health checks: src/utils/cache_manager.py, src/utils/rate_limiter.py, src/utils/templates.py, src/utils/common.py
-Endpoints: 
+Endpoints:

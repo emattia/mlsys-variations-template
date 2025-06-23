@@ -1,6 +1,6 @@
 # UV Package Management Guide for MLX Foundation
 
-> **Package Manager**: `uv` | **Project**: MLX Foundation  
+> **Package Manager**: `uv` | **Project**: MLX Foundation
 > **Updated**: December 2024 | **Version**: uv 0.5.23+
 
 ## 📖 Overview
@@ -41,7 +41,7 @@ brew install uv
 # Install project dependencies
 uv pip install -r requirements.txt
 
-# Install development dependencies  
+# Install development dependencies
 uv pip install -r requirements-dev.txt
 
 # Install a single package
@@ -203,7 +203,7 @@ uv pip sync requirements-dev.txt  # Ensure exact versions
 echo "new-package>=1.0.0" >> requirements.txt
 uv pip install -r requirements.txt
 
-# For development dependencies  
+# For development dependencies
 echo "new-dev-package>=1.0.0" >> requirements-dev.txt
 uv pip install -r requirements-dev.txt
 
@@ -409,7 +409,7 @@ pip install -r requirements.txt
 pip freeze > requirements-lock.txt
 pip uninstall package
 
-# New uv workflow  
+# New uv workflow
 uv pip install -r requirements.txt
 uv pip freeze > requirements-lock.txt
 uv pip uninstall package
@@ -456,7 +456,7 @@ class MLXProject(PythonProject):
             dev_deps=["pytest>=8.1.1"],
             **kwargs
         )
-        
+
         # UV-specific optimizations
         self.add_task(
             "deps:install-fast",
@@ -575,6 +575,6 @@ uv pip install -r requirements.txt
 
 ---
 
-**Last Updated**: December 2024  
-**Next Review**: After UV 1.0 release  
-**Maintainer**: MLX Foundation Team 
+**Last Updated**: December 2024
+**Next Review**: After UV 1.0 release
+**Maintainer**: MLX Foundation Team
