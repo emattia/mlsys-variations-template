@@ -1,6 +1,6 @@
 """Unit tests for plugin architecture."""
 
-from src.plugins.base import MLOpsComponent, ExecutionContext
+from src.plugins.base import ExecutionContext, MLOpsComponent
 from src.plugins.registry import PluginRegistry
 
 
