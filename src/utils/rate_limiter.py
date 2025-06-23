@@ -67,50 +67,83 @@ class RateLimiter:
         limits = self.config[service]
         now = time.time()
         history = self.request_history[service]
-
+        
+        # Clean old requests and get counts
+        request_counts = self._get_request_counts(history, now)
+        
+        # Check rate limits
+        if not self._check_rate_limits(service, limits, request_counts):
+            return False
+            
+        # Check cost limits
+        if not self._check_cost_limits(service, limits, cost, now):
+            return False
+            
+        # Record the request
+        self._record_request(service, now, cost)
+        return True
+    
+    def _get_request_counts(self, history: Any, now: float) -> Dict[str, int]:
+        """Get request counts for different time windows."""
         # Clean old requests
-        cutoff_minute = now - 60
-        cutoff_hour = now - 3600
         cutoff_day = now - 86400
-
         while history and history[0]["timestamp"] < cutoff_day:
             history.popleft()
-
+            
         # Count requests in time windows
+        cutoff_minute = now - 60
+        cutoff_hour = now - 3600
+        
         minute_count = sum(1 for req in history if req["timestamp"] > cutoff_minute)
         hour_count = sum(1 for req in history if req["timestamp"] > cutoff_hour)
         day_count = len(history)
-
-        # Check rate limits
-        if minute_count >= limits.requests_per_minute:
-            logger.warning(f"Rate limit exceeded for {service}: {minute_count}/min")
+        
+        return {
+            "minute": minute_count,
+            "hour": hour_count, 
+            "day": day_count
+        }
+    
+    def _check_rate_limits(self, service: str, limits: Any, counts: Dict[str, int]) -> bool:
+        """Check if request counts are within limits."""
+        if counts["minute"] >= limits.requests_per_minute:
+            logger.warning(f"Rate limit exceeded for {service}: {counts['minute']}/min")
             return False
-
-        if hour_count >= limits.requests_per_hour:
-            logger.warning(f"Rate limit exceeded for {service}: {hour_count}/hour")
+            
+        if counts["hour"] >= limits.requests_per_hour:
+            logger.warning(f"Rate limit exceeded for {service}: {counts['hour']}/hour")
             return False
-
-        if day_count >= limits.requests_per_day:
-            logger.warning(f"Rate limit exceeded for {service}: {day_count}/day")
+            
+        if counts["day"] >= limits.requests_per_day:
+            logger.warning(f"Rate limit exceeded for {service}: {counts['day']}/day")
             return False
-
-        # Check cost limits
+            
+        return True
+    
+    def _check_cost_limits(self, service: str, limits: Any, cost: float, now: float) -> bool:
+        """Check if cost is within limits."""
         cost_info = self.cost_tracking[service]
-        if now - cost_info["last_reset"] > 86400:  # Reset daily costs
+        
+        # Reset daily costs if needed
+        if now - cost_info["last_reset"] > 86400:
             cost_info["daily"] = 0.0
             cost_info["last_reset"] = now
-
+            
         if cost_info["daily"] + cost > limits.cost_limit_per_day:
             logger.warning(
                 f"Cost limit exceeded for {service}: ${cost_info['daily']:.2f}/day"
             )
             return False
-
-        # Record the request
+            
+        return True
+    
+    def _record_request(self, service: str, now: float, cost: float) -> None:
+        """Record the request in history and cost tracking."""
+        history = self.request_history[service]
+        cost_info = self.cost_tracking[service]
+        
         history.append({"timestamp": now, "cost": cost})
         cost_info["daily"] += cost
-
-        return True
 
     def get_status(self, service: str) -> Dict[str, Any]:
         """Get current rate limit status for a service."""

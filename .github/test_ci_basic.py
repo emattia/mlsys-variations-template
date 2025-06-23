@@ -8,6 +8,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Add project root to Python path to enable src imports
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
 
 def test_python_version():
     """Test that Python version is correct."""

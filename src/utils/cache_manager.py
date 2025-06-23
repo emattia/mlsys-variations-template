@@ -222,7 +222,7 @@ class CacheManager:
 
             try:
                 with open(file_path, "rb") as f:
-                    value = pickle.load(f)
+                    value = pickle.load(f)  # nosec B301 - Only loading trusted cache data
 
                 return CacheEntry(
                     key=row[0],
@@ -523,7 +523,7 @@ class CacheManager:
     def _get_cache_file(self, key: str) -> Path:
         """Get the file path for a cache key."""
         # Create a hash of the key to avoid filesystem issues
-        key_hash = hashlib.md5(key.encode()).hexdigest()
+        key_hash = hashlib.md5(key.encode(), usedforsecurity=False).hexdigest()
         return self.cache_dir / f"{key_hash}.json"
 
 
