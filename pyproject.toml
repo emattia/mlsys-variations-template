@@ -9,9 +9,6 @@ description = "Production-ready MLOps template for specialized ML systems"
 authors = [ "Your Name <you@example.com>",]
 readme = "README.md"
 [[tool.poetry.packages]]
-include = "src"
-
-[[tool.poetry.packages]]
 include = "analysis_template"
 from = "src"
 
@@ -31,7 +28,7 @@ pymdown-extensions = "^10.2.1"
 dev = [ "nbdoc", "radon", "pytest", "ruff", "bandit", "mypy", "polars", "asgi-lifespan", "httpx", "fastapi", "uvicorn", "hydra-core", "pydantic-settings", "joblib", "numpy", "pytest-cov", "scikit-learn", "matplotlib", "pytest-asyncio", "vulture", "unimport",]
 
 [tool.poetry.scripts]
-analysis-template = "analysis_template.cli:app"
+analysis-template = "analysis_template.cli_template:app"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
