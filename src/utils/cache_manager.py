@@ -327,7 +327,17 @@ class CacheManager:
         """
         cache_data = {"prompt": prompt, "model": model}
         key = self._generate_key(cache_data, "llm")
-        return self.get(key)
+
+        # Get the cached response
+        response = self.get(key)
+
+        # Track cache hits/misses for statistics
+        if response is not None:
+            self.stats["hits"] += 1
+        else:
+            self.stats["misses"] += 1
+
+        return response
 
     def cache_embedding(
         self, text: str, model: str, embedding: list[float], cost: float = 0.0

@@ -154,7 +154,7 @@ jobs:
         sleep 10
 
         # Run integration tests
-        python -m pytest tests/integration/ -v || true
+        python -m pytest tests/integration/ -v
 
         # Cleanup
         kill $API_PID || true
