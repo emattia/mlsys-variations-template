@@ -52,8 +52,12 @@ def evaluate_classification_model(
     if isinstance(y, pl.Series):
         y = y.to_numpy()
 
-    # Get predictions
-    y_pred = model.predict(X)
+    # Get predictions with proper error handling
+    try:
+        y_pred = model.predict(X)
+    except Exception as e:
+        # Re-raise as RuntimeError for consistent error handling
+        raise RuntimeError(f"Model prediction failed: {e}") from e
 
     # Get probabilities if available
     try:
