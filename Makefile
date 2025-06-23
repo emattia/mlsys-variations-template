@@ -155,6 +155,8 @@ install-dev:
 	@command -v uv >/dev/null 2>&1 || (echo "uv not found. Installing..."; curl -LsSf https://astral.sh/uv/install.sh | sh)
 	uv venv $(VENV)
 	uv pip install -e ".[dev]"
+	@echo "Development dependencies installed!"
+
 
 clean:
 	@echo "Cleaning up generated files..."
