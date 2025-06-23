@@ -1,6 +1,23 @@
+# Default model configuration - aligned with DetailedModelConfig structure
+model_type: "random_forest"
+algorithm: "sklearn"
+problem_type: "classification"
+target_column: "target"
+
+# Feature engineering
 categorical_features: []
-model_params: {}
-model_type: random_forest
 numerical_features: []
-problem_type: classification
-target_column: target
+
+# Model parameters (using nested structure for consistency)
+parameters:
+  n_estimators: 100
+  max_depth: null
+  min_samples_split: 2
+  min_samples_leaf: 1
+  random_state: 42
+
+# Training configuration
+training:
+  early_stopping: false
+  validation_metric: "accuracy"
+  save_best_only: true

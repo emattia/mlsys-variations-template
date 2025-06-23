@@ -1,26 +1,20 @@
-"""Unit tests for the rate-limiting utilities in ``src.utils.rate_limiter``.
+"""
+Comprehensive tests for the RateLimiter functionality.
 
-The tests cover:
-1. Dataclass defaults & custom configuration.
-2. Core ``RateLimiter`` behaviour (success, unknown service, minute limit, daily cost).
-3. Public helper/utility functions (status, estimate cost, wait-for-capacity).
-4. Decorator helpers (both async & sync functions).
-5. Global singleton behaviour.
-6. A minimal integration scenario with concurrent requests.
-
-NOTE:  The original, fully-commented version of these tests still exists in
-``tests/unit/test_rate_limiter.py``.  We leave that file untouched so that it is
-ignored by pytest, and provide this active version instead.
+This module tests the rate limiting capabilities including:
+- Basic rate limiting functionality
+- Async function decorators
+- Service-specific rate limits
+- Cost estimation
+- Concurrent access patterns
 """
 
-from __future__ import annotations
-
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.utils.rate_limiter import (
+from src.platform.utils.rate_limiter import (
     RateLimit,
     RateLimiter,
     estimate_openai_cost,
@@ -199,8 +193,8 @@ async def test_async_function_decoration() -> None:
         fut.set_result(value)
         return fut
 
-    with patch("src.utils.rate_limiter.get_rate_limiter") as mock_get_limiter:
-        mock_limiter = MagicMock()
+    with patch("src.platform.utils.rate_limiter.get_rate_limiter") as mock_get_limiter:
+        mock_limiter = AsyncMock()
         mock_limiter.acquire.side_effect = lambda *_a, **_kw: _make_future(True)
         mock_get_limiter.return_value = mock_limiter
 
@@ -228,7 +222,9 @@ async def test_async_function_rate_limited():
     test_limiter = RateLimiter(test_config)
 
     # Patch the global rate limiter to use our test instance
-    with patch("src.utils.rate_limiter.get_rate_limiter", return_value=test_limiter):
+    with patch(
+        "src.platform.utils.rate_limiter.get_rate_limiter", return_value=test_limiter
+    ):
 
         @rate_limited("test", cost=0.1)  # Moderate cost
         async def test_function():
@@ -251,10 +247,10 @@ def test_sync_function_decoration() -> None:
     """Decorator should work for synchronous functions as well."""
 
     with (
-        patch("src.utils.rate_limiter.get_rate_limiter") as mock_get_limiter,
+        patch("src.platform.utils.rate_limiter.get_rate_limiter") as mock_get_limiter,
         patch("asyncio.run", return_value=True) as mock_run,
     ):
-        mock_get_limiter.return_value = MagicMock()
+        mock_get_limiter.return_value = AsyncMock()
 
         @rate_limited(service="test", cost=1.0)
         def func():  # pragma: no cover
@@ -292,11 +288,11 @@ def test_wait_for_capacity_success() -> None:
     """wait_for_capacity() should return *True* immediately when capacity exists."""
 
     with (
-        patch("src.utils.rate_limiter.get_rate_limiter") as mock_get_limiter,
+        patch("src.platform.utils.rate_limiter.get_rate_limiter") as mock_get_limiter,
         patch("asyncio.run", return_value=True),
         patch("time.sleep"),
     ):
-        mock_get_limiter.return_value = MagicMock()
+        mock_get_limiter.return_value = AsyncMock()
         assert wait_for_capacity("svc", max_wait=2) is True
 
 
@@ -304,12 +300,12 @@ def test_wait_for_capacity_timeout() -> None:
     """Should eventually give up when capacity never becomes available."""
 
     with (
-        patch("src.utils.rate_limiter.get_rate_limiter") as mock_get_limiter,
+        patch("src.platform.utils.rate_limiter.get_rate_limiter") as mock_get_limiter,
         patch("asyncio.run", return_value=False),
         patch("time.sleep"),
         patch("time.time") as mock_time,
     ):
-        mock_get_limiter.return_value = MagicMock()
+        mock_get_limiter.return_value = AsyncMock()
         mock_time.side_effect = [0, 1, 2, 3, 4, 5, 6]
         assert wait_for_capacity("svc", max_wait=5) is False
 

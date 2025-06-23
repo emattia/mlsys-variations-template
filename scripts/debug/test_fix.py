@@ -16,9 +16,9 @@ import pytest
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from src.utils.cache_manager import CacheManager
-from src.utils.rate_limiter import RateLimit, RateLimiter
-from src.utils.templates import TemplateManager
+from src.platform.utils.cache_manager import CacheManager
+from src.platform.utils.rate_limiter import RateLimit, RateLimiter
+from src.platform.utils.templates import TemplateManager
 
 # Setup debug logging
 logging.basicConfig(level=logging.DEBUG)

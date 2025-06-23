@@ -67,7 +67,7 @@ def test_dependencies():
 def test_src_importable():
     """Test that src modules are importable."""
     try:
-        from src.utils.common import get_project_root
+        from src.platform.utils.common import get_project_root
 
         project_root = get_project_root()
         assert project_root.exists(), "Project root not found"

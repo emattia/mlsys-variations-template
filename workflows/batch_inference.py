@@ -11,8 +11,8 @@
 
 # from dotenv import load_dotenv
 
-# from src.models.inference import batch_predict
-# from src.models.training import load_model
+# from src.ml.inference import batch_predict
+# from src.ml.training import load_model
 # from src.utils.common import get_data_path, load_config, setup_logging
 
 # # Load environment variables

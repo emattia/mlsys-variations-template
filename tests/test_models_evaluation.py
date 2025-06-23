@@ -12,7 +12,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
-from src.models.evaluation import (
+from src.ml.evaluation import (
     evaluate_classification_model,
     evaluate_regression_model,
     plot_confusion_matrix,

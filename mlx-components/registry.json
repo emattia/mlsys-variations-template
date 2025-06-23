@@ -15,30 +15,31 @@
         "security_enabled": true,
         "rate_limiting": true,
         "monitoring": true,
-        "existing_source": "src/api/"
+        "existing_source": "src/platform/api/"
       },
       "dependencies": ["config-management"],
       "compatibility_score": 1.0,
       "production_ready": true,
-      "source_path": "src/api/",
+      "source_path": "src/platform/api/",
       "extracted_from_existing": true
     },
     "config-management": {
-      "version": "1.0.0",
+      "version": "2.0.0",
       "type": "production-component",
-      "description": "Hierarchical configuration system with Hydra and Pydantic validation",
+      "description": "Unified configuration system with single source of truth and environment variables",
       "config": {
-        "framework": "hydra",
+        "framework": "unified",
         "validation": "pydantic",
         "hierarchical": true,
         "environment_aware": true,
         "secret_management": true,
-        "existing_source": "src/config/"
+        "single_source_of_truth": true,
+        "existing_source": "src/platform/config/"
       },
       "dependencies": [],
       "compatibility_score": 1.0,
       "production_ready": true,
-      "source_path": "src/config/",
+      "source_path": "src/platform/config/",
       "extracted_from_existing": true
     },
     "plugin-registry": {
@@ -50,12 +51,12 @@
         "hot_reload": true,
         "contract_testing": true,
         "type_safe": true,
-        "existing_source": "src/plugins/"
+        "existing_source": "src/platform/plugins/"
       },
       "dependencies": ["config-management"],
       "compatibility_score": 1.0,
       "production_ready": true,
-      "source_path": "src/plugins/",
+      "source_path": "src/platform/plugins/",
       "extracted_from_existing": true
     },
     "data-processing": {
@@ -82,12 +83,44 @@
         "caching": true,
         "rate_limiting": true,
         "monitoring": true,
-        "existing_source": "src/utils/"
+        "existing_source": "src/platform/utils/"
       },
       "dependencies": [],
       "compatibility_score": 1.0,
       "production_ready": true,
-      "source_path": "src/utils/",
+      "source_path": "src/platform/utils/",
+      "extracted_from_existing": true
+    },
+    "ml-workflows": {
+      "version": "1.0.0",
+      "type": "domain-component",
+      "description": "Traditional ML workflows for tabular data and scikit-learn models",
+      "config": {
+        "framework": "scikit-learn",
+        "data_format": "tabular",
+        "model_types": ["random_forest", "xgboost", "linear"],
+        "existing_source": "src/ml/"
+      },
+      "dependencies": ["config-management", "data-processing"],
+      "compatibility_score": 1.0,
+      "production_ready": true,
+      "source_path": "src/ml/",
+      "extracted_from_existing": true
+    },
+    "llm-workflows": {
+      "version": "1.0.0",
+      "type": "domain-component",
+      "description": "LLM and generative AI workflows with fine-tuning and prompt engineering",
+      "config": {
+        "framework": "transformers",
+        "model_types": ["llm", "embedding", "generative"],
+        "features": ["fine_tuning", "prompt_engineering", "rag"],
+        "existing_source": "src/llm/"
+      },
+      "dependencies": ["config-management", "utilities"],
+      "compatibility_score": 1.0,
+      "production_ready": true,
+      "source_path": "src/llm/",
       "extracted_from_existing": true
     }
   },

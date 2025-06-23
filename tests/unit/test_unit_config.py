@@ -1,4 +1,4 @@
-"""Unit tests for configuration management."""
+"""Comprehensive unit tests for MLOps configuration management."""
 
 import tempfile
 from pathlib import Path
@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from src.config.manager import ConfigManager
-from src.config.models import APIConfig, DetailedModelConfig
+from src.platform.config.manager import ConfigManager
+from src.platform.config.models import APIConfig, DetailedModelConfig
 
 
 class TestConfigModels:

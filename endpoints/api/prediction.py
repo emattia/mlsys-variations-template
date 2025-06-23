@@ -12,9 +12,9 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from src.models.inference import create_prediction_payload, predict
-from src.models.training import load_model
-from src.utils.common import get_model_path, setup_logging
+from src.ml.inference import create_prediction_payload, predict
+from src.ml.training import load_model
+from src.platform.utils.common import get_model_path, setup_logging
 
 # Load environment variables
 load_dotenv()

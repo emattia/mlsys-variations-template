@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from src.models.inference import batch_predict
-from src.utils.common import get_model_path, load_config, setup_logging
+from src.ml.inference import batch_predict
+from src.platform.utils.common import get_model_path, load_config, setup_logging
 
 # Load environment variables
 load_dotenv()

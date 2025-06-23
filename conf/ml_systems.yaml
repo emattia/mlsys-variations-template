@@ -25,12 +25,20 @@ rate_limiting:
     requests_per_day: 10000
     cost_limit_per_day: 0.0
 
+  # Default rate limits for generic services
+  default:
+    requests_per_minute: 60
+    requests_per_hour: 1000
+    requests_per_day: 10000
+    cost_limit_per_day: 0.0
+
 caching:
   enabled: true
 
   # Memory cache settings
   memory:
     max_size: 1000
+    max_memory_items: 1000
     ttl_seconds: 3600  # 1 hour
 
   # Disk cache settings
@@ -39,6 +47,7 @@ caching:
     cache_dir: "data/cache"
     max_size_mb: 1000
     ttl_seconds: 86400  # 24 hours
+    default_ttl_seconds: 86400  # Default TTL for cache entries
 
   # Response caching
   responses:
@@ -72,3 +81,36 @@ template_management:
     enabled: true
     auto_rollback: true
     performance_threshold: 0.1  # 10% performance drop triggers rollback
+
+# System limits and ML defaults
+system_limits:
+  # File and memory limits
+  max_file_size_mb: 100  # Maximum file size for model loading
+  max_wait_seconds: 300  # Maximum wait time for operations (5 minutes)
+
+  # Agent and automation limits
+  agent_max_steps: 5     # Maximum steps for agent execution
+  cli_default_limit: 10  # Default limit for CLI list operations
+
+  # ML training defaults
+  ml_defaults:
+    random_seed: 42
+    test_size: 0.2
+    demo_samples: 1000
+    demo_features: 4
+    demo_classes: 2
+    quick_estimators: 10  # For demo/testing purposes
+
+# LLM pricing (for cost estimation)
+llm_pricing:
+  openai:
+    gpt4:
+      input_per_1k_tokens: 0.03
+      output_per_1k_tokens: 0.06
+    gpt35_turbo:
+      input_per_1k_tokens: 0.001
+      output_per_1k_tokens: 0.002
+  embedding:
+    text_embedding_ada_002:
+      input_per_1k_tokens: 0.0001
+      output_per_1k_tokens: 0.0

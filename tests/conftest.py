@@ -1,4 +1,4 @@
-"""Pytest configuration and fixtures for the MLOps testing framework."""
+"""Test configuration and fixtures."""
 
 import asyncio
 import tempfile
@@ -11,10 +11,9 @@ import pytest
 from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
 
-# Import from installed package (no sys.path manipulation needed)
-from src.api.app import app
-from src.config import Config, ConfigManager
-from src.plugins import ExecutionContext
+from src.platform.api.app import app
+from src.platform.config import Config, ConfigManager
+from src.platform.plugins import ExecutionContext
 
 
 @pytest.fixture(scope="session")

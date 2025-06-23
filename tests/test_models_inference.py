@@ -11,7 +11,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
-from src.models.inference import (
+from src.ml.inference import (
     batch_predict,
     predict,
 )

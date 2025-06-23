@@ -123,7 +123,19 @@ setup-complete: setup docker-build
 install-uv:
 	@echo "Installing uv package manager..."
 	@command -v uv >/dev/null 2>&1 && { echo "uv already installed"; exit 0; } || true
-	curl -LsSf https://astral.sh/uv/install.sh | sh
+	@if command -v brew >/dev/null 2>&1; then \
+		echo "Installing uv via Homebrew..."; \
+		brew install uv; \
+	elif command -v powershell >/dev/null 2>&1; then \
+		echo "Installing uv via PowerShell..."; \
+		powershell -c "irm https://astral.sh/uv/install.sh | iex"; \
+	elif command -v pwsh >/dev/null 2>&1; then \
+		echo "Installing uv via PowerShell Core..."; \
+		pwsh -c "irm https://astral.sh/uv/install.sh | iex"; \
+	else \
+		echo "Installing uv via curl..."; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	fi
 	@echo "uv installed! You may need to restart your shell or run: source ~/.bashrc"
 
 install-trivy:
@@ -146,13 +158,13 @@ install-trivy:
 
 install:
 	@echo "Installing production dependencies with uv..."
-	@command -v uv >/dev/null 2>&1 || (echo "uv not found. Installing..."; curl -LsSf https://astral.sh/uv/install.sh | sh)
+	@command -v uv >/dev/null 2>&1 || $(MAKE) install-uv
 	uv venv $(VENV)
 	uv pip install -e .
 
 install-dev:
 	@echo "Installing development dependencies with uv..."
-	@command -v uv >/dev/null 2>&1 || (echo "uv not found. Installing..."; curl -LsSf https://astral.sh/uv/install.sh | sh)
+	@command -v uv >/dev/null 2>&1 || $(MAKE) install-uv
 	uv venv $(VENV)
 	uv pip install -e ".[dev]"
 	@echo "Development dependencies installed!"

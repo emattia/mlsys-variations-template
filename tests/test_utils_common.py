@@ -1,4 +1,4 @@
-"""Test cases for src/utils/common.py."""
+"""Comprehensive unit tests for common utility functions."""
 
 import json
 import logging
@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 import yaml
 
-from src.utils.common import (
+from src.platform.utils.common import (
     get_data_path,
     get_model_path,
     get_project_root,
@@ -293,6 +293,6 @@ def test_environment_variables_file_exists():
     """Test loading environment variables when .env file exists."""
     # Test behavior when .env file exists - this is handled automatically by python-dotenv
     # We'll just verify the function doesn't crash
-    from src.utils.common import load_environment_variables
+    from src.platform.utils.common import load_environment_variables
 
     load_environment_variables()  # Should not raise an exception

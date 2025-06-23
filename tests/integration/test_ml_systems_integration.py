@@ -1,4 +1,4 @@
-"""Integration tests for ML systems components working together."""
+"""Integration tests for ML systems working together."""
 
 import asyncio
 import tempfile
@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from src.utils.cache_manager import CacheManager
-from src.utils.rate_limiter import RateLimit, RateLimiter
-from src.utils.templates import TemplateManager
+from src.platform.utils.cache_manager import CacheManager
+from src.platform.utils.rate_limiter import RateLimit, RateLimiter
+from src.platform.utils.templates import TemplateManager
 
 
 class TestMLSystemsIntegration:

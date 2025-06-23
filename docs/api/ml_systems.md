@@ -14,15 +14,17 @@ The ML systems components provide:
 
 ## Rate Limiter
 
-::: src.utils.rate_limiter
+The rate limiter helps manage API calls and resource usage.
+
+::: src.platform.utils.rate_limiter
 
 ## Cache Manager
 
-::: src.utils.cache_manager
+::: src.platform.utils.cache_manager
 
 ## Template Manager
 
-::: src.utils.templates
+::: src.platform.utils.templates
 
 ## Configuration
 
@@ -31,14 +33,14 @@ The ML systems are configured via Hydra configuration files. See `conf/ml_system
 ### Example Usage
 
 ```python
-from src.utils.rate_limiter import RateLimiter
-from src.utils.cache_manager import CacheManager
-from src.utils.templates import PromptTemplateManager
+from src.platform.utils.rate_limiter import RateLimiter
+from src.platform.utils.cache_manager import CacheManager
+from src.platform.utils.templates import TemplateManager
 
 # Initialize with configuration
 rate_limiter = RateLimiter()
 cache_manager = CacheManager()
-template_manager = PromptTemplateManager()
+template_manager = TemplateManager()
 
 # Use rate limiting decorator
 @rate_limiter.limit_requests("openai")
@@ -62,3 +64,27 @@ template = template_manager.get_template_for_user("classification", "user123")
 - **Zero API overruns** through rate limiting
 - **Data-driven optimization** through A/B testing
 - **Enterprise reliability** through comprehensive error handling
+
+## Data Processing
+
+Core utilities for data processing and validation.
+
+::: src.data.processing
+
+## Model Training
+
+Utilities for model training and evaluation.
+
+::: src.ml.training
+
+## Model Inference
+
+Utilities for model inference and prediction.
+
+::: src.ml.inference
+
+## Model Evaluation
+
+Tools for evaluating model performance.
+
+::: src.ml.evaluation

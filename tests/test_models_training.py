@@ -10,7 +10,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
-from src.models.training import (
+from src.ml.training import (
     evaluate_model_cv,
     hyperparameter_tuning,
     load_model,

@@ -8,9 +8,8 @@
 # import os
 # from dotenv import load_dotenv
 # from src.data.loading import load_data
-# )
-# from src.models.inference import predict
-# from src.models.training import load_model
+# from src.ml.inference import predict
+# from src.ml.training import load_model
 # from src.utils.common import get_model_path, load_config, setup_logging
 
 # # Load environment variables

@@ -122,7 +122,7 @@ class MLXProject(PythonProject):
             "*.joblib",  # Model files
             "data/raw/",
             "data/processed/",  # Data directories
-            "models/artifacts/",  # Model artifacts (preserve existing models/ structure)
+            "assets/artifacts/",  # Model artifacts (updated from models/ to assets/)
             "reports/generated/",  # Generated reports (preserve existing reports/ structure)
             "logs/",  # Log files
         ]
@@ -216,13 +216,13 @@ class MLXProject(PythonProject):
         # API development - use existing FastAPI app
         self.add_task(
             "api:dev",
-            exec="uvicorn src.api.app:app --reload --host 0.0.0.0 --port 8000",
+            exec="uvicorn src.platform.api.app:app --reload --host 0.0.0.0 --port 8000",
             description="Start existing FastAPI development server with auto-reload",
         )
 
         self.add_task(
             "api:prod",
-            exec="uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --workers 4",
+            exec="uvicorn src.platform.api.app:app --host 0.0.0.0 --port 8000 --workers 4",
             description="Start production FastAPI server",
         )
 

@@ -176,9 +176,9 @@ class SystemDiagnostics:
 
         # Check our modules
         try:
-            from src.utils.cache_manager import CacheManager  # noqa: F401
-            from src.utils.rate_limiter import RateLimiter  # noqa: F401
-            from src.utils.templates import TemplateManager  # noqa: F401
+            from src.platform.utils.cache_manager import CacheManager  # noqa: F401
+            from src.platform.utils.rate_limiter import RateLimiter  # noqa: F401
+            from src.platform.utils.templates import TemplateManager  # noqa: F401
 
             deps_status["core_modules"] = {"installed": True}
         except ImportError as e:
@@ -201,7 +201,7 @@ class SystemDiagnostics:
             }
 
         # Check source directories
-        src_dirs = ["src/", "src/utils/", "src/models/", "src/data/"]
+        src_dirs = ["src/", "src/utils/", "src/ml/", "src/data/"]
         for src_dir in src_dirs:
             path = Path(src_dir)
             env_status[src_dir] = {
@@ -234,9 +234,9 @@ def create_debug_test_file():
 Simple debug test file for troubleshooting.
 """
 import pytest
-from src.utils.rate_limiter import RateLimiter
-from src.utils.cache_manager import CacheManager
-from src.utils.templates import TemplateManager
+from src.platform.utils.rate_limiter import RateLimiter
+from src.platform.utils.cache_manager import CacheManager
+from src.platform.utils.templates import TemplateManager
 
 def test_basic_imports():
     """Test that basic imports work."""

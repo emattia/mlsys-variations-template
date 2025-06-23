@@ -21,7 +21,7 @@ def api_server():
             sys.executable,  # Use the same python that runs pytest
             "-m",
             "uvicorn",
-            "src.api.app:app",
+            "src.platform.api.app:app",
             "--host",
             "0.0.0.0",
             "--port",

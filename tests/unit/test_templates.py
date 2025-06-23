@@ -1,4 +1,4 @@
-"""Unit tests for the template management system."""
+"""Comprehensive unit tests for template management functionality."""
 
 import os
 import tempfile
@@ -8,7 +8,11 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-from src.utils.templates import PromptTestResult, PromptVersion, TemplateManager
+from src.platform.utils.templates import (
+    PromptTestResult,
+    PromptVersion,
+    TemplateManager,
+)
 
 
 class TestPromptVersion:

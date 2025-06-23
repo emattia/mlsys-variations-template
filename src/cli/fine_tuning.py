@@ -1,11 +1,18 @@
-"""CLI commands for fine-tuning operations."""
+"""
+Fine-tuning functionality for MLOps CLI.
+
+This module provides commands for fine-tuning machine learning models including:
+- Model training configuration
+- Dataset preparation and validation
+- Training monitoring and checkpointing
+"""
 
 from pathlib import Path
 
 import typer
 
-from src.config import ConfigManager
-from src.plugins import ExecutionContext, get_plugin
+from src.platform.config import ConfigManager
+from src.platform.plugins import ExecutionContext, get_plugin
 
 app = typer.Typer()
 

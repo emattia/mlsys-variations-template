@@ -1,12 +1,14 @@
-site_name: Analysis Template
-site_description: A streamlined data science project template
-site_author: Your Name
-repo_url: https://github.com/yourusername/analysis-template
-repo_name: analysis-template
+site_name: MLX Foundation
+site_description: A comprehensive MLX Foundation project for AI/ML systems
+site_author: MLX Foundation Team
+repo_url: https://github.com/yourusername/mlx-foundation
+repo_name: mlx-foundation
+site_url: https://yourusername.github.io/mlx-foundation/
 
 theme:
   name: material
   palette:
+    scheme: default
     primary: indigo
     accent: indigo
   features:
@@ -14,16 +16,23 @@ theme:
     - navigation.tracking
     - navigation.expand
     - navigation.indexes
+    - navigation.tabs
+    - navigation.sections
     - content.code.annotate
     - content.tabs.link
+    - content.code.copy
+    - search.highlight
+    - search.share
 
 markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
-  - pymdownx.highlight
+  - pymdownx.highlight:
+      anchor_linenums: true
   - pymdownx.inlinehilite
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.arithmatex:
       generic: true
   - tables
@@ -31,6 +40,8 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - pymdownx.emoji
+  - toc:
+      permalink: true
 
 plugins:
   - search
@@ -41,6 +52,7 @@ plugins:
             docstring_style: google
           rendering:
             show_source: true
+            heading_level: 2
 
 extra_javascript:
   - javascripts/mathjax.js
@@ -50,20 +62,71 @@ extra_javascript:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+
+  - Architecture:
+    - Overview: architecture/README.md
+    - Dual Layer Architecture: architecture/001-dual-layer-architecture.md
+    - Temporal Workflows: architecture/002-temporal-workflow-orchestration.md
+    - OpenTelemetry Observability: architecture/003-opentelemetry-observability.md
+    - Plugin Type System: architecture/004-plugin-type-system.md
+    - Configuration Management: architecture/005-hydra-pydantic-configuration.md
+    - Exception Hierarchy: architecture/006-exception-hierarchy.md
+    - Plugin Autodiscovery: architecture/007-plugin-autodiscovery.md
+
   - User Guide:
     - Project Structure: user-guide/project-structure.md
     - Data Processing: user-guide/data-processing.md
     - Modeling: user-guide/modeling.md
     - Evaluation: user-guide/evaluation.md
-  - Notebooks:
-    - Example Analysis: notebooks/example_analysis.md
+    - MLX Assistant Guide: mlx-assistant-guide.md
+    - Naming Configuration: naming-configuration-guide.md
+
   - API Reference:
+    - Overview: api/README.md
     - Data Utils: api/data_utils.md
     - ML Systems: api/ml_systems.md
+    - Plugin Management: api/plugin-management-api.md
+    - Workflow API: api/workflow-api.md
+    - Observability API: api/observability-api.md
+
   - Development:
     - Contributing: development/contributing.md
     - Testing: development/testing.md
     - Documentation: development/documentation.md
+    - Project Setup: development/project-setup.md
+    - Forking Tests: development/forking-tests.md
+    - Security Scanning: development/security_scanning.md
+    - GitHub Actions: development/github_actions_fixes.md
+    - NBDoc Guide: development/nbdoc_guide.md
+    - Documentation Overview: development/documentation_overview.md
+    - Branching Strategy: development/branching_strategy.md
+
+  - Implementation Guides:
+    - Phase 2 Implementation: phase-2-implementation-guide.md
+    - Next Implementation: next-implementation-guide.md
+    - UV Package Management: uv-package-management.md
+    - Config Migration: config-migration-notes.md
+    - Expert Systems Engineering: expert-systems-engineering-guide.md
+
+  - Project Reports:
+    - Project Analysis: project-analysis.md
+    - Implementation Summary: implementation-complete-summary.md
+    - Phase 2 Completion: phase-2-completion-summary.md
+    - MLX Migration Progress: mlx-migration-progress.md
+    - Naming Migration: naming-migration-completeness.md
+    - Naming System Summary: naming-system-implementation-summary.md
+
+  - Plugin Ecosystem:
+    - Plugin Design: plugin-ecosystem-design.md
+    - Components Architecture: plugins-and-components-architecture.md
+    - MLX Architecture: mlx-architecture.md
+
+  - Notebooks:
+    - Example Analysis: notebooks/example_analysis.md
+
+  - Reference:
+    - Glossary: glossary.md
+
   - About:
     - License: about/license.md
     - Changelog: about/changelog.md

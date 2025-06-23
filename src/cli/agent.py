@@ -1,9 +1,9 @@
-"""CLI commands for agent operations."""
+"""AI Agent management functionality for MLOps CLI."""
 
 import typer
 
-from src.config import ConfigManager
-from src.plugins import ExecutionContext, get_plugin
+from src.platform.config import ConfigManager
+from src.platform.plugins import ExecutionContext, get_plugin
 
 app = typer.Typer()
 

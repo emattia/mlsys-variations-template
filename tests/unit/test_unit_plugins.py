@@ -1,7 +1,7 @@
-"""Unit tests for plugin architecture."""
+"""Comprehensive unit tests for plugin system functionality."""
 
-from src.plugins.base import ExecutionContext, MLOpsComponent
-from src.plugins.registry import PluginRegistry
+from src.platform.plugins.base import ExecutionContext, MLOpsComponent
+from src.platform.plugins.registry import PluginRegistry
 
 
 class MockPlugin(MLOpsComponent):

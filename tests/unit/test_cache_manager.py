@@ -1,10 +1,10 @@
-"""Test cases for cache manager functionality."""
+"""Comprehensive unit tests for CacheManager functionality."""
 
 import tempfile
 import time
 from pathlib import Path
 
-from src.utils.cache_manager import CacheManager
+from src.platform.utils.cache_manager import CacheManager
 
 
 class TestCacheManager:

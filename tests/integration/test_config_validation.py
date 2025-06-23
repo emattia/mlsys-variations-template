@@ -1,8 +1,10 @@
+"""Integration tests for configuration validation."""
+
 from pathlib import Path
 
 import pytest
 
-from src.config import ConfigManager
+from src.platform.config import ConfigManager
 
 # The root directory of the configuration files.
 project_root = Path(__file__).parent.parent.parent

@@ -1,7 +1,9 @@
+"""Test API health endpoint."""
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from src.api.app import app
+from src.platform.api.app import app
 
 
 @pytest.mark.asyncio

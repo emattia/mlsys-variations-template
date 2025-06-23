@@ -1,4 +1,11 @@
-"""CLI commands for RAG operations."""
+"""
+RAG (Retrieval-Augmented Generation) functionality for MLOps CLI.
+
+This module provides commands for managing RAG pipelines including:
+- Vector store setup and management
+- Document ingestion and indexing
+- Query processing and retrieval
+"""
 
 import textwrap
 from pathlib import Path
@@ -7,8 +14,8 @@ import typer
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from src.config import ConfigManager
-from src.plugins import ExecutionContext, get_plugin
+from src.platform.config import ConfigManager
+from src.platform.plugins import ExecutionContext, get_plugin
 
 app = typer.Typer()
 

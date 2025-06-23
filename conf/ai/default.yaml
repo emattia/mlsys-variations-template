@@ -1,0 +1,71 @@
+# Default AI configuration
+# This file configures the AI agent framework components
+
+ai:
+  # LLM Provider Configuration
+  llm:
+    provider: "openai"  # openai, anthropic, local
+    model: "gpt-4"
+    temperature: 0.7
+    max_tokens: 2000
+    api_key: ${oc.env:OPENAI_API_KEY}  # Set via environment variable
+
+  # Agent Configuration
+  agents:
+    default_type: "react"  # react, langraph, crewai
+    max_iterations: 10
+    verbose: false
+
+  # RAG Configuration
+  rag:
+    chunk_size: 1000
+    chunk_overlap: 200
+    retrieval_method: "vector"  # vector, keyword, hybrid
+    top_k: 4
+    similarity_threshold: 0.0
+
+    # Vector Store Configuration
+    vector_store:
+      type: "chroma"  # chroma, faiss, memory
+      path: "data/vector_store"
+      collection_name: "default_collection"
+      embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+
+  # Monitoring Configuration
+  monitoring:
+    enabled: true
+    langfuse:
+      enabled: false
+      api_key: ${oc.env:LANGFUSE_API_KEY,null}
+      project_name: "ai-agents"
+
+    # Cost tracking
+    cost_tracking:
+      enabled: true
+      currency: "USD"
+      alert_threshold: 100.0  # Alert when monthly estimate exceeds this
+
+  # Prompt Engineering
+  prompts:
+    validation:
+      enabled: true
+      strict_mode: false
+
+    optimization:
+      enabled: false  # Disable by default as it requires test cases
+      strategy: "iterative"  # iterative, genetic, template_based
+
+  # Tools Configuration
+  tools:
+    # Built-in tools to enable
+    calculator: true
+    web_search: false  # Requires API setup
+    filesystem: true
+    code_executor: true
+    shell_command: false  # Disabled by default for security
+
+    # Tool security settings
+    security:
+      safe_directories: ["./data", "./temp", "./output"]
+      command_whitelist: ["ls", "pwd", "echo", "cat", "python", "git"]
+      execution_timeout: 30

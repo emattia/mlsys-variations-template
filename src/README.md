@@ -24,7 +24,7 @@ src/
 ```python
 # Example: Custom endpoint
 from src.api.routes import router
-from src.api.models import PredictionRequest
+from src.api.schemas import PredictionRequest
 
 @router.post("/custom-predict")
 async def custom_predict(request: PredictionRequest):
@@ -62,7 +62,7 @@ quality_report = validate_quality(features)
 
 ```python
 # Example: Model training
-from src.models import train_model, evaluate_model
+from src.ml import train_model, evaluate_model
 
 model = train_model(X_train, y_train, model_type="random_forest")
 metrics = evaluate_model(model, X_test, y_test)
@@ -245,7 +245,7 @@ except ValidationError as e:
 
 ### Model Errors
 ```python
-from src.models.exceptions import ModelError
+from src.ml.exceptions import ModelError
 
 try:
     model = load_model("model.pkl")

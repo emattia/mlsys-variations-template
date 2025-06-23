@@ -1,7 +1,6 @@
-"""Data ingestion workflow.
-
-This workflow handles ingesting data from various sources into the raw data
-directory.
+"""
+Data ingestion workflow for ML pipeline.
+This module handles loading, validating, and preprocessing data from various sources.
 """
 
 import argparse
@@ -15,7 +14,7 @@ from dotenv import load_dotenv
 
 from src.data.loading import load_data, save_data
 from src.data.validation import generate_data_quality_report, validate_schema
-from src.utils.common import get_data_path, load_config, setup_logging
+from src.platform.utils.common import get_data_path, load_config, setup_logging
 
 # Load environment variables
 load_dotenv()

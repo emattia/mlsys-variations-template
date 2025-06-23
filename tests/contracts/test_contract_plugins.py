@@ -1,7 +1,9 @@
+"""Contract tests to ensure plugin interface compliance."""
+
 import pytest
 
-from src.config import load_config
-from src.plugins import ExecutionContext, get_registry
+from src.platform.config import load_config
+from src.platform.plugins import ExecutionContext, get_registry
 
 
 def _all_plugin_names():
@@ -17,7 +19,7 @@ def test_plugin_contract(plugin_name):
     succeed—plugin authors can short-circuit execute() when running under the
     `TEST_MODE` env var.
     """
-    from src.plugins import get_plugin
+    from src.platform.plugins import get_plugin
 
     plugin = get_plugin(plugin_name, cache=False)
 
