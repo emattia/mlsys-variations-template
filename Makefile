@@ -146,13 +146,13 @@ install-trivy:
 
 install:
 	@echo "Installing production dependencies with uv..."
-	@command -v uv >/dev/null 2>&1 || { echo "uv not found. Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"; exit 1; }
+	@command -v uv >/dev/null 2>&1 || (echo "uv not found. Installing..."; curl -LsSf https://astral.sh/uv/install.sh | sh)
 	uv venv $(VENV)
 	uv pip install -e .
 
 install-dev:
 	@echo "Installing development dependencies with uv..."
-	@command -v uv >/dev/null 2>&1 || { echo "uv not found. Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"; exit 1; }
+	@command -v uv >/dev/null 2>&1 || (echo "uv not found. Installing..."; curl -LsSf https://astral.sh/uv/install.sh | sh)
 	uv venv $(VENV)
 	uv pip install -e ".[dev]"
 
