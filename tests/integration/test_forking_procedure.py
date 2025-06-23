@@ -110,9 +110,9 @@ class TestForkingProcedure:
                     text=True,
                     timeout=120,
                 )
-                assert result.returncode == 0, (
-                    f"mlx failed for {project_name}: {result.stderr}"
-                )
+                assert (
+                    result.returncode == 0
+                ), f"mlx failed for {project_name}: {result.stderr}"
                 self._verify_transformation_results(test_path, project_name)
 
     @pytest.mark.integration
@@ -140,9 +140,9 @@ class TestForkingProcedure:
 
         # Check that Python files exist in new directory
         assert (new_src / "__init__.py").exists()
-        assert len(list(new_src.glob("*.py"))) > 0, (
-            "Python files should exist in new directory"
-        )
+        assert (
+            len(list(new_src.glob("*.py"))) > 0
+        ), "Python files should exist in new directory"
 
     @pytest.mark.integration
     def test_pyproject_toml_updates(self, temp_project_dir: Path):
@@ -267,9 +267,9 @@ except ImportError as e:
             if config_file.exists():
                 content = config_file.read_text()
                 # Should not contain old template references
-                assert "analysis_template" not in content.lower(), (
-                    f"Config file {config_file} still contains analysis_template references"
-                )
+                assert (
+                    "analysis_template" not in content.lower()
+                ), f"Config file {config_file} still contains analysis_template references"
 
     @pytest.mark.integration
     def test_docker_configuration_updates(self, temp_project_dir: Path):
@@ -297,12 +297,12 @@ except ImportError as e:
                 # Should have project-specific references
                 expected_snake = project_name.replace("-", "_")
                 # At minimum, should not contain old template name
-                assert "analysis_template" not in content, (
-                    f"Docker file {docker_file} still contains analysis_template"
-                )
-                assert expected_snake in content, (
-                    f"Docker file {docker_file} does not contain {expected_snake}"
-                )
+                assert (
+                    "analysis_template" not in content
+                ), f"Docker file {docker_file} still contains analysis_template"
+                assert (
+                    expected_snake in content
+                ), f"Docker file {docker_file} does not contain {expected_snake}"
 
     @pytest.mark.integration
     def test_makefile_updates(self, temp_project_dir: Path):
@@ -323,9 +323,9 @@ except ImportError as e:
         if makefile_path.exists():
             content = makefile_path.read_text()
             # Should not contain old template references
-            assert "analysis_template" not in content, (
-                "Makefile still contains analysis_template references"
-            )
+            assert (
+                "analysis_template" not in content
+            ), "Makefile still contains analysis_template references"
 
     @pytest.mark.integration
     def test_github_workflows_updates(self, temp_project_dir: Path):
@@ -347,9 +347,9 @@ except ImportError as e:
             for workflow_file in workflows_dir.glob("*.yml"):
                 content = workflow_file.read_text()
                 # Should not contain old template references
-                assert "analysis_template" not in content, (
-                    f"Workflow {workflow_file} still contains analysis_template"
-                )
+                assert (
+                    "analysis_template" not in content
+                ), f"Workflow {workflow_file} still contains analysis_template"
 
     def _verify_transformation_results(self, project_dir: Path, project_name: str):
         """Helper method to verify transformation results."""
@@ -365,9 +365,9 @@ except ImportError as e:
         assert new_src.exists(), "New project directory should exist"
 
         # Check that __init__.py exists in new directory
-        assert (new_src / "__init__.py").exists(), (
-            "__init__.py should exist in new directory"
-        )
+        assert (
+            new_src / "__init__.py"
+        ).exists(), "__init__.py should exist in new directory"
 
         # Check pyproject.toml was updated
         pyproject_path = project_dir / "pyproject.toml"

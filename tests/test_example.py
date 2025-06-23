@@ -31,9 +31,9 @@ def test_data_processing(sample_data: dict[str, list[int]]) -> None:
     target = sample_data["target"]
 
     # Example assertion
-    assert len(features) == len(target), (
-        "Features and target should have the same length"
-    )
+    assert len(features) == len(
+        target
+    ), "Features and target should have the same length"
     assert sum(features) > 0, "Sum of features should be positive"
 
 

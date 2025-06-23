@@ -164,19 +164,19 @@ class TestFixedIntegration:
         logger.info(f"Successful results: {len(successful_results)}/{len(results)}")
 
         # All requests should succeed with the higher limits
-        assert len(successful_results) == 3, (
-            f"Expected all requests to succeed, but only {len(successful_results)} succeeded"
-        )
+        assert (
+            len(successful_results) == 3
+        ), f"Expected all requests to succeed, but only {len(successful_results)} succeeded"
 
         # Check rate limiter recorded the requests
         # Should show 3 requests or 2 if one was cached
         requests_made = int(status["requests"]["minute"].split("/")[0])
-        assert requests_made >= 2, (
-            f"Expected at least 2 requests recorded, got {requests_made}"
-        )
-        assert requests_made <= 3, (
-            f"Expected at most 3 requests recorded, got {requests_made}"
-        )
+        assert (
+            requests_made >= 2
+        ), f"Expected at least 2 requests recorded, got {requests_made}"
+        assert (
+            requests_made <= 3
+        ), f"Expected at most 3 requests recorded, got {requests_made}"
 
         # Check cache has at least one entry
         assert cache_stats["total_entries"] >= 1, "Expected at least one cache entry"
@@ -294,9 +294,9 @@ class TestFixedIntegration:
 
         # With the fixed rate limits, most requests should succeed
         success_rate = successful_requests / total_requests
-        assert success_rate >= 0.7, (
-            f"Success rate too low: {success_rate:.2%} (expected >= 70%)"
-        )
+        assert (
+            success_rate >= 0.7
+        ), f"Success rate too low: {success_rate:.2%} (expected >= 70%)"
 
         # Should have some cache hits (duplicate prompts)
         cache_hits = sum(1 for r in flat_results if r.get("cached", False))

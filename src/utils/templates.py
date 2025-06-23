@@ -374,7 +374,9 @@ class TemplateManager:
         if user_id:
             import hashlib
 
-            hash_val = int(hashlib.md5(user_id.encode(), usedforsecurity=False).hexdigest(), 16)
+            hash_val = int(
+                hashlib.md5(user_id.encode(), usedforsecurity=False).hexdigest(), 16
+            )
             use_version_a = (hash_val % 100) < (experiment["traffic_split"] * 100)
         else:
             import random
