@@ -53,7 +53,7 @@ def validate_toml_file(file_path: str) -> tuple[bool, str | None]:
         return False, str(err)
 
 
-def simple_toml_syntax_check(file_path: str) -> tuple[bool, str | None]:
+def simple_toml_syntax_check(file_path: str, loaded_data) -> tuple[bool, str | None]:
     """Perform a simple syntax check on a TOML file.
 
     This is a fallback when no TOML parser is available.
@@ -67,25 +67,25 @@ def simple_toml_syntax_check(file_path: str) -> tuple[bool, str | None]:
     """
     try:
         with open(file_path) as f:
-            content = f.read()
+            loaded_data = f.read()
 
         # Check for balanced brackets
-        if content.count("[") != content.count("]"):
+        if loaded_data.count("[") != loaded_data.count("]"):
             return False, "Unbalanced square brackets"
 
         # Check for balanced quotes
-        if content.count('"') % 2 != 0:
+        if loaded_data.count('"') % 2 != 0:
             return False, "Unbalanced double quotes"
 
-        if content.count("'") % 2 != 0:
+        if loaded_data.count("'") % 2 != 0:
             return False, "Unbalanced single quotes"
 
         # Check for balanced braces
-        if content.count("{") != content.count("}"):
+        if loaded_data.count("{") != loaded_data.count("}"):
             return False, "Unbalanced curly braces"
 
         # Check for common TOML syntax errors
-        lines = content.split("\n")
+        lines = loaded_data.split("\n")
         for i, line in enumerate(lines):
             line = line.strip()
 

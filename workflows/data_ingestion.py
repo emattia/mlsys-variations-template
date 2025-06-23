@@ -6,9 +6,10 @@ directory.
 
 import argparse
 import logging
-import os
 from pathlib import Path
 from typing import Any
+import os
+import json
 
 from dotenv import load_dotenv
 
@@ -96,7 +97,7 @@ def ingest_data(
         "destination_path": str(destination_path),
         "rows_count": rows_count,
         "columns_count": columns_count,
-        "columns": df.columns,
+        "columns": df.columns.tolist(),
         "success": True,
     }
 
@@ -107,8 +108,6 @@ def ingest_data(
         # Save quality report
         quality_report_path = Path(destination_path).with_suffix(".report.json")
         with open(quality_report_path, "w") as f:
-            import json
-
             json.dump(quality_report, f, indent=2)
         logger.info(f"Data quality report saved to {quality_report_path}")
 
@@ -154,7 +153,7 @@ if __name__ == "__main__":
             print("Data validation: PASSED")
         else:
             print(
-                f"Data validation: FAILED - "
+                "Data validation: FAILED - "
                 f"{len(result['validation']['errors'])} errors"
             )
 

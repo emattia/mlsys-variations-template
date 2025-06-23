@@ -153,6 +153,18 @@ class ModelParametersConfig(BaseModel):
     random_state: int = 42
     n_jobs: int = -1
 
+    def __getitem__(self, key):
+        """Make the config subscriptable like a dictionary."""
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        """Allow item assignment like a dictionary."""
+        setattr(self, key, value)
+
+    def get(self, key, default=None):
+        """Get value with default like a dictionary."""
+        return getattr(self, key, default)
+
 
 class HyperparameterRangesConfig(BaseModel):
     """Ranges for hyperparameter tuning."""
@@ -182,6 +194,7 @@ class ModelTrainingConfig(BaseModel):
 class DetailedModelConfig(BaseModel):
     """Configuration for a specific model."""
 
+    name: str = "default_model"
     model_type: str = "RandomForest"
     algorithm: str = "ensemble.RandomForestClassifier"
     parameters: ModelParametersConfig = Field(default_factory=ModelParametersConfig)
@@ -190,8 +203,52 @@ class DetailedModelConfig(BaseModel):
     )
     training: ModelTrainingConfig = Field(default_factory=ModelTrainingConfig)
 
+    def __init__(self, **data):
+        # Handle 'type' parameter for backward compatibility
+        if "type" in data:
+            data["model_type"] = data.pop("type")
+
+        # Handle parameters as dict
+        if "parameters" in data and isinstance(data["parameters"], dict):
+            data["parameters"] = ModelParametersConfig(**data["parameters"])
+
+        super().__init__(**data)
+
     class Config:
         protected_namespaces = ()
+
+    @property
+    def type(self) -> str:
+        """Alias for model_type for backward compatibility."""
+        return self.model_type
+
+    @type.setter
+    def type(self, value: str) -> None:
+        """Setter for type property."""
+        self.model_type = value
+
+    def __getattr__(self, name):
+        # Override for parameters to return dict-like access
+        if name == "parameters":
+            # Return a dict-like view of parameters
+            return ParametersDict(super().__getattribute__("parameters"))
+        return super().__getattribute__(name)
+
+
+class ParametersDict:
+    """Dict-like wrapper for ModelParametersConfig."""
+
+    def __init__(self, params_config):
+        self.config = params_config
+
+    def __getitem__(self, key):
+        return getattr(self.config, key)
+
+    def __setitem__(self, key, value):
+        setattr(self.config, key, value)
+
+    def get(self, key, default=None):
+        return getattr(self.config, key, default)
 
 
 class APISecurityConfig(BaseModel):
@@ -236,10 +293,21 @@ class APIConfig(BaseModel):
     workers: int = 1
     timeout: int = 120
     max_request_size: int = 1048576  # 1MB
+    cors_origins: list[str] = Field(default_factory=lambda: ["*"])
     security: APISecurityConfig = Field(default_factory=APISecurityConfig)
     models: APIModelsConfig = Field(default_factory=APIModelsConfig)
     monitoring: APIMonitoringConfig = Field(default_factory=APIMonitoringConfig)
     caching: APICachingConfig = Field(default_factory=APICachingConfig)
+
+    class Config:
+        protected_namespaces = ()
+
+    @field_validator("port")
+    def validate_port(cls, v):
+        """Validate port number."""
+        if not isinstance(v, int) or v < 1 or v > 65535:
+            raise ValueError("Port must be an integer between 1 and 65535")
+        return v
 
 
 # Main Configuration Model that brings everything together

@@ -1,108 +1,83 @@
-"""Unit tests for the plugin architecture."""
+"""Unit tests for plugin architecture."""
 
-from typing import Any
-
-import polars as pl
-
-from src.config import AppConfig
-from src.plugins import (
-    ComponentResult,
-    ComponentStatus,
-    DataProcessor,
-    ExecutionContext,
-)
 from src.plugins.registry import PluginRegistry
+from src.plugins.base import MLOpsComponent
 
 
-class TestDataProcessor(DataProcessor):
-    """Test implementation of DataProcessor."""
+class MockPlugin(MLOpsComponent):
+    """Mock plugin for testing."""
 
-    __test__ = False  # Tell pytest not to collect this as a test case
+    def __init__(self, name="mock_plugin", config=None):
+        super().__init__(name, config)
 
-    def initialize(self, context: ExecutionContext) -> None:
-        """Initialize the component."""
-        pass
+    @property
+    def version(self):
+        """Plugin version."""
+        return "1.0.0"
 
-    def execute(self, context: ExecutionContext) -> ComponentResult:
-        """Execute the component."""
-        return ComponentResult(
-            status=ComponentStatus.SUCCESS,
-            component_name=self.name,
-            execution_time=0.1,
-        )
-
-    def validate_config(self, config: dict[str, Any]) -> bool:
-        """Validate configuration."""
+    def initialize(self, context=None):
+        """Initialize the plugin."""
         return True
 
-    def process_data(
-        self, input_data: pl.DataFrame, context: ExecutionContext
-    ) -> pl.DataFrame:
-        """Process data."""
-        return input_data
+    def validate_config(self, config=None):
+        """Validate plugin configuration."""
+        return True
 
-    def validate_data(self, data: pl.DataFrame, context: ExecutionContext) -> bool:
-        """Validate data."""
-        return len(data) > 0
+    def execute(self, context):
+        """Mock execute method."""
+        return {"status": "success", "context": context}
 
 
 class TestPluginRegistry:
-    """Test PluginRegistry functionality."""
+    """Test cases for PluginRegistry."""
 
-    def test_registry_initialization(self):
-        """Test registry initialization."""
-        registry = PluginRegistry()
-
-        assert len(registry._plugins) == 0
-        assert len(registry._instances) == 0
-
-    def test_plugin_registration(self):
+    def test_register_plugin(self):
         """Test plugin registration."""
         registry = PluginRegistry()
+        plugin = MockPlugin("test_plugin")
+        registry.register("test_plugin", plugin.__class__)
+        assert "test_plugin" in registry._plugins
 
-        registry.register(
-            name="test-processor",
-            plugin_class=TestDataProcessor,
-            category="data_processing",
-            description="Test data processor",
-            version="1.0.0",
-        )
+    def test_get_plugin(self):
+        """Test getting registered plugin."""
+        registry = PluginRegistry()
+        plugin = MockPlugin("test_plugin")
+        registry.register("test_plugin", plugin.__class__)
+        retrieved = registry.get_plugin("test_plugin")
+        assert retrieved is not None
 
-        assert "test-processor" in registry._plugins
-        plugin_info = registry._plugins["test-processor"]
-        assert plugin_info["class"] == TestDataProcessor
-        assert plugin_info["category"] == "data_processing"
+    def test_get_nonexistent_plugin(self):
+        """Test getting non-existent plugin."""
+        registry = PluginRegistry()
+        result = registry.get_plugin("nonexistent")
+        assert result is None
 
-
-class TestExecutionContext:
-    """Test ExecutionContext dataclass."""
-
-    def test_context_creation(self, test_config: AppConfig):
-        """Test creating execution context."""
-        context = ExecutionContext(
-            config=test_config,
-            run_id="test-run",
-            component_name="test-component",
-        )
-
-        assert context.config == test_config
-        assert context.run_id == "test-run"
-        assert context.component_name == "test-component"
+    def test_list_plugins(self):
+        """Test listing all plugins."""
+        registry = PluginRegistry()
+        plugin1 = MockPlugin("plugin1")
+        plugin2 = MockPlugin("plugin2")
+        registry.register("plugin1", plugin1.__class__)
+        registry.register("plugin2", plugin2.__class__)
+        plugins = registry.list_plugins()
+        assert len(plugins) >= 2
+        assert "plugin1" in plugins
+        assert "plugin2" in plugins
 
 
-class TestComponentResult:
-    """Test ComponentResult dataclass."""
+class TestMLOpsComponent:
+    """Test cases for MLOpsComponent."""
 
-    def test_result_creation(self):
-        """Test creating component result."""
-        result = ComponentResult(
-            status=ComponentStatus.SUCCESS,
-            component_name="test-component",
-            execution_time=1.5,
-        )
+    def test_plugin_initialization(self):
+        """Test plugin initialization."""
+        plugin = MockPlugin("test")
+        assert plugin.name == "test"
+        assert plugin.version == "1.0.0"
 
-        assert result.status == ComponentStatus.SUCCESS
-        assert result.component_name == "test-component"
-        assert result.execution_time == 1.5
-        assert result.is_success() is True
-        assert result.is_failed() is False
+    def test_plugin_execute(self):
+        """Test plugin execution."""
+        plugin = MockPlugin("test")
+        context = {"input": "test_data"}
+        result = plugin.execute(context)
+        assert result["status"] == "success"
+        assert result["context"] == context

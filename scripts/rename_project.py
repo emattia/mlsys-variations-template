@@ -1,5 +1,3 @@
-import os
-import subprocess
 from pathlib import Path
 
 import toml
@@ -22,10 +20,10 @@ FILES_TO_REPLACE = [
 def replace_in_file(file_path: Path, old: str, new: str):
     """Replaces all occurrences of old with new in a file."""
     try:
-        content = file_path.read_text()
-        if old in content:
-            new_content = content.replace(old, new)
-            file_path.write_text(new_content)
+        loaded_data = file_path.read_text()
+        if old in loaded_data:
+            _newloaded_data = loaded_data.replace(old, new)
+            file_path.write_text(_newloaded_data)
             typer.echo(f"Updated {file_path}")
     except Exception as e:
         typer.echo(f"Error updating {file_path}: {e}", err=True)
@@ -34,14 +32,14 @@ def replace_in_file(file_path: Path, old: str, new: str):
 def update_toml_cli_name(file_path: Path, new_name: str):
     """Updates the CLI entry point name in pyproject.toml."""
     try:
-        data = toml.load(file_path)
-        if "project" in data and "scripts" in data["project"]:
-            if OLD_CLI_NAME in data["project"]["scripts"]:
-                data["project"]["scripts"][new_name] = data["project"]["scripts"].pop(
+        _data = toml.load(file_path)
+        if "project" in _data and "scripts" in _data["project"]:
+            if OLD_CLI_NAME in _data["project"]["scripts"]:
+                _data["project"]["scripts"][new_name] = _data["project"]["scripts"].pop(
                     OLD_CLI_NAME
                 )
                 with open(file_path, "w") as f:
-                    toml.dump(data, f)
+                    toml.dump(_data, f)
                 typer.echo(f"Updated CLI entry point in {file_path} to '{new_name}'")
     except Exception as e:
         typer.echo(f"Error updating {file_path}: {e}", err=True)

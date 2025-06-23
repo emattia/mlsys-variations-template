@@ -105,6 +105,20 @@ class PluginRegistry:
 
         return self._plugins[name]["class"]
 
+    def get_plugin(self, name: str) -> MLOpsComponent | None:
+        """Get plugin instance by name.
+
+        Args:
+            name: Name of the plugin
+
+        Returns:
+            Plugin instance or None if not found
+        """
+        try:
+            return self.create_instance(name, cache=True)
+        except KeyError:
+            return None
+
     def create_instance(
         self,
         name: str,

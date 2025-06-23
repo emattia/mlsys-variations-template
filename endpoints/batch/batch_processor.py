@@ -3,12 +3,12 @@
 This module provides a service for processing batch prediction requests.
 """
 
-import argparse
-import json
-import logging
-import os
 import time
+import os
+import json
 from datetime import datetime
+import argparse
+import logging
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -114,7 +114,7 @@ class BatchRequestHandler(FileSystemEventHandler):
             output_path = self.output_dir / output_filename
 
             # Run batch prediction
-            result = batch_predict(
+            _result = batch_predict(
                 model_path=model_path,
                 input_path=data_path,
                 output_path=output_path,
@@ -131,8 +131,8 @@ class BatchRequestHandler(FileSystemEventHandler):
                 "model_path": str(model_path),
                 "data_path": data_path,
                 "output_path": str(output_path),
-                "num_predictions": result["num_predictions"],
-                "has_probabilities": result["has_probabilities"],
+                "num_predictions": _result["num_predictions"],
+                "has_probabilities": _result["has_probabilities"],
             }
 
             # Save response
@@ -141,7 +141,7 @@ class BatchRequestHandler(FileSystemEventHandler):
                 json.dump(response, f, indent=2)
 
             logger.info(
-                f"Batch prediction complete: {result['num_predictions']} "
+                f"Batch prediction complete: {_result['num_predictions']} "
                 f"predictions saved to {output_path}"
             )
 

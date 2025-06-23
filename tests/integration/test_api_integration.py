@@ -3,13 +3,14 @@ Integration tests for the API endpoints.
 """
 
 import asyncio
-import subprocess
-import sys
 import time
+
+import sys
 from collections.abc import AsyncGenerator
 
 import httpx
 import pytest
+import subprocess
 
 
 @pytest.fixture(scope="session")
@@ -50,6 +51,7 @@ async def async_client(api_server) -> AsyncGenerator[httpx.AsyncClient, None]:
 class TestAPIIntegration:
     """Integration tests for the API."""
 
+    @pytest.mark.integration
     async def test_health_endpoint(self, async_client: httpx.AsyncClient):
         """Test health endpoint integration."""
         response = await async_client.get("/api/v1/health")
@@ -62,6 +64,7 @@ class TestAPIIntegration:
         assert "version" in data
         assert "models_loaded" in data
 
+    @pytest.mark.integration
     async def test_root_endpoint(self, async_client: httpx.AsyncClient):
         """Test root endpoint integration."""
         response = await async_client.get("/")
@@ -71,6 +74,7 @@ class TestAPIIntegration:
         assert data["message"] == "MLOps Template API"
         assert data["version"] == "1.0.0"
 
+    @pytest.mark.integration
     async def test_models_endpoints(self, async_client: httpx.AsyncClient):
         """Test model management endpoints."""
         # List models (should be empty initially)
@@ -97,6 +101,7 @@ class TestAPIIntegration:
         assert "features" in model_info
         assert "type" in model_info
 
+    @pytest.mark.integration
     async def test_prediction_workflow(self, async_client: httpx.AsyncClient):
         """Test complete prediction workflow."""
         # Create default model first
@@ -134,6 +139,7 @@ class TestAPIIntegration:
         data = response.json()
         assert len(data["prediction"]) == 2  # Two predictions
 
+    @pytest.mark.integration
     async def test_error_handling(self, async_client: httpx.AsyncClient):
         """Test API error handling."""
         # Test prediction with non-existent model
@@ -158,6 +164,7 @@ class TestAPIIntegration:
         response = await async_client.get("/api/v1/models/nonexistent")
         assert response.status_code == 404
 
+    @pytest.mark.integration
     async def test_openapi_docs(self, async_client: httpx.AsyncClient):
         """Test OpenAPI documentation endpoints."""
         # Test OpenAPI schema
@@ -169,8 +176,9 @@ class TestAPIIntegration:
         # Test docs endpoint
         response = await async_client.get("/docs")
         assert response.status_code == 200
-        assert "text/html" in response.headers["content-type"]
+        assert "text/html" in response.headers["loaded_data-type"]
 
+    @pytest.mark.integration
     async def test_concurrent_predictions(self, async_client: httpx.AsyncClient):
         """Test concurrent predictions."""
         # Create default model first
@@ -201,6 +209,7 @@ class TestAPIIntegration:
 class TestAPIPerformance:
     """Performance tests for the API."""
 
+    @pytest.mark.integration
     async def test_prediction_performance(self, async_client: httpx.AsyncClient):
         """Test prediction endpoint performance."""
         # Create default model
@@ -229,6 +238,7 @@ class TestAPIPerformance:
         assert avg_response_time < 1.0  # Average response time under 1 second
         assert max_response_time < 2.0  # Max response time under 2 seconds
 
+    @pytest.mark.integration
     async def test_batch_prediction_performance(self, async_client: httpx.AsyncClient):
         """Test batch prediction performance."""
         # Create default model

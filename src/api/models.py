@@ -14,14 +14,14 @@ class PredictionRequest(BaseModel):
         protected_namespaces=(),
         json_schema_extra={
             "example": {
-                "features": [5.1, 3.5, 1.4, 0.2],
+                "features": [[5.1, 3.5, 1.4, 0.2], [4.9, 3.0, 1.4, 0.2]],
                 "model_name": "default",
                 "return_probabilities": False,
             }
         },
     )
 
-    features: list[float | int] = Field(
+    features: list[list[float | int]] = Field(
         ..., description="Input features for prediction", min_length=1
     )
     model_name: str = Field(
@@ -40,24 +40,20 @@ class PredictionResponse(BaseModel):
         protected_namespaces=(),
         json_schema_extra={
             "example": {
-                "prediction": [1],
-                "probabilities": [0.1, 0.9],
+                "predictions": [0, 1],
+                "probabilities": [[0.9, 0.1], [0.3, 0.7]],
                 "model_name": "default",
-                "timestamp": "2024-01-01T12:00:00Z",
-                "processing_time_ms": 15.2,
+                "status": "success",
             }
         },
     )
 
-    prediction: list[float | int | str] = Field(..., description="Model predictions")
+    predictions: list[float | int | str] = Field(..., description="Model predictions")
     probabilities: list[list[float]] | None = Field(
         default=None, description="Prediction probabilities (for classification models)"
     )
     model_name: str = Field(..., description="Name of the model used")
-    timestamp: datetime = Field(..., description="Timestamp of the prediction")
-    processing_time_ms: float = Field(
-        ..., description="Processing time in milliseconds"
-    )
+    status: str = Field(..., description="Status of the prediction")
 
 
 class BatchPredictionRequest(BaseModel):

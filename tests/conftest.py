@@ -40,7 +40,7 @@ def temp_dir() -> Generator[Path, None, None]:
 @pytest.fixture(scope="session")
 def config_manager(temp_dir: Path) -> ConfigManager:
     """Create a test configuration manager."""
-    config_dir = temp_dir / "conf"
+    config_dir = temp_dir / "con"
     manager = ConfigManager(config_dir=config_dir)
     manager.create_default_config_files()
     return manager

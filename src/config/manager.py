@@ -44,6 +44,9 @@ class ConfigManager:
         self.version_base = version_base
         self._hydra_config: DictConfig | None = None
         self._app_config: Config | None = None
+        self._config: Config | None = (
+            None  # Add _config attribute for test compatibility
+        )
 
         # Ensure config directory exists
         self.config_dir.mkdir(parents=True, exist_ok=True)
@@ -405,6 +408,151 @@ class ConfigManager:
             except ValueError:
                 # Keep as string
                 return value
+
+    def load_from_dict(self, config_data: dict[str, Any]) -> None:
+        """Load configuration from a dictionary.
+
+        Args:
+            config_data: Dictionary containing configuration data
+        """
+        try:
+            # Try to create Config model first
+            config_instance = Config(**config_data)
+
+            # Check if the config data was actually used or if defaults were applied
+            # by comparing a few key fields that should be different if data was used
+            model_dump = config_instance.model_dump()
+            data_was_used = False
+
+            # Check if any of the provided keys exist in the model
+            for key in config_data.keys():
+                if key in model_dump:
+                    data_was_used = True
+                    break
+
+            if data_was_used:
+                self._app_config = config_instance
+                self._config = self._app_config
+                # Also store raw config for flexibility
+                self._raw_config = config_data
+                logger.info("Configuration loaded from dictionary successfully")
+            else:
+                # The data wasn't recognized by the Config model, store as raw
+                raise ValueError("Config data doesn't match expected schema")
+
+        except Exception as e:
+            # If it fails, store as raw dict for flexibility
+            logger.warning(f"Could not create Config model: {e}, storing as raw config")
+            self._raw_config = config_data
+            self._config = None
+            self._app_config = None
+            logger.info("Configuration loaded from dictionary as raw data")
+
+    def load_from_file(self, file_path: str | Path) -> None:
+        """Load configuration from a file.
+
+        Args:
+            file_path: Path to the configuration file (YAML or JSON)
+        """
+        file_path = Path(file_path)
+        if not file_path.exists():
+            raise FileNotFoundError(f"Configuration file not found: {file_path}")
+
+        try:
+            config_data = self._load_yaml_config(file_path)
+            self.load_from_dict(config_data)
+            logger.info(f"Configuration loaded from file: {file_path}")
+        except Exception as e:
+            logger.error(f"Failed to load configuration from file {file_path}: {e}")
+            raise
+
+    def set(self, key: str, value: Any) -> None:
+        """Set a configuration value.
+
+        Args:
+            key: Configuration key (supports dot notation for nested keys)
+            value: Value to set
+        """
+        # Initialize raw config if needed
+        if not hasattr(self, "_raw_config"):
+            if self._app_config:
+                self._raw_config = self._app_config.model_dump()
+            else:
+                self._raw_config = {}
+
+        # Handle nested keys
+        keys = key.split(".")
+        current = self._raw_config
+        for k in keys[:-1]:
+            if k not in current:
+                current[k] = {}
+            current = current[k]
+
+        current[keys[-1]] = value
+
+        # Try to recreate Config model
+        try:
+            self._app_config = Config(**self._raw_config)
+            self._config = self._app_config
+        except Exception:
+            # Keep as raw config if model creation fails
+            pass
+
+    def get(self, key: str, default: Any = None) -> Any:
+        """Get a configuration value.
+
+        Args:
+            key: Configuration key (supports dot notation for nested keys)
+            default: Default value if key not found
+
+        Returns:
+            Configuration value or default
+        """
+        # Try raw config first (more flexible)
+        if hasattr(self, "_raw_config") and self._raw_config:
+            current = self._raw_config
+            keys = key.split(".")
+            try:
+                for k in keys:
+                    current = current[k]
+                return current
+            except (KeyError, TypeError):
+                pass
+
+        # Try structured config
+        if self._app_config is not None:
+            keys = key.split(".")
+            current = self._app_config.model_dump()
+            try:
+                for k in keys:
+                    current = current[k]
+                return current
+            except (KeyError, TypeError):
+                pass
+
+        return default
+
+    def save_to_file(self, file_path: str | Path) -> None:
+        """Save configuration to a file.
+
+        Args:
+            file_path: Path where to save the configuration
+        """
+        file_path = Path(file_path)
+
+        if hasattr(self, "_raw_config") and self._raw_config:
+            config_data = self._raw_config
+        elif self._app_config:
+            config_data = self._app_config.model_dump()
+        else:
+            config_data = {}
+
+        try:
+            self._save_yaml(config_data, file_path)
+            logger.info(f"Configuration saved to file: {file_path}")
+        except Exception as e:
+            logger.error(f"Failed to save configuration to file {file_path}: {e}")
+            raise
 
 
 # Global configuration manager instance

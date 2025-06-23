@@ -44,11 +44,11 @@ def package_name(name: str):
         data = toml.load(pyproject_path)
         if (
             "tool" in data
-            and "ruff" in data["tool"]
-            and "lint" in data["tool"]["ruff"]
-            and "isort" in data["tool"]["ruff"]["lint"]
+            and "ruf" in data["tool"]
+            and "lint" in data["tool"]["ruf"]
+            and "isort" in data["tool"]["ruf"]["lint"]
         ):
-            data["tool"]["ruff"]["lint"]["isort"]["known-first-party"] = [name]
+            data["tool"]["ruf"]["lint"]["isort"]["known-first-party"] = [name]
         else:
             typer.echo(
                 "Could not find [tool.ruff.lint.isort] in pyproject.toml", err=True

@@ -13,13 +13,13 @@ Example:
 """
 
 import argparse
-import shutil
-import subprocess
 import sys
-import tempfile
 import tomllib
 from pathlib import Path
 from typing import Dict
+import shutil
+import subprocess
+import tempfile
 
 
 def run_command(cmd: list, cwd: Path, timeout: int = 60) -> subprocess.CompletedProcess:
@@ -140,9 +140,9 @@ def verify_transformation(project_dir: Path, project_name: str) -> Dict[str, boo
         except Exception as e:
             print(f"Warning: Could not parse pyproject.toml: {e}")
             # Fall back to text-based verification
-            content = pyproject_path.read_text()
+            loaded_data = pyproject_path.read_text()
             kebab_case = project_name.replace("_", "-")
-            if f'name = "{kebab_case}"' in content:
+            if f'name = "{kebab_case}"' in loaded_data:
                 results["pyproject_updated"] = True
                 print("✅ Verified project name update via text search")
 

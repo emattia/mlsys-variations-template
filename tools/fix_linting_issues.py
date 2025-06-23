@@ -21,7 +21,7 @@ def fix_double_underscore_kwargs(file_path: str) -> int:
         Number of replacements made
     """
     with open(file_path) as f:
-        content = f.read()
+        loaded_data = f.read()
 
     # Replace __keyword with keyword
     patterns = [
@@ -57,14 +57,13 @@ def fix_double_underscore_kwargs(file_path: str) -> int:
 
     total_count = 0
     for pattern, replacement in patterns:
-        new_content, count = re.subn(pattern, replacement, content)
+        new_loaded_data, count = re.subn(pattern, replacement, loaded_data)
         if count > 0:
-            content = new_content
             total_count += count
 
     if total_count > 0:
         with open(file_path, "w") as f:
-            f.write(content)
+            f.write(loaded_data)
 
         print(f"Fixed {total_count} double underscore keyword arguments in {file_path}")
 

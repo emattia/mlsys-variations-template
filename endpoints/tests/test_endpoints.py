@@ -143,13 +143,13 @@ def test_batch_request_handler(
                     "num_predictions": 10,
                     "has_probabilities": True,
                     "model_path": str(model_dir / "model.pkl"),
-                    "input_path": "data.csv",
+                    "input_path": "_data.csv",
                     "output_path": str(output_dir / "predictions.csv"),
                 }
 
                 # Create a request file
                 request_data = {
-                    "data_path": "data.csv",
+                    "data_path": "_data.csv",
                     "model_name": "model",
                     "return_probabilities": True,
                 }
@@ -204,7 +204,7 @@ def test_batch_request_handler_error(
 
                 # Create a request file
                 request_data = {
-                    "data_path": "data.csv",
+                    "data_path": "_data.csv",
                     "model_name": "model",
                     "return_probabilities": True,
                 }

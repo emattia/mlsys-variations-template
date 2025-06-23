@@ -17,8 +17,7 @@ import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
-import yaml
+from typing import Any, Dict, List, Optional, Union
 import hashlib
 from enum import Enum
 
@@ -27,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 class SecurityLevel(Enum):
     """Security compliance levels."""
+
     BASIC = "basic"
     ENHANCED = "enhanced"
     ENTERPRISE = "enterprise"
@@ -35,6 +35,7 @@ class SecurityLevel(Enum):
 
 class ScanType(Enum):
     """Types of security scans."""
+
     FILESYSTEM = "filesystem"
     CONTAINER = "container"
     DEPENDENCIES = "dependencies"
@@ -46,6 +47,7 @@ class ScanType(Enum):
 @dataclass
 class SecurityFinding:
     """Represents a security finding."""
+
     scan_type: ScanType
     severity: str
     title: str
@@ -60,6 +62,7 @@ class SecurityFinding:
 @dataclass
 class SecurityReport:
     """Comprehensive security report."""
+
     scan_timestamp: float
     project_path: str
     security_level: SecurityLevel
@@ -67,22 +70,22 @@ class SecurityReport:
     sbom: Optional[Dict[str, Any]] = None
     compliance_status: Dict[str, bool] = field(default_factory=dict)
     metrics: Dict[str, Union[int, float]] = field(default_factory=dict)
-    
+
     @property
     def critical_findings(self) -> List[SecurityFinding]:
         """Get critical severity findings."""
         return [f for f in self.findings if f.severity.upper() == "CRITICAL"]
-    
+
     @property
     def high_findings(self) -> List[SecurityFinding]:
-        """Get high severity findings.""" 
+        """Get high severity findings."""
         return [f for f in self.findings if f.severity.upper() == "HIGH"]
-    
+
     @property
     def total_findings(self) -> int:
         """Total number of findings."""
         return len(self.findings)
-    
+
     @property
     def risk_score(self) -> float:
         """Calculate risk score based on findings."""
@@ -93,16 +96,18 @@ class SecurityReport:
 
 class SecurityHardeningFramework:
     """Comprehensive security hardening framework."""
-    
-    def __init__(self, project_path: Path, security_level: SecurityLevel = SecurityLevel.ENHANCED):
+
+    def __init__(
+        self, project_path: Path, security_level: SecurityLevel = SecurityLevel.ENHANCED
+    ):
         self.project_path = Path(project_path)
         self.security_level = security_level
         self.tools_config = self._load_tools_config()
         self.policies = self._load_security_policies()
-        
+
         # Ensure required tools are available
         self._verify_security_tools()
-    
+
     def _load_tools_config(self) -> Dict[str, Any]:
         """Load security tools configuration."""
         return {
@@ -110,126 +115,139 @@ class SecurityHardeningFramework:
                 "binary": "trivy",
                 "filesystem_args": ["fs", "--scanners", "vuln,secret,misconfig"],
                 "image_args": ["image"],
-                "output_format": "json"
+                "output_format": "json",
             },
             "bandit": {
                 "binary": "bandit",
                 "args": ["-r", "-f", "json"],
-                "config_file": ".bandit"
+                "config_file": ".bandit",
             },
             "safety": {
                 "binary": "safety",
                 "args": ["check", "--json"],
-                "ignore_file": ".safety-ignore"
+                "ignore_file": ".safety-ignore",
             },
             "cosign": {
                 "binary": "cosign",
                 "verify_args": ["verify"],
-                "sign_args": ["sign"]
+                "sign_args": ["sign"],
             },
             "syft": {
                 "binary": "syft",
                 "args": ["-o", "spdx-json"],
-                "output_format": "spdx-json"
-            }
+                "output_format": "spdx-json",
+            },
         }
-    
+
     def _load_security_policies(self) -> Dict[str, Any]:
         """Load security policies based on security level."""
         base_policies = {
             "max_critical_findings": 0,
             "max_high_findings": 5,
             "max_medium_findings": 20,
-            "required_scans": [ScanType.FILESYSTEM, ScanType.DEPENDENCIES, ScanType.CODE],
+            "required_scans": [
+                ScanType.FILESYSTEM,
+                ScanType.DEPENDENCIES,
+                ScanType.CODE,
+            ],
             "sbom_required": True,
             "signature_verification": False,
-            "compliance_frameworks": ["cis", "nist"]
+            "compliance_frameworks": ["cis", "nist"],
         }
-        
+
         level_overrides = {
             SecurityLevel.BASIC: {
                 "max_high_findings": 10,
                 "max_medium_findings": 50,
                 "required_scans": [ScanType.FILESYSTEM, ScanType.CODE],
-                "sbom_required": False
+                "sbom_required": False,
             },
             SecurityLevel.ENHANCED: {
                 "signature_verification": True,
                 "required_scans": [
-                    ScanType.FILESYSTEM, ScanType.DEPENDENCIES, 
-                    ScanType.CODE, ScanType.SECRETS
-                ]
+                    ScanType.FILESYSTEM,
+                    ScanType.DEPENDENCIES,
+                    ScanType.CODE,
+                    ScanType.SECRETS,
+                ],
             },
             SecurityLevel.ENTERPRISE: {
                 "max_high_findings": 2,
                 "max_medium_findings": 10,
                 "signature_verification": True,
                 "required_scans": list(ScanType),
-                "compliance_frameworks": ["cis", "nist", "sox", "pci"]
+                "compliance_frameworks": ["cis", "nist", "sox", "pci"],
             },
             SecurityLevel.CRITICAL: {
                 "max_high_findings": 0,
                 "max_medium_findings": 5,
                 "signature_verification": True,
-                "required_scans": list(ScanType)
-            }
+                "required_scans": list(ScanType),
+            },
         }
-        
+
         policies = base_policies.copy()
         if self.security_level in level_overrides:
             policies.update(level_overrides[self.security_level])
-        
+
         return policies
-    
+
     def _verify_security_tools(self):
         """Verify that required security tools are available."""
         required_tools = ["trivy"]
-        
-        if self.security_level in [SecurityLevel.ENHANCED, SecurityLevel.ENTERPRISE, SecurityLevel.CRITICAL]:
+
+        if self.security_level in [
+            SecurityLevel.ENHANCED,
+            SecurityLevel.ENTERPRISE,
+            SecurityLevel.CRITICAL,
+        ]:
             required_tools.extend(["bandit", "safety"])
-        
+
         if self.policies.get("sbom_required"):
             required_tools.append("syft")
-        
+
         if self.policies.get("signature_verification"):
             required_tools.append("cosign")
-        
+
         missing_tools = []
         for tool in required_tools:
             if not self._tool_available(self.tools_config[tool]["binary"]):
                 missing_tools.append(tool)
-        
+
         if missing_tools:
             raise RuntimeError(f"Missing security tools: {missing_tools}")
-    
+
     def _tool_available(self, tool_binary: str) -> bool:
         """Check if a security tool is available."""
         try:
-            subprocess.run([tool_binary, "--version"], 
-                         capture_output=True, check=True)
+            subprocess.run([tool_binary, "--version"], capture_output=True, check=True)
             return True
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
-    
+
     def run_comprehensive_scan(self) -> SecurityReport:
         """Run comprehensive security scan based on security level."""
-        logger.info(f"Starting comprehensive security scan at level: {self.security_level.value}")
-        
+        logger.info(
+            f"Starting comprehensive security scan at level: {self.security_level.value}"
+        )
+
         report = SecurityReport(
             scan_timestamp=time.time(),
             project_path=str(self.project_path),
-            security_level=self.security_level
+            security_level=self.security_level,
         )
-        
+
         # Run required scans
         for scan_type in self.policies["required_scans"]:
             try:
                 findings = self._run_scan_by_type(scan_type)
                 report.findings.extend(findings)
-                logger.info(f"Completed {scan_type.value} scan: {len(findings)} findings")
+                logger.info(
+                    f"Completed {scan_type.value} scan: {len(findings)} findings"
+                )
             except Exception as e:
                 logger.error(f"Failed to run {scan_type.value} scan: {e}")
-        
+
         # Generate SBOM if required
         if self.policies.get("sbom_required"):
             try:
@@ -237,18 +255,20 @@ class SecurityHardeningFramework:
                 logger.info("Generated SBOM")
             except Exception as e:
                 logger.error(f"Failed to generate SBOM: {e}")
-        
+
         # Check compliance
         report.compliance_status = self._check_compliance(report)
-        
+
         # Calculate metrics
         report.metrics = self._calculate_metrics(report)
-        
-        logger.info(f"Security scan completed: {report.total_findings} findings, "
-                   f"risk score: {report.risk_score:.1f}")
-        
+
+        logger.info(
+            f"Security scan completed: {report.total_findings} findings, "
+            f"risk score: {report.risk_score:.1f}"
+        )
+
         return report
-    
+
     def _run_scan_by_type(self, scan_type: ScanType) -> List[SecurityFinding]:
         """Run a specific type of security scan."""
         if scan_type == ScanType.FILESYSTEM:
@@ -265,33 +285,37 @@ class SecurityHardeningFramework:
             return self._run_configuration_scan()
         else:
             return []
-    
+
     def _run_trivy_filesystem_scan(self) -> List[SecurityFinding]:
         """Run Trivy filesystem vulnerability scan."""
         config = self.tools_config["trivy"]
-        
+
         cmd = [config["binary"]] + config["filesystem_args"]
         if self.security_level in [SecurityLevel.ENTERPRISE, SecurityLevel.CRITICAL]:
             cmd.extend(["--severity", "CRITICAL,HIGH,MEDIUM"])
         else:
             cmd.extend(["--severity", "CRITICAL,HIGH"])
-        
+
         cmd.extend(["-f", config["output_format"], str(self.project_path)])
-        
+
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-            
+
             if result.returncode == 0 or result.stdout:
-                scan_results = json.loads(result.stdout) if result.stdout else {"Results": []}
+                scan_results = (
+                    json.loads(result.stdout) if result.stdout else {"Results": []}
+                )
                 return self._parse_trivy_results(scan_results, ScanType.FILESYSTEM)
             else:
-                logger.warning(f"Trivy filesystem scan returned no results: {result.stderr}")
+                logger.warning(
+                    f"Trivy filesystem scan returned no results: {result.stderr}"
+                )
                 return []
-                
+
         except Exception as e:
             logger.error(f"Trivy filesystem scan failed: {e}")
             return []
-    
+
     def _run_trivy_container_scan(self) -> List[SecurityFinding]:
         """Run Trivy container image scan."""
         # Look for Dockerfile or built images
@@ -299,144 +323,183 @@ class SecurityHardeningFramework:
         if not dockerfile_path.exists():
             logger.info("No Dockerfile found, skipping container scan")
             return []
-        
+
         # For this implementation, we'll scan the Dockerfile itself
         # In practice, you'd scan built images
         config = self.tools_config["trivy"]
-        
-        cmd = [config["binary"], "config", "--severity", "CRITICAL,HIGH", 
-               "-f", "json", str(dockerfile_path)]
-        
+
+        cmd = [
+            config["binary"],
+            "config",
+            "--severity",
+            "CRITICAL,HIGH",
+            "-f",
+            "json",
+            str(dockerfile_path),
+        ]
+
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-            
+
             if result.returncode == 0 or result.stdout:
-                scan_results = json.loads(result.stdout) if result.stdout else {"Results": []}
+                scan_results = (
+                    json.loads(result.stdout) if result.stdout else {"Results": []}
+                )
                 return self._parse_trivy_results(scan_results, ScanType.CONTAINER)
             else:
                 return []
-                
+
         except Exception as e:
             logger.error(f"Trivy container scan failed: {e}")
             return []
-    
+
     def _run_dependency_scan(self) -> List[SecurityFinding]:
         """Run dependency vulnerability scan using Safety."""
         if not self._tool_available("safety"):
             logger.warning("Safety not available, skipping dependency scan")
             return []
-        
+
         config = self.tools_config["safety"]
         findings = []
-        
+
         # Check for requirements files
         req_files = [
-            "requirements.txt", "requirements-dev.txt", "requirements-prod.txt"
+            "requirements.txt",
+            "requirements-dev.txt",
+            "requirements-prod.txt",
         ]
-        
+
         for req_file in req_files:
             req_path = self.project_path / req_file
             if req_path.exists():
                 cmd = [config["binary"]] + config["args"] + ["-r", str(req_path)]
-                
+
                 try:
-                    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-                    
+                    result = subprocess.run(
+                        cmd, capture_output=True, text=True, check=False
+                    )
+
                     if result.stdout:
                         safety_results = json.loads(result.stdout)
-                        findings.extend(self._parse_safety_results(safety_results, req_file))
-                        
+                        findings.extend(
+                            self._parse_safety_results(safety_results, req_file)
+                        )
+
                 except Exception as e:
                     logger.error(f"Safety scan failed for {req_file}: {e}")
-        
+
         return findings
-    
+
     def _run_code_scan(self) -> List[SecurityFinding]:
         """Run code security scan using Bandit."""
         if not self._tool_available("bandit"):
             logger.warning("Bandit not available, skipping code scan")
             return []
-        
+
         config = self.tools_config["bandit"]
         src_paths = []
-        
+
         # Find Python source directories
         for path in ["src", "app", "lib"]:
             src_path = self.project_path / path
             if src_path.exists() and src_path.is_dir():
                 src_paths.append(str(src_path))
-        
+
         if not src_paths:
             logger.info("No Python source directories found, skipping code scan")
             return []
-        
+
         findings = []
         for src_path in src_paths:
             cmd = [config["binary"]] + config["args"] + [src_path]
-            
+
             try:
-                result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-                
+                result = subprocess.run(
+                    cmd, capture_output=True, text=True, check=False
+                )
+
                 if result.stdout:
                     bandit_results = json.loads(result.stdout)
                     findings.extend(self._parse_bandit_results(bandit_results))
-                    
+
             except Exception as e:
                 logger.error(f"Bandit scan failed for {src_path}: {e}")
-        
+
         return findings
-    
+
     def _run_secrets_scan(self) -> List[SecurityFinding]:
         """Run secrets detection scan."""
         # Use Trivy's secret detection capability
         config = self.tools_config["trivy"]
-        
-        cmd = [config["binary"], "fs", "--scanners", "secret", 
-               "--severity", "CRITICAL,HIGH,MEDIUM", 
-               "-f", "json", str(self.project_path)]
-        
+
+        cmd = [
+            config["binary"],
+            "fs",
+            "--scanners",
+            "secret",
+            "--severity",
+            "CRITICAL,HIGH,MEDIUM",
+            "-f",
+            "json",
+            str(self.project_path),
+        ]
+
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-            
+
             if result.returncode == 0 or result.stdout:
-                scan_results = json.loads(result.stdout) if result.stdout else {"Results": []}
+                scan_results = (
+                    json.loads(result.stdout) if result.stdout else {"Results": []}
+                )
                 return self._parse_trivy_results(scan_results, ScanType.SECRETS)
             else:
                 return []
-                
+
         except Exception as e:
             logger.error(f"Secrets scan failed: {e}")
             return []
-    
+
     def _run_configuration_scan(self) -> List[SecurityFinding]:
         """Run configuration security scan."""
         # Use Trivy's misconfiguration detection
         config = self.tools_config["trivy"]
-        
-        cmd = [config["binary"], "fs", "--scanners", "misconfig",
-               "--severity", "CRITICAL,HIGH,MEDIUM",
-               "-f", "json", str(self.project_path)]
-        
+
+        cmd = [
+            config["binary"],
+            "fs",
+            "--scanners",
+            "misconfig",
+            "--severity",
+            "CRITICAL,HIGH,MEDIUM",
+            "-f",
+            "json",
+            str(self.project_path),
+        ]
+
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-            
+
             if result.returncode == 0 or result.stdout:
-                scan_results = json.loads(result.stdout) if result.stdout else {"Results": []}
+                scan_results = (
+                    json.loads(result.stdout) if result.stdout else {"Results": []}
+                )
                 return self._parse_trivy_results(scan_results, ScanType.CONFIGURATION)
             else:
                 return []
-                
+
         except Exception as e:
             logger.error(f"Configuration scan failed: {e}")
             return []
-    
-    def _parse_trivy_results(self, results: Dict[str, Any], scan_type: ScanType) -> List[SecurityFinding]:
+
+    def _parse_trivy_results(
+        self, results: Dict[str, Any], scan_type: ScanType
+    ) -> List[SecurityFinding]:
         """Parse Trivy scan results."""
         findings = []
-        
+
         for result in results.get("Results", []):
             target = result.get("Target", "")
-            
+
             # Parse vulnerabilities
             for vuln in result.get("Vulnerabilities", []):
                 finding = SecurityFinding(
@@ -451,11 +514,11 @@ class SecurityHardeningFramework:
                         "package_name": vuln.get("PkgName"),
                         "installed_version": vuln.get("InstalledVersion"),
                         "fixed_version": vuln.get("FixedVersion"),
-                        "references": vuln.get("References", [])
-                    }
+                        "references": vuln.get("References", []),
+                    },
                 )
                 findings.append(finding)
-            
+
             # Parse misconfigurations
             for misconfig in result.get("Misconfigurations", []):
                 finding = SecurityFinding(
@@ -468,11 +531,11 @@ class SecurityHardeningFramework:
                     metadata={
                         "type": misconfig.get("Type"),
                         "id": misconfig.get("ID"),
-                        "avd_id": misconfig.get("AVDID")
-                    }
+                        "avd_id": misconfig.get("AVDID"),
+                    },
                 )
                 findings.append(finding)
-            
+
             # Parse secrets
             for secret in result.get("Secrets", []):
                 finding = SecurityFinding(
@@ -486,41 +549,43 @@ class SecurityHardeningFramework:
                     metadata={
                         "rule_id": secret.get("RuleID"),
                         "category": secret.get("Category"),
-                        "match": secret.get("Match")
-                    }
+                        "match": secret.get("Match"),
+                    },
                 )
                 findings.append(finding)
-        
+
         return findings
-    
-    def _parse_safety_results(self, results: List[Dict[str, Any]], req_file: str) -> List[SecurityFinding]:
+
+    def _parse_safety_results(
+        self, results: List[Dict[str, Any]], req_file: str
+    ) -> List[SecurityFinding]:
         """Parse Safety scan results."""
         findings = []
-        
+
         for vuln in results:
             finding = SecurityFinding(
                 scan_type=ScanType.DEPENDENCIES,
                 severity="HIGH",  # Safety typically reports high-severity vulnerabilities
                 title=f"Vulnerable dependency: {vuln.get('package_name')}",
-                description=vuln.get('advisory', ''),
+                description=vuln.get("advisory", ""),
                 file_path=req_file,
-                cve_id=vuln.get('cve'),
+                cve_id=vuln.get("cve"),
                 recommendation=f"Update to version {vuln.get('safe_versions', 'latest')}",
                 metadata={
-                    "package_name": vuln.get('package_name'),
-                    "installed_version": vuln.get('installed_version'),
-                    "safe_versions": vuln.get('safe_versions'),
-                    "vulnerability_id": vuln.get('vulnerability_id')
-                }
+                    "package_name": vuln.get("package_name"),
+                    "installed_version": vuln.get("installed_version"),
+                    "safe_versions": vuln.get("safe_versions"),
+                    "vulnerability_id": vuln.get("vulnerability_id"),
+                },
             )
             findings.append(finding)
-        
+
         return findings
-    
+
     def _parse_bandit_results(self, results: Dict[str, Any]) -> List[SecurityFinding]:
         """Parse Bandit scan results."""
         findings = []
-        
+
         for result in results.get("results", []):
             finding = SecurityFinding(
                 scan_type=ScanType.CODE,
@@ -529,46 +594,52 @@ class SecurityHardeningFramework:
                 description=result.get("issue_text", ""),
                 file_path=result.get("filename"),
                 line_number=result.get("line_number"),
-                recommendation=result.get("more_info", "Review and fix the security issue"),
+                recommendation=result.get(
+                    "more_info", "Review and fix the security issue"
+                ),
                 metadata={
                     "test_id": result.get("test_id"),
                     "confidence": result.get("issue_confidence"),
-                    "code": result.get("code")
-                }
+                    "code": result.get("code"),
+                },
             )
             findings.append(finding)
-        
+
         return findings
-    
+
     def generate_sbom(self) -> Dict[str, Any]:
         """Generate Software Bill of Materials using Syft."""
         if not self._tool_available("syft"):
             raise RuntimeError("Syft not available for SBOM generation")
-        
+
         config = self.tools_config["syft"]
-        
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             output_file = f.name
-        
+
         try:
-            cmd = [config["binary"]] + config["args"] + [str(self.project_path), "-o", f"json={output_file}"]
-            
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            
-            with open(output_file, 'r') as f:
+            cmd = (
+                [config["binary"]]
+                + config["args"]
+                + [str(self.project_path), "-o", f"json={output_file}"]
+            )
+
+            subprocess.run(cmd, capture_output=True, text=True, check=True)
+
+            with open(output_file, "r") as f:
                 sbom_data = json.load(f)
-            
+
             # Enhance SBOM with additional metadata
             enhanced_sbom = {
                 "sbom_version": "1.0",
                 "generation_timestamp": time.time(),
                 "project_path": str(self.project_path),
                 "tool": "syft",
-                "data": sbom_data
+                "data": sbom_data,
             }
-            
+
             return enhanced_sbom
-            
+
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"SBOM generation failed: {e}")
         finally:
@@ -577,93 +648,105 @@ class SecurityHardeningFramework:
                 os.unlink(output_file)
             except FileNotFoundError:
                 pass
-    
-    def verify_signatures(self, container_image: Optional[str] = None) -> Dict[str, Any]:
+
+    def verify_signatures(
+        self, container_image: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Verify container image signatures using Cosign."""
         if not self._tool_available("cosign"):
             raise RuntimeError("Cosign not available for signature verification")
-        
+
         if not container_image:
             # Try to infer image name from project
             container_image = f"{self.project_path.name}:latest"
-        
+
         config = self.tools_config["cosign"]
-        
+
         try:
             cmd = [config["binary"]] + config["verify_args"] + [container_image]
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-            
-            verification_result = {
+
+            {
                 "image": container_image,
                 "verified": result.returncode == 0,
                 "timestamp": time.time(),
                 "output": result.stdout,
-                "error": result.stderr if result.returncode != 0 else None
+                "error": result.stderr if result.returncode != 0 else None,
             }
-            
-            return verification_result
-            
+
+            return result
+
         except Exception as e:
             return {
                 "image": container_image,
                 "verified": False,
                 "timestamp": time.time(),
-                "error": str(e)
+                "error": str(e),
             }
-    
+
     def _check_compliance(self, report: SecurityReport) -> Dict[str, bool]:
         """Check compliance against security policies."""
         compliance = {}
-        
+
         # Check finding thresholds
         critical_count = len(report.critical_findings)
         high_count = len(report.high_findings)
-        medium_count = len([f for f in report.findings if f.severity.upper() == "MEDIUM"])
-        
-        compliance["critical_findings"] = critical_count <= self.policies["max_critical_findings"]
+        medium_count = len(
+            [f for f in report.findings if f.severity.upper() == "MEDIUM"]
+        )
+
+        compliance["critical_findings"] = (
+            critical_count <= self.policies["max_critical_findings"]
+        )
         compliance["high_findings"] = high_count <= self.policies["max_high_findings"]
-        compliance["medium_findings"] = medium_count <= self.policies["max_medium_findings"]
-        
+        compliance["medium_findings"] = (
+            medium_count <= self.policies["max_medium_findings"]
+        )
+
         # Check required scans
         completed_scans = set(f.scan_type for f in report.findings)
         required_scans = set(self.policies["required_scans"])
         compliance["required_scans"] = required_scans.issubset(completed_scans)
-        
+
         # Check SBOM requirement
         if self.policies.get("sbom_required"):
             compliance["sbom_generated"] = report.sbom is not None
-        
+
         # Overall compliance
         compliance["overall"] = all(compliance.values())
-        
+
         return compliance
-    
-    def _calculate_metrics(self, report: SecurityReport) -> Dict[str, Union[int, float]]:
+
+    def _calculate_metrics(
+        self, report: SecurityReport
+    ) -> Dict[str, Union[int, float]]:
         """Calculate security metrics."""
         findings_by_severity = {}
         findings_by_type = {}
-        
+
         for finding in report.findings:
             # Count by severity
             severity = finding.severity.upper()
             findings_by_severity[severity] = findings_by_severity.get(severity, 0) + 1
-            
+
             # Count by scan type
             scan_type = finding.scan_type.value
             findings_by_type[scan_type] = findings_by_type.get(scan_type, 0) + 1
-        
+
         metrics = {
             "total_findings": report.total_findings,
             "risk_score": report.risk_score,
             "scan_duration": time.time() - report.scan_timestamp,
             **{f"{k.lower()}_findings": v for k, v in findings_by_severity.items()},
-            **{f"{k}_findings": v for k, v in findings_by_type.items()}
+            **{f"{k}_findings": v for k, v in findings_by_type.items()},
         }
-        
+
         return metrics
-    
-    def generate_security_report(self, report: SecurityReport, output_format: str = "json") -> str:
+
+    def generate_security_report(
+        self, report: SecurityReport, output_format: str = "json"
+    ) -> str:
         """Generate formatted security report."""
         if output_format == "json":
             return self._generate_json_report(report)
@@ -673,7 +756,7 @@ class SecurityHardeningFramework:
             return self._generate_sarif_report(report)
         else:
             raise ValueError(f"Unsupported output format: {output_format}")
-    
+
     def _generate_json_report(self, report: SecurityReport) -> str:
         """Generate JSON security report."""
         report_data = {
@@ -682,7 +765,7 @@ class SecurityHardeningFramework:
                 "project_path": report.project_path,
                 "security_level": report.security_level.value,
                 "total_findings": report.total_findings,
-                "risk_score": report.risk_score
+                "risk_score": report.risk_score,
             },
             "compliance": report.compliance_status,
             "metrics": report.metrics,
@@ -696,17 +779,17 @@ class SecurityHardeningFramework:
                     "line_number": f.line_number,
                     "cve_id": f.cve_id,
                     "recommendation": f.recommendation,
-                    "metadata": f.metadata
+                    "metadata": f.metadata,
                 }
                 for f in report.findings
-            ]
+            ],
         }
-        
+
         if report.sbom:
             report_data["sbom"] = report.sbom
-        
+
         return json.dumps(report_data, indent=2, default=str)
-    
+
     def _generate_html_report(self, report: SecurityReport) -> str:
         """Generate HTML security report."""
         # Simplified HTML report template
@@ -748,7 +831,7 @@ class SecurityHardeningFramework:
 </body>
 </html>
         """
-        
+
         findings_html = ""
         for finding in report.findings:
             severity_class = finding.severity.lower()
@@ -757,33 +840,39 @@ class SecurityHardeningFramework:
                 <h3>{finding.title}</h3>
                 <p><strong>Severity:</strong> {finding.severity}</p>
                 <p><strong>Type:</strong> {finding.scan_type.value}</p>
-                {f'<p><strong>File:</strong> {finding.file_path}</p>' if finding.file_path else ''}
-                {f'<p><strong>Line:</strong> {finding.line_number}</p>' if finding.line_number else ''}
+                {f"<p><strong>File:</strong> {finding.file_path}</p>" if finding.file_path else ""}
+                {f"<p><strong>Line:</strong> {finding.line_number}</p>" if finding.line_number else ""}
                 <p><strong>Description:</strong> {finding.description}</p>
-                {f'<p><strong>Recommendation:</strong> {finding.recommendation}</p>' if finding.recommendation else ''}
+                {f"<p><strong>Recommendation:</strong> {finding.recommendation}</p>" if finding.recommendation else ""}
             </div>
             """
-        
+
         return html_template.format(
             project_name=Path(report.project_path).name,
             security_level=report.security_level.value,
-            scan_date=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(report.scan_timestamp)),
+            scan_date=time.strftime(
+                "%Y-%m-%d %H:%M:%S", time.localtime(report.scan_timestamp)
+            ),
             risk_score=report.risk_score,
             total_findings=report.total_findings,
             critical_count=len(report.critical_findings),
             high_count=len(report.high_findings),
-            medium_count=len([f for f in report.findings if f.severity.upper() == "MEDIUM"]),
-            findings_html=findings_html
+            medium_count=len(
+                [f for f in report.findings if f.severity.upper() == "MEDIUM"]
+            ),
+            findings_html=findings_html,
         )
-    
+
     def _generate_sarif_report(self, report: SecurityReport) -> str:
         """Generate SARIF format report for GitHub Security."""
         sarif_rules = {}
         sarif_results = []
-        
+
         for finding in report.findings:
-            rule_id = f"{finding.scan_type.value}_{finding.title.replace(' ', '_').lower()}"
-            
+            rule_id = (
+                f"{finding.scan_type.value}_{finding.title.replace(' ', '_').lower()}"
+            )
+
             # Add rule if not exists
             if rule_id not in sarif_rules:
                 sarif_rules[rule_id] = {
@@ -791,49 +880,57 @@ class SecurityHardeningFramework:
                     "shortDescription": {"text": finding.title},
                     "fullDescription": {"text": finding.description},
                     "defaultConfiguration": {
-                        "level": "error" if finding.severity.upper() in ["CRITICAL", "HIGH"] else "warning"
-                    }
+                        "level": "error"
+                        if finding.severity.upper() in ["CRITICAL", "HIGH"]
+                        else "warning"
+                    },
                 }
-            
+
             # Add result
             result = {
                 "ruleId": rule_id,
                 "message": {"text": finding.description},
-                "level": "error" if finding.severity.upper() in ["CRITICAL", "HIGH"] else "warning"
+                "level": "error"
+                if finding.severity.upper() in ["CRITICAL", "HIGH"]
+                else "warning",
             }
-            
+
             if finding.file_path:
-                result["locations"] = [{
-                    "physicalLocation": {
-                        "artifactLocation": {"uri": finding.file_path},
-                        "region": {"startLine": finding.line_number or 1}
+                result["locations"] = [
+                    {
+                        "physicalLocation": {
+                            "artifactLocation": {"uri": finding.file_path},
+                            "region": {"startLine": finding.line_number or 1},
+                        }
                     }
-                }]
-            
+                ]
+
             sarif_results.append(result)
-        
+
         sarif_report = {
             "version": "2.1.0",
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-            "runs": [{
-                "tool": {
-                    "driver": {
-                        "name": "MLX Security Scanner",
-                        "version": "1.0.0",
-                        "informationUri": "https://github.com/mlx/security-scanner",
-                        "rules": list(sarif_rules.values())
-                    }
-                },
-                "results": sarif_results
-            }]
+            "$schema": "https://raw.githubuserloaded_data.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "runs": [
+                {
+                    "tool": {
+                        "driver": {
+                            "name": "MLX Security Scanner",
+                            "version": "1.0.0",
+                            "informationUri": "https://github.com/mlx/security-scanner",
+                            "rules": list(sarif_rules.values()),
+                        }
+                    },
+                    "results": sarif_results,
+                }
+            ],
         }
-        
+
         return json.dumps(sarif_report, indent=2)
-    
+
     def create_security_baseline(self) -> Dict[str, Any]:
         """Create security baseline for the project."""
         baseline_report = self.run_comprehensive_scan()
-        
+
         baseline = {
             "created_at": time.time(),
             "project_path": str(self.project_path),
@@ -847,30 +944,32 @@ class SecurityHardeningFramework:
                     "file_path": f.file_path,
                     "checksum": hashlib.sha256(
                         f"{f.scan_type.value}{f.title}{f.file_path or ''}".encode()
-                    ).hexdigest()[:16]
+                    ).hexdigest()[:16],
                 }
                 for f in baseline_report.findings
-            ]
+            ],
         }
-        
+
         # Save baseline
         baseline_file = self.project_path / ".security_baseline.json"
-        with open(baseline_file, 'w') as f:
+        with open(baseline_file, "w") as f:
             json.dump(baseline, f, indent=2)
-        
-        logger.info(f"Security baseline created with {len(baseline['allowed_findings'])} allowed findings")
+
+        logger.info(
+            f"Security baseline created with {len(baseline['allowed_findings'])} allowed findings"
+        )
         return baseline
-    
+
     def compare_with_baseline(self, current_report: SecurityReport) -> Dict[str, Any]:
         """Compare current scan with security baseline."""
         baseline_file = self.project_path / ".security_baseline.json"
-        
+
         if not baseline_file.exists():
             return {"status": "no_baseline", "message": "No security baseline found"}
-        
+
         with open(baseline_file) as f:
             baseline = json.load(f)
-        
+
         # Create checksums for current findings
         current_checksums = set()
         for f in current_report.findings:
@@ -878,14 +977,14 @@ class SecurityHardeningFramework:
                 f"{f.scan_type.value}{f.title}{f.file_path or ''}".encode()
             ).hexdigest()[:16]
             current_checksums.add(checksum)
-        
+
         # Create checksums for baseline findings
         baseline_checksums = set(f["checksum"] for f in baseline["allowed_findings"])
-        
+
         # Find new and resolved findings
         new_findings = current_checksums - baseline_checksums
         resolved_findings = baseline_checksums - current_checksums
-        
+
         comparison = {
             "status": "compared",
             "baseline_date": baseline["created_at"],
@@ -894,85 +993,94 @@ class SecurityHardeningFramework:
             "current_findings": current_report.total_findings,
             "new_findings": len(new_findings),
             "resolved_findings": len(resolved_findings),
-            "regression_detected": len(new_findings) > 0
+            "regression_detected": len(new_findings) > 0,
         }
-        
+
         return comparison
 
 
 # CLI interface for security hardening
 if __name__ == "__main__":
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Security Hardening Framework")
-    parser.add_argument("command", choices=[
-        "scan", "sbom", "verify", "baseline", "compare", "report"
-    ])
+    parser.add_argument(
+        "command", choices=["scan", "sbom", "verify", "baseline", "compare", "report"]
+    )
     parser.add_argument("--project-path", default=".", help="Project path to scan")
-    parser.add_argument("--security-level", choices=[l.value for l in SecurityLevel], 
-                       default="enhanced", help="Security level")
-    parser.add_argument("--output-format", choices=["json", "html", "sarif"], 
-                       default="json", help="Output format")
+    parser.add_argument(
+        "--security-level",
+        choices=[level.value for level in SecurityLevel],
+        default="enhanced",
+        help="Security level",
+    )
+    parser.add_argument(
+        "--output-format",
+        choices=["json", "html", "sarif"],
+        default="json",
+        help="Output format",
+    )
     parser.add_argument("--output-file", help="Output file path")
     parser.add_argument("--container-image", help="Container image for verification")
-    
+
     args = parser.parse_args()
-    
+
     # Setup logging
-    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-    
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
     framework = SecurityHardeningFramework(
-        Path(args.project_path), 
-        SecurityLevel(args.security_level)
+        Path(args.project_path), SecurityLevel(args.security_level)
     )
-    
+
     try:
         if args.command == "scan":
             report = framework.run_comprehensive_scan()
             output = framework.generate_security_report(report, args.output_format)
-            
+
             if args.output_file:
-                with open(args.output_file, 'w') as f:
+                with open(args.output_file, "w") as f:
                     f.write(output)
                 print(f"Security report saved to: {args.output_file}")
             else:
                 print(output)
-        
+
         elif args.command == "sbom":
             sbom = framework.generate_sbom()
             output = json.dumps(sbom, indent=2)
-            
+
             if args.output_file:
-                with open(args.output_file, 'w') as f:
+                with open(args.output_file, "w") as f:
                     f.write(output)
                 print(f"SBOM saved to: {args.output_file}")
             else:
                 print(output)
-        
+
         elif args.command == "verify":
             result = framework.verify_signatures(args.container_image)
             print(json.dumps(result, indent=2))
-        
+
         elif args.command == "baseline":
             baseline = framework.create_security_baseline()
-            print(f"Security baseline created with {len(baseline['allowed_findings'])} findings")
-        
+            print(
+                f"Security baseline created with {len(baseline['allowed_findings'])} findings"
+            )
+
         elif args.command == "compare":
             report = framework.run_comprehensive_scan()
             comparison = framework.compare_with_baseline(report)
             print(json.dumps(comparison, indent=2))
-        
+
         elif args.command == "report":
             report = framework.run_comprehensive_scan()
             output = framework.generate_security_report(report, args.output_format)
-            
+
             if args.output_file:
-                with open(args.output_file, 'w') as f:
+                with open(args.output_file, "w") as f:
                     f.write(output)
                 print(f"Report saved to: {args.output_file}")
             else:
                 print(output)
-    
+
     except Exception as e:
         logger.error(f"Command failed: {e}")
-        exit(1) 
+        exit(1)

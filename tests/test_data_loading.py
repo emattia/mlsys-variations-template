@@ -1,21 +1,14 @@
 """Tests for data loading module.
-
 This module tests the functions in src.data.loading.
 """
 
 from __future__ import annotations
-
-import tempfile
 from pathlib import Path
-
 import polars as pl
 import pytest
+import tempfile
 
-from src.data.loading import (
-    load_data,
-    load_local_dataset,
-    save_data,
-)
+from src.data.loading import load_data, save_data, load_local_dataset
 
 
 class TestLoadData:

@@ -16,6 +16,7 @@ scenarios = {
 }
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("scenario_name, overrides", scenarios.items())
 def test_config_scenario(scenario_name, overrides):
     """

@@ -48,7 +48,11 @@ def safe_pickle_load(file_path: Path) -> Any:
 class ModelService:
     """Service for managing model loading and predictions."""
 
-    def __init__(self, config_manager: ConfigManager):
+    def __init__(self, config_manager: ConfigManager = None):
+        if config_manager is None:
+            from ..config.manager import get_config_manager
+
+            config_manager = get_config_manager()
         self.config_manager = config_manager
         self.models: dict[str, dict[str, Any]] = {}
         self.startup_time = time.time()
@@ -135,15 +139,15 @@ class ModelService:
 
     def predict(
         self,
+        model_name: str,
         features: list[float | int] | list[list[float | int]],
-        model_name: str = "default",
         return_probabilities: bool = False,
     ) -> tuple[list[Any], list[list[float]] | None, float]:
         """Make predictions using the specified model."""
         start_time = time.time()
 
         if model_name not in self.models:
-            raise ValueError(f"Model '{model_name}' not loaded")
+            raise ValueError(f"Model '{model_name}' not found")
 
         model = self.models[model_name]["model"]
 
@@ -159,11 +163,15 @@ class ModelService:
         probabilities = None
         if return_probabilities and hasattr(model, "predict_proba"):
             proba = model.predict_proba(X)
-            probabilities = proba.tolist()
+            probabilities = proba.tolist() if hasattr(proba, "tolist") else proba
 
         processing_time = (time.time() - start_time) * 1000  # Convert to milliseconds
 
-        return predictions.tolist(), probabilities, processing_time
+        # Convert predictions to list if not already
+        predictions_list = (
+            predictions.tolist() if hasattr(predictions, "tolist") else predictions
+        )
+        return predictions_list, probabilities, processing_time
 
     def get_model_info(self, model_name: str) -> ModelInfo | None:
         """Get information about a loaded model."""

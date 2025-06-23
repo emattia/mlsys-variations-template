@@ -43,10 +43,10 @@ def _get_repo_dirs() -> list[str]:
 
 def _extract_doc_dirs() -> list[str]:
     """Parse the markdown file and extract the directory names from the ASCII tree."""
-    content = DOC_FILE.read_text()
+    loaded_data = DOC_FILE.read_text()
 
     # Extract the fenced code block containing the tree (```).
-    tree_match = re.search(r"```[\s\S]*?```", content)
+    tree_match = re.search(r"```[\s\S]*?```", loaded_data)
     if not tree_match:
         print("❌  Could not find an ASCII tree fenced code block in the doc.")
         sys.exit(1)

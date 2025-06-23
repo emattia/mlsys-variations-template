@@ -1,10 +1,8 @@
 """Tests for data validation module.
-
 This module tests the functions in src.data.validation.
 """
 
 from __future__ import annotations
-
 import polars as pl
 import pytest
 
@@ -71,7 +69,7 @@ class TestValidateSchema:
         )
         expected_schema = {"id": pl.Int64, "name": pl.Utf8}
         is_valid, errors = validate_schema(df, expected_schema)
-        assert is_valid is False
+        assert not is_valid
         assert len(errors) > 0
 
 
@@ -138,7 +136,6 @@ class TestGenerateDataQualityReport:
             }
         )
         report = generate_data_quality_report(df)
-
         assert report["row_count"] == 3
         assert report["column_count"] == 2
         assert "missing_values" in report

@@ -10,16 +10,12 @@ This module provides comprehensive plugin development and management capabilitie
 
 import json
 import logging
-import os
-import shutil
 import subprocess
-import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List
 import yaml
-import importlib.util
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -27,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class PluginType(Enum):
     """Types of MLX plugins."""
+
     ML_FRAMEWORK = "ml_framework"
     DATA_PROCESSOR = "data_processor"
     MODEL_PROVIDER = "model_provider"
@@ -38,6 +35,7 @@ class PluginType(Enum):
 
 class PluginStatus(Enum):
     """Plugin development status."""
+
     TEMPLATE = "template"
     DEVELOPMENT = "development"
     TESTING = "testing"
@@ -49,6 +47,7 @@ class PluginStatus(Enum):
 @dataclass
 class PluginSpec:
     """Plugin specification for template generation."""
+
     name: str
     plugin_type: PluginType
     description: str
@@ -61,11 +60,12 @@ class PluginSpec:
     interfaces: List[str] = field(default_factory=list)
     config_schema: Dict[str, Any] = field(default_factory=dict)
     test_frameworks: List[str] = field(default_factory=lambda: ["pytest"])
-    
+
 
 @dataclass
 class PluginValidationResult:
     """Result of plugin validation."""
+
     plugin_name: str
     validation_timestamp: float
     overall_status: str
@@ -77,45 +77,52 @@ class PluginValidationResult:
 
 class PluginEcosystemManager:
     """Manager for plugin ecosystem development and validation."""
-    
+
     def __init__(self, workspace_dir: Path):
         self.workspace_dir = Path(workspace_dir)
         self.plugins_dir = self.workspace_dir / "plugins"
         self.templates_dir = self.workspace_dir / "scripts" / "mlx" / "plugin_templates"
-        self.registry_file = self.workspace_dir / "mlx-components" / "plugin_registry.json"
-        
+        self.registry_file = (
+            self.workspace_dir / "mlx-components" / "plugin_registry.json"
+        )
+
         # Create necessary directories
         self.plugins_dir.mkdir(parents=True, exist_ok=True)
         self.templates_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Load plugin templates and validation rules
         self.templates = self._load_plugin_templates()
         self.validation_rules = self._load_validation_rules()
-    
+
     def _load_plugin_templates(self) -> Dict[str, Dict[str, Any]]:
         """Load plugin templates for different plugin types."""
         return {
             PluginType.ML_FRAMEWORK.value: {
                 "base_class": "MLFrameworkPlugin",
                 "required_methods": ["train", "predict", "evaluate"],
-                "optional_methods": ["preprocess", "postprocess", "save_model", "load_model"],
+                "optional_methods": [
+                    "preprocess",
+                    "postprocess",
+                    "save_model",
+                    "load_model",
+                ],
                 "dependencies": ["scikit-learn", "numpy", "pandas"],
                 "config_schema": {
                     "model_params": {"type": "dict", "default": {}},
                     "training_params": {"type": "dict", "default": {}},
-                    "preprocessing": {"type": "dict", "default": {}}
-                }
+                    "preprocessing": {"type": "dict", "default": {}},
+                },
             },
             PluginType.DATA_PROCESSOR.value: {
-                "base_class": "DataProcessorPlugin", 
+                "base_class": "DataProcessorPlugin",
                 "required_methods": ["process", "validate"],
                 "optional_methods": ["preprocess", "postprocess", "transform"],
                 "dependencies": ["pandas", "pydantic"],
                 "config_schema": {
                     "input_format": {"type": "str", "default": "csv"},
                     "output_format": {"type": "str", "default": "parquet"},
-                    "validation_rules": {"type": "dict", "default": {}}
-                }
+                    "validation_rules": {"type": "dict", "default": {}},
+                },
             },
             PluginType.MODEL_PROVIDER.value: {
                 "base_class": "ModelProviderPlugin",
@@ -125,8 +132,8 @@ class PluginEcosystemManager:
                 "config_schema": {
                     "api_endpoint": {"type": "str", "required": True},
                     "api_key": {"type": "str", "required": True},
-                    "timeout": {"type": "int", "default": 30}
-                }
+                    "timeout": {"type": "int", "default": 30},
+                },
             },
             PluginType.DEPLOYMENT.value: {
                 "base_class": "DeploymentPlugin",
@@ -136,125 +143,129 @@ class PluginEcosystemManager:
                 "config_schema": {
                     "platform": {"type": "str", "required": True},
                     "namespace": {"type": "str", "default": "default"},
-                    "replicas": {"type": "int", "default": 1}
-                }
+                    "replicas": {"type": "int", "default": 1},
+                },
             },
             PluginType.MONITORING.value: {
                 "base_class": "MonitoringPlugin",
-                "required_methods": ["start_monitoring", "stop_monitoring", "get_metrics"],
+                "required_methods": [
+                    "start_monitoring",
+                    "stop_monitoring",
+                    "get_metrics",
+                ],
                 "optional_methods": ["alert", "dashboard", "export_metrics"],
                 "dependencies": ["prometheus-client", "grafana-api"],
                 "config_schema": {
                     "metrics_endpoint": {"type": "str", "required": True},
                     "collection_interval": {"type": "int", "default": 60},
-                    "retention_days": {"type": "int", "default": 30}
-                }
-            }
+                    "retention_days": {"type": "int", "default": 30},
+                },
+            },
         }
-    
+
     def _load_validation_rules(self) -> Dict[str, Any]:
         """Load validation rules for plugin development."""
         return {
             "naming_convention": {
                 "pattern": r"^mlx-plugin-[a-z][a-z0-9-]*[a-z0-9]$",
-                "description": "Plugin names must start with 'mlx-plugin-' and use kebab-case"
+                "description": "Plugin names must start with 'mlx-plugin-' and use kebab-case",
             },
             "required_files": [
                 "pyproject.toml",
-                "README.md", 
+                "README.md",
                 "src/{plugin_package}/__init__.py",
                 "src/{plugin_package}/plugin.py",
-                "tests/test_plugin.py"
+                "tests/test_plugin.py",
             ],
             "code_quality": {
                 "min_test_coverage": 80,
                 "max_complexity": 10,
-                "security_scan": True
+                "security_scan": True,
             },
             "compatibility": {
                 "python_versions": ["3.9", "3.10", "3.11", "3.12"],
                 "mlx_versions": [">=1.0.0"],
-                "required_interfaces": ["BasePlugin"]
+                "required_interfaces": ["BasePlugin"],
             },
             "performance": {
                 "max_import_time": 2.0,  # seconds
                 "max_memory_usage": 100,  # MB
-                "max_initialization_time": 5.0  # seconds
-            }
+                "max_initialization_time": 5.0,  # seconds
+            },
         }
-    
+
     def create_plugin_template(self, spec: PluginSpec) -> Path:
         """Create a new plugin from template."""
         plugin_name = spec.name
         if not plugin_name.startswith("mlx-plugin-"):
             plugin_name = f"mlx-plugin-{plugin_name}"
-        
+
         plugin_dir = self.plugins_dir / plugin_name
-        
+
         if plugin_dir.exists():
             raise ValueError(f"Plugin directory already exists: {plugin_dir}")
-        
+
         logger.info(f"Creating plugin template: {plugin_name}")
-        
+
         # Create plugin directory structure
         self._create_plugin_structure(plugin_dir, spec)
-        
+
         # Generate plugin files from templates
         self._generate_plugin_files(plugin_dir, spec)
-        
+
         # Create development environment
         self._setup_plugin_dev_environment(plugin_dir, spec)
-        
+
         logger.info(f"Plugin template created at: {plugin_dir}")
         return plugin_dir
-    
+
     def _create_plugin_structure(self, plugin_dir: Path, spec: PluginSpec):
         """Create plugin directory structure."""
         package_name = spec.name.replace("-", "_")
-        
+
         # Create directories
         dirs = [
             Path("src") / package_name,
             Path("tests"),
-            Path("docs"), 
+            Path("docs"),
             Path("examples"),
             Path("conf"),
-            Path(".github") / "workflows"
+            Path(".github") / "workflows",
         ]
-        
+
         for dir_path in dirs:
             (plugin_dir / dir_path).mkdir(parents=True, exist_ok=True)
-    
+
     def _generate_plugin_files(self, plugin_dir: Path, spec: PluginSpec):
         """Generate plugin files from templates."""
         package_name = spec.name.replace("-", "_")
         src_dir = plugin_dir / "src" / package_name
-        
+
         # Generate pyproject.toml
         self._generate_pyproject_toml(plugin_dir, spec)
-        
+
         # Generate main plugin module
         self._generate_plugin_module(src_dir, spec)
-        
+
         # Generate __init__.py
         self._generate_init_file(src_dir, spec)
-        
+
         # Generate tests
         self._generate_test_files(plugin_dir / "tests", spec)
-        
+
         # Generate documentation
         self._generate_documentation(plugin_dir, spec)
-        
+
         # Generate CI/CD workflows
         self._generate_workflows(plugin_dir / ".github" / "workflows", spec)
-        
+
         # Generate configuration
         self._generate_config_files(plugin_dir / "conf", spec)
-    
+
     def _generate_pyproject_toml(self, plugin_dir: Path, spec: PluginSpec):
         """Generate pyproject.toml file."""
-        package_name = spec.name.replace("-", "_")
-        
+        spec.name.replace("-", "_")
+
         config = {
             "project": {
                 "name": spec.name,
@@ -264,55 +275,51 @@ class PluginEcosystemManager:
                 "requires-python": spec.python_version,
                 "dependencies": spec.dependencies,
                 "optional-dependencies": {
-                    "dev": spec.dev_dependencies + [
+                    "dev": spec.dev_dependencies
+                    + [
                         "pytest>=7.0.0",
-                        "pytest-cov>=4.0.0", 
+                        "pytest-cov>=4.0.0",
                         "ruff>=0.1.0",
-                        "mypy>=1.0.0"
+                        "mypy>=1.0.0",
                     ]
                 },
                 "classifiers": [
                     "Development Status :: 3 - Alpha",
                     "Intended Audience :: Developers",
                     "License :: OSI Approved :: MIT License",
-                    f"Programming Language :: Python :: {spec.python_version.split('>=')[1]}"
-                ]
+                    f"Programming Language :: Python :: {spec.python_version.split('>=')[1]}",
+                ],
             },
             "build-system": {
                 "requires": ["setuptools>=61.0"],
-                "build-backend": "setuptools.build_meta"
+                "build-backend": "setuptools.build_meta",
             },
             "tool": {
                 "pytest": {
                     "testpaths": ["tests"],
-                    "addopts": "--cov=src --cov-report=term-missing"
+                    "addopts": "--cov=src --cov-report=term-missing",
                 },
-                "ruff": {
-                    "line-length": 88,
-                    "target-version": "py39"
-                },
-                "mypy": {
-                    "python_version": "3.9",
-                    "strict": True
-                }
-            }
+                "ruff": {"line-length": 88, "target-version": "py39"},
+                "mypy": {"python_version": "3.9", "strict": True},
+            },
         }
-        
+
         # Add entry points if specified
         if spec.entry_points:
             config["project"]["entry-points"] = {"mlx.plugins": spec.entry_points}
-        
+
         with open(plugin_dir / "pyproject.toml", "w") as f:
             import toml
+
             toml.dump(config, f)
-    
+
     def _generate_plugin_module(self, src_dir: Path, spec: PluginSpec):
         """Generate main plugin module."""
         template_info = self.templates.get(spec.plugin_type.value, {})
         base_class = template_info.get("base_class", "BasePlugin")
         required_methods = template_info.get("required_methods", [])
-        optional_methods = template_info.get("optional_methods", [])
-        
+        template_info.get("optional_methods", [])
+
         plugin_code = f'''"""
 {spec.description}
 
@@ -378,7 +385,7 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
             if method == "train":
                 plugin_code += '''
     def train(self, data: Any, **kwargs) -> Any:
-        """Train a model with the provided data."""
+        """Train a model with the provided _data."""
         if not self._initialized:
             raise RuntimeError("Plugin not initialized")
         
@@ -402,7 +409,7 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
             elif method == "process":
                 plugin_code += '''
     def process(self, data: Any, **kwargs) -> Any:
-        """Process the input data."""
+        """Process the input _data."""
         if not self._initialized:
             raise RuntimeError("Plugin not initialized")
         
@@ -414,7 +421,7 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
             elif method == "validate":
                 plugin_code += '''
     def validate(self, data: Any, **kwargs) -> bool:
-        """Validate input data."""
+        """Validate input _data."""
         if not self._initialized:
             raise RuntimeError("Plugin not initialized")
         
@@ -459,15 +466,17 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
             "config": self.config
         }
 '''
-        
+
         with open(src_dir / "plugin.py", "w") as f:
             f.write(plugin_code)
-    
+
     def _generate_init_file(self, src_dir: Path, spec: PluginSpec):
         """Generate __init__.py file."""
-        base_class = self.templates.get(spec.plugin_type.value, {}).get("base_class", "BasePlugin")
+        base_class = self.templates.get(spec.plugin_type.value, {}).get(
+            "base_class", "BasePlugin"
+        )
         class_name = base_class.replace("Plugin", "") + "Plugin"
-        
+
         init_code = f'''"""
 {spec.name} - {spec.description}
 
@@ -488,19 +497,21 @@ PLUGIN_INFO = {{
     "type": "{spec.plugin_type.value}",
     "class": {class_name},
     "interfaces": {spec.interfaces},
-    "entry_point": "{spec.name.replace('-', '_')}"
+    "entry_point": "{spec.name.replace("-", "_")}"
 }}
 '''
-        
+
         with open(src_dir / "__init__.py", "w") as f:
             f.write(init_code)
-    
+
     def _generate_test_files(self, tests_dir: Path, spec: PluginSpec):
         """Generate test files."""
-        base_class = self.templates.get(spec.plugin_type.value, {}).get("base_class", "BasePlugin")
+        base_class = self.templates.get(spec.plugin_type.value, {}).get(
+            "base_class", "BasePlugin"
+        )
         class_name = base_class.replace("Plugin", "") + "Plugin"
         package_name = spec.name.replace("-", "_")
-        
+
         test_code = f'''"""
 Tests for {spec.name} plugin.
 """
@@ -565,7 +576,9 @@ class Test{class_name}:
 '''
 
         # Add method-specific tests
-        required_methods = self.templates.get(spec.plugin_type.value, {}).get("required_methods", [])
+        required_methods = self.templates.get(spec.plugin_type.value, {}).get(
+            "required_methods", []
+        )
         for method in required_methods:
             test_code += f'''
     def test_{method}(self, plugin):
@@ -576,7 +589,7 @@ class Test{class_name}:
         result = plugin.{method}(test_data="sample")
         assert result is not None
 '''
-        
+
         # Add performance tests
         test_code += '''
     @pytest.mark.performance
@@ -598,10 +611,10 @@ class Test{class_name}:
         memory_mb = process.memory_info().rss / 1024 / 1024
         assert memory_mb < 100, f"Memory usage too high: {memory_mb}MB"
 '''
-        
+
         with open(tests_dir / "test_plugin.py", "w") as f:
             f.write(test_code)
-        
+
         # Create conftest.py for shared test fixtures
         conftest_code = '''"""
 Shared test fixtures for plugin testing.
@@ -628,22 +641,16 @@ def sample_data():
         "metadata": {"source": "test"}
     }
 '''
-        
+
         with open(tests_dir / "conftest.py", "w") as f:
             f.write(conftest_code)
-    
+
     def _generate_documentation(self, plugin_dir: Path, spec: PluginSpec):
         """Generate plugin documentation."""
-        docs_dir = plugin_dir / "docs"
-        
-        # Generate README.md
-        readme_content = f'''# {spec.name}
+
+        readme_content = f"""# {spec.name}
 
 {spec.description}
-
-## Overview
-
-This plugin provides {spec.plugin_type.value} functionality for the MLX platform.
 
 ## Installation
 
@@ -651,42 +658,47 @@ This plugin provides {spec.plugin_type.value} functionality for the MLX platform
 pip install {spec.name}
 ```
 
-## Quick Start
+## Usage
 
 ```python
-from {spec.name.replace("-", "_")} import {self.templates.get(spec.plugin_type.value, {}).get("base_class", "BasePlugin").replace("Plugin", "")}Plugin
-
-# Initialize plugin
-plugin = {self.templates.get(spec.plugin_type.value, {}).get("base_class", "BasePlugin").replace("Plugin", "")}Plugin(config={{}})
+from {spec.name.replace("-", "_")} import {spec.name.replace("-", "_").title()}Plugin
 
 # Initialize the plugin
-if plugin.initialize():
-    # Use the plugin
-    result = plugin.process(data)
-    print(result)
-    
-    # Clean up
-    plugin.cleanup()
+plugin = {spec.name.replace("-", "_").title()}Plugin()
+
+# Use the plugin
+result = plugin.process(data)
 ```
 
 ## Configuration
 
-The plugin accepts the following configuration options:
+The plugin can be configured using the following parameters:
 
 ```yaml
-{yaml.dump(spec.config_schema, default_flow_style=False)}
+plugin:
+  name: {spec.name}
+  version: {spec.version}
+  type: {spec.plugin_type.value}
+  enabled: true
 ```
 
 ## API Reference
 
-### Methods
+### Main Plugin Class
 
-'''
-        
+#### `{spec.name.replace("-", "_").title()}Plugin`
+
+The main plugin class that implements the MLX plugin interface.
+
+**Methods:**
+"""
+
         # Add method documentation
-        required_methods = self.templates.get(spec.plugin_type.value, {}).get("required_methods", [])
+        required_methods = self.templates.get(spec.plugin_type.value, {}).get(
+            "required_methods", []
+        )
         for method in required_methods:
-            readme_content += f'''
+            readme_content += f"""
 #### `{method}()`
 
 Description of {method} method.
@@ -698,9 +710,9 @@ Description of {method} method.
 **Returns:**
 - Processed result
 
-'''
-        
-        readme_content += f'''
+"""
+
+        readme_content += f"""
 ## Development
 
 ### Setup Development Environment
@@ -740,15 +752,15 @@ MIT License
 ## Support
 
 For support, please open an issue on the repository or contact {spec.author}.
-'''
-        
+"""
+
         with open(plugin_dir / "README.md", "w") as f:
             f.write(readme_content)
-    
+
     def _generate_workflows(self, workflows_dir: Path, spec: PluginSpec):
         """Generate CI/CD workflows."""
         # Generate GitHub Actions workflow
-        workflow_content = f'''name: CI/CD
+        ci_workflow = """name: CI
 
 on:
   push:
@@ -761,15 +773,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.9, 3.10, 3.11, 3.12]
+        python-version: [3.9, 3.10, 3.11]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
     
-    - name: Set up Python ${{{{ matrix.python-version }}}}
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
-        python-version: ${{{{ matrix.python-version }}}}
+        python-version: ${{ matrix.python-version }}
     
     - name: Install dependencies
       run: |
@@ -782,7 +794,7 @@ jobs:
     
     - name: Type check with mypy
       run: |
-        mypy .
+        mypy src/
     
     - name: Test with pytest
       run: |
@@ -792,60 +804,11 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
+"""
 
-  security:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install bandit safety
-    
-    - name: Security scan with bandit
-      run: |
-        bandit -r src/
-    
-    - name: Check dependencies with safety
-      run: |
-        safety check
-
-  build:
-    needs: [test, security]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11
-    
-    - name: Install build dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build twine
-    
-    - name: Build package
-      run: |
-        python -m build
-    
-    - name: Check distribution
-      run: |
-        twine check dist/*
-'''
-        
         with open(workflows_dir / "ci.yml", "w") as f:
-            f.write(workflow_content)
-    
+            f.write(ci_workflow)
+
     def _generate_config_files(self, conf_dir: Path, spec: PluginSpec):
         """Generate configuration files."""
         # Generate default config
@@ -854,35 +817,35 @@ jobs:
                 "name": spec.name,
                 "version": spec.version,
                 "type": spec.plugin_type.value,
-                "enabled": True
+                "enabled": True,
             },
-            "settings": spec.config_schema
+            "settings": spec.config_schema,
         }
-        
+
         with open(conf_dir / "config.yaml", "w") as f:
             yaml.dump(default_config, f, default_flow_style=False)
-        
+
         # Generate development config
         dev_config = {
             **default_config,
-            "development": {
-                "debug": True,
-                "log_level": "DEBUG",
-                "test_mode": True
-            }
+            "development": {"debug": True, "log_level": "DEBUG", "test_mode": True},
         }
-        
+
         with open(conf_dir / "development.yaml", "w") as f:
             yaml.dump(dev_config, f, default_flow_style=False)
-    
+
     def _setup_plugin_dev_environment(self, plugin_dir: Path, spec: PluginSpec):
         """Setup development environment for the plugin."""
         # Create .gitignore
-        gitignore_content = '''# Python
+        gitignore_content = """# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+
+# C extensions  
+*.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -899,107 +862,177 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Virtual environments
-.venv/
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
 env/
+venv/
 ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
+*~
 
 # OS
 .DS_Store
 Thumbs.db
 
 # MLX specific
-.mlx/
-*.model
-'''
-        
+mlruns/
+outputs/
+artifacts/
+*.pkl
+*.joblib
+"""
+
         with open(plugin_dir / ".gitignore", "w") as f:
             f.write(gitignore_content)
-        
+
         # Create Makefile for common tasks
-        makefile_content = f'''# Makefile for {spec.name} plugin
+        makefile_content = f"""# Makefile for {spec.name}
 
-.PHONY: install test lint format clean build publish
+.PHONY: install install-dev test lint format typecheck clean help
 
-install:
-\tpip install -e ".[dev]"
+help:  ## Show this help message
+	@echo "Available commands:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {{FS = ":.*?## "}}; {{printf "  \\033[36m%-15s\\033[0m %s\\n", $$1, $$2}}'
 
-test:
-\tpytest --cov=src --cov-report=term-missing
+install:  ## Install the package
+	pip install -e .
 
-test-verbose:
-\tpytest -v --cov=src --cov-report=html
+install-dev:  ## Install development dependencies
+	pip install -e ".[dev]"
 
-lint:
-\truff check .
-\tmypy .
+test:  ## Run tests
+	pytest
 
-format:
-\truff format .
+test-cov:  ## Run tests with coverage
+	pytest --cov=src --cov-report=html --cov-report=term
 
-security:
-\tbandit -r src/
-\tsafety check
+lint:  ## Run linting
+	ruff check .
 
-clean:
-\trm -rf build/
-\trm -rf dist/
-\trm -rf *.egg-info/
-\tfind . -name "*.pyc" -delete
-\tfind . -name "__pycache__" -delete
+format:  ## Format code
+	ruff format .
 
-build: clean
-\tpython -m build
+typecheck:  ## Run type checking
+	mypy src/
 
-publish: build
-\ttwine upload dist/*
+clean:  ## Clean build artifacts
+	rm -rf build/
+	rm -rf dist/
+	rm -rf *.egg-info/
+	rm -rf htmlcov/
+	find . -type d -name __pycache__ -delete
+	find . -type f -name "*.pyc" -delete
 
-dev-setup:
-\tpip install -e ".[dev]"
-\tpre-commit install
+build:  ## Build the package
+	python -m build
 
-all: lint security test
+publish:  ## Publish to PyPI (requires credentials)
+	python -m twine upload dist/*
 
-help:
-\t@echo "Available commands:"
-\t@echo "  install     - Install package in development mode"
-\t@echo "  test        - Run tests with coverage"
-\t@echo "  lint        - Run linting checks"
-\t@echo "  format      - Format code"
-\t@echo "  security    - Run security checks"
-\t@echo "  clean       - Clean build artifacts"
-\t@echo "  build       - Build package"
-\t@echo "  publish     - Publish to PyPI"
-\t@echo "  dev-setup   - Setup development environment"
-'''
-        
+dev:  ## Start development mode
+	python -m {spec.name.replace("-", "_")}
+
+all: install-dev lint typecheck test  ## Run all checks
+"""
+
         with open(plugin_dir / "Makefile", "w") as f:
             f.write(makefile_content)
-    
+
     def validate_plugin(self, plugin_path: Path) -> PluginValidationResult:
         """Validate a plugin against MLX standards."""
         plugin_name = plugin_path.name
         logger.info(f"Validating plugin: {plugin_name}")
-        
+
         result = PluginValidationResult(
             plugin_name=plugin_name,
             validation_timestamp=time.time(),
-            overall_status="unknown"
+            overall_status="unknown",
         )
-        
+
         # Run validation checks
         result.checks["structure"] = self._validate_plugin_structure(plugin_path)
         result.checks["code_quality"] = self._validate_code_quality(plugin_path)
@@ -1007,272 +1040,290 @@ help:
         result.checks["documentation"] = self._validate_documentation(plugin_path)
         result.checks["security"] = self._validate_security(plugin_path)
         result.checks["performance"] = self._validate_performance(plugin_path)
-        
+
         # Check compatibility
         result.compatibility_matrix = self._check_compatibility(plugin_path)
-        
+
         # Generate recommendations
         result.recommendations = self._generate_recommendations(result.checks)
-        
+
         # Determine overall status
-        failed_checks = [name for name, check in result.checks.items() 
-                        if check.get("status") == "failed"]
-        
+        failed_checks = [
+            name
+            for name, check in result.checks.items()
+            if check.get("status") == "failed"
+        ]
+
         if not failed_checks:
             result.overall_status = "passed"
         elif len(failed_checks) <= 2:
-            result.overall_status = "warning" 
+            result.overall_status = "warning"
         else:
             result.overall_status = "failed"
-        
+
         logger.info(f"Plugin validation completed: {result.overall_status}")
         return result
-    
+
     def _validate_plugin_structure(self, plugin_path: Path) -> Dict[str, Any]:
         """Validate plugin directory structure."""
-        check_result = {"status": "passed", "details": {}, "missing_files": []}
-        
+
         # Check required files
         # Extract plugin name from directory name (remove mlx-plugin- prefix if present)
         plugin_name = plugin_path.name
         if plugin_name.startswith("mlx-plugin-"):
             plugin_name = plugin_name[11:]  # Remove "mlx-plugin-" prefix
         package_name = plugin_name.replace("-", "_")
-        
+
         required_files = [
             "pyproject.toml",
             "README.md",
             f"src/{package_name}/__init__.py",
             f"src/{package_name}/plugin.py",
-            "tests/test_plugin.py"
+            "tests/test_plugin.py",
         ]
-        
+
         for file_path in required_files:
             full_path = plugin_path / file_path
             if full_path.exists():
-                check_result["details"][file_path] = "present"
+                result["details"][file_path] = "present"
             else:
-                check_result["details"][file_path] = "missing"
-                check_result["missing_files"].append(file_path)
-        
-        if check_result["missing_files"]:
-            check_result["status"] = "failed"
-        
-        return check_result
-    
+                result["details"][file_path] = "missing"
+                result["missing_files"].append(file_path)
+
+        if result["missing_files"]:
+            result["status"] = "failed"
+
+        return result
+
     def _validate_code_quality(self, plugin_path: Path) -> Dict[str, Any]:
         """Validate code quality using ruff and mypy."""
-        check_result = {"status": "unknown", "tools": {}}
-        
+
         try:
             # Run ruff
-            ruff_result = subprocess.run(
+            subprocess.run(
                 ["ruff", "check", str(plugin_path)],
-                capture_output=True, text=True, cwd=plugin_path
+                capture_output=True,
+                text=True,
+                cwd=plugin_path,
             )
-            check_result["tools"]["ruff"] = {
-                "returncode": ruff_result.returncode,
-                "stdout": ruff_result.stdout,
-                "stderr": ruff_result.stderr
+            result["tools"]["ruff"] = {
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
             }
-            
+
             # Run mypy
-            mypy_result = subprocess.run(
-                ["mypy", "src/"],
-                capture_output=True, text=True, cwd=plugin_path
+            subprocess.run(
+                ["mypy", "src/"], capture_output=True, text=True, cwd=plugin_path
             )
-            check_result["tools"]["mypy"] = {
-                "returncode": mypy_result.returncode,
-                "stdout": mypy_result.stdout,
-                "stderr": mypy_result.stderr
+            result["tools"]["mypy"] = {
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
             }
-            
+
             # Determine overall status
-            if ruff_result.returncode == 0 and mypy_result.returncode == 0:
-                check_result["status"] = "passed"
+            if result.returncode == 0 and result.returncode == 0:
+                result["status"] = "passed"
             else:
-                check_result["status"] = "failed"
-                
+                result["status"] = "failed"
+
         except FileNotFoundError as e:
-            check_result["status"] = "skipped"
-            check_result["error"] = f"Tool not available: {e}"
-        
-        return check_result
-    
+            result["status"] = "skipped"
+            result["error"] = f"Tool not available: {e}"
+
+        return result
+
     def _validate_tests(self, plugin_path: Path) -> Dict[str, Any]:
         """Validate test coverage and execution."""
-        check_result = {"status": "unknown", "coverage": 0, "test_results": {}}
-        
+
         try:
             # Run tests with coverage
-            test_result = subprocess.run(
+            subprocess.run(
                 ["pytest", "--cov=src", "--cov-report=json", "--json-report"],
-                capture_output=True, text=True, cwd=plugin_path
+                capture_output=True,
+                text=True,
+                cwd=plugin_path,
             )
-            
-            check_result["test_results"] = {
-                "returncode": test_result.returncode,
-                "stdout": test_result.stdout,
-                "stderr": test_result.stderr
+
+            result["test_results"] = {
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
             }
-            
+
             # Try to read coverage report
             coverage_file = plugin_path / "coverage.json"
             if coverage_file.exists():
                 with open(coverage_file) as f:
                     coverage_data = json.load(f)
-                    check_result["coverage"] = coverage_data.get("totals", {}).get("percent_covered", 0)
-            
+                    result["coverage"] = coverage_data.get("totals", {}).get(
+                        "percent_covered", 0
+                    )
+
             # Check if tests pass and coverage meets minimum
             min_coverage = self.validation_rules["code_quality"]["min_test_coverage"]
-            if test_result.returncode == 0 and check_result["coverage"] >= min_coverage:
-                check_result["status"] = "passed"
+            if result.returncode == 0 and result["coverage"] >= min_coverage:
+                result["status"] = "passed"
             else:
-                check_result["status"] = "failed"
-                
+                result["status"] = "failed"
+
         except FileNotFoundError:
-            check_result["status"] = "skipped"
-            check_result["error"] = "pytest not available"
-        
-        return check_result
-    
+            result["status"] = "skipped"
+            result["error"] = "pytest not available"
+
+        return result
+
     def _validate_documentation(self, plugin_path: Path) -> Dict[str, Any]:
         """Validate plugin documentation."""
-        check_result = {"status": "passed", "files": {}}
-        
+
         # Check README.md
         readme_path = plugin_path / "README.md"
         if readme_path.exists():
-            content = readme_path.read_text()
-            check_result["files"]["README.md"] = {
+            loaded_data = readme_path.read_text()
+            result["files"]["README.md"] = {
                 "exists": True,
-                "length": len(content),
-                "has_installation": "installation" in content.lower(),
-                "has_usage": "usage" in content.lower() or "example" in content.lower(),
-                "has_api": "api" in content.lower() or "method" in content.lower()
+                "length": len(loaded_data),
+                "has_installation": "installation" in loaded_data.lower(),
+                "has_usage": "usage" in loaded_data.lower()
+                or "example" in loaded_data.lower(),
+                "has_api": "api" in loaded_data.lower()
+                or "method" in loaded_data.lower(),
             }
         else:
-            check_result["files"]["README.md"] = {"exists": False}
-            check_result["status"] = "failed"
-        
-        return check_result
-    
+            result["files"]["README.md"] = {"exists": False}
+            result["status"] = "failed"
+
+        return result
+
     def _validate_security(self, plugin_path: Path) -> Dict[str, Any]:
         """Validate plugin security."""
-        check_result = {"status": "unknown", "tools": {}}
-        
+
         try:
             # Run bandit
-            bandit_result = subprocess.run(
+            subprocess.run(
                 ["bandit", "-r", "src/", "-f", "json"],
-                capture_output=True, text=True, cwd=plugin_path
+                capture_output=True,
+                text=True,
+                cwd=plugin_path,
             )
-            
-            check_result["tools"]["bandit"] = {
-                "returncode": bandit_result.returncode,
-                "stdout": bandit_result.stdout,
-                "stderr": bandit_result.stderr
+
+            result["tools"]["bandit"] = {
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
             }
-            
+
             # Parse bandit results
-            if bandit_result.stdout:
+            if result.stdout:
                 try:
-                    bandit_data = json.loads(bandit_result.stdout)
-                    high_severity = len([r for r in bandit_data.get("results", []) 
-                                       if r.get("issue_severity") == "HIGH"])
-                    check_result["high_severity_issues"] = high_severity
-                    
+                    bandit_data = json.loads(result.stdout)
+                    high_severity = len(
+                        [
+                            r
+                            for r in bandit_data.get("results", [])
+                            if r.get("issue_severity") == "HIGH"
+                        ]
+                    )
+                    result["high_severity_issues"] = high_severity
+
                     if high_severity == 0:
-                        check_result["status"] = "passed"
+                        result["status"] = "passed"
                     else:
-                        check_result["status"] = "failed"
+                        result["status"] = "failed"
                 except json.JSONDecodeError:
-                    check_result["status"] = "unknown"
-            
+                    result["status"] = "unknown"
+
         except FileNotFoundError:
-            check_result["status"] = "skipped"
-            check_result["error"] = "bandit not available"
-        
-        return check_result
-    
+            result["status"] = "skipped"
+            result["error"] = "bandit not available"
+
+        return result
+
     def _validate_performance(self, plugin_path: Path) -> Dict[str, Any]:
         """Validate plugin performance characteristics."""
-        check_result = {"status": "unknown", "metrics": {}}
-        
+
         try:
             # Run performance tests
-            perf_result = subprocess.run(
+            subprocess.run(
                 ["pytest", "-m", "performance", "--json-report"],
-                capture_output=True, text=True, cwd=plugin_path
+                capture_output=True,
+                text=True,
+                cwd=plugin_path,
             )
-            
-            check_result["test_results"] = {
-                "returncode": perf_result.returncode,
-                "stdout": perf_result.stdout,
-                "stderr": perf_result.stderr
+
+            result["test_results"] = {
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
             }
-            
-            if perf_result.returncode == 0:
-                check_result["status"] = "passed"
+
+            if result.returncode == 0:
+                result["status"] = "passed"
             else:
-                check_result["status"] = "failed"
-                
+                result["status"] = "failed"
+
         except FileNotFoundError:
-            check_result["status"] = "skipped"
-            check_result["error"] = "pytest not available"
-        
-        return check_result
-    
+            result["status"] = "skipped"
+            result["error"] = "pytest not available"
+
+        return result
+
     def _check_compatibility(self, plugin_path: Path) -> Dict[str, bool]:
         """Check plugin compatibility with MLX platform."""
         compatibility = {}
-        
+
         # Check Python version compatibility
         pyproject_file = plugin_path / "pyproject.toml"
         if pyproject_file.exists():
             try:
                 import toml
+
                 pyproject_data = toml.load(pyproject_file)
-                requires_python = pyproject_data.get("project", {}).get("requires-python", "")
-                
+                requires_python = pyproject_data.get("project", {}).get(
+                    "requires-python", ""
+                )
+
                 # Simple compatibility check
                 compatibility["python_version"] = ">=3.9" in requires_python
                 compatibility["dependencies"] = True  # Would check actual dependencies
-                compatibility["interfaces"] = True    # Would check plugin interfaces
-                
+                compatibility["interfaces"] = True  # Would check plugin interfaces
+
             except Exception:
                 compatibility["python_version"] = False
                 compatibility["dependencies"] = False
                 compatibility["interfaces"] = False
-        
+
         return compatibility
-    
+
     def _generate_recommendations(self, checks: Dict[str, Dict[str, Any]]) -> List[str]:
         """Generate recommendations based on validation results."""
         recommendations = []
-        
+
         # Structure recommendations
         structure_check = checks.get("structure", {})
         if structure_check.get("missing_files"):
             recommendations.append(
                 f"Add missing files: {', '.join(structure_check['missing_files'])}"
             )
-        
+
         # Code quality recommendations
         code_quality = checks.get("code_quality", {})
         if code_quality.get("status") == "failed":
             recommendations.append("Fix code quality issues reported by ruff and mypy")
-        
+
         # Test recommendations
         tests = checks.get("tests", {})
         if tests.get("coverage", 0) < 80:
-            recommendations.append(f"Increase test coverage to at least 80% (current: {tests.get('coverage', 0):.1f}%)")
-        
+            recommendations.append(
+                f"Increase test coverage to at least 80% (current: {tests.get('coverage', 0):.1f}%)"
+            )
+
         # Security recommendations
         security = checks.get("security", {})
         if security.get("high_severity_issues", 0) > 0:
             recommendations.append("Fix high-severity security issues found by bandit")
-        
+
         # Documentation recommendations
         docs = checks.get("documentation", {})
         readme_info = docs.get("files", {}).get("README.md", {})
@@ -1280,72 +1331,78 @@ help:
             recommendations.append("Add installation instructions to README")
         if not readme_info.get("has_usage"):
             recommendations.append("Add usage examples to README")
-        
+
         return recommendations
 
 
 # CLI interface for plugin ecosystem management
 if __name__ == "__main__":
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Plugin Ecosystem Manager")
-    parser.add_argument("command", choices=[
-        "create", "validate", "list", "info"
-    ])
+    parser.add_argument("command", choices=["create", "validate", "list", "info"])
     parser.add_argument("--name", help="Plugin name")
-    parser.add_argument("--type", choices=[t.value for t in PluginType], help="Plugin type")
+    parser.add_argument(
+        "--type", choices=[t.value for t in PluginType], help="Plugin type"
+    )
     parser.add_argument("--description", help="Plugin description")
     parser.add_argument("--workspace", default=".", help="Workspace directory")
     parser.add_argument("--plugin-path", help="Path to plugin for validation")
-    
+
     args = parser.parse_args()
-    
+
     # Setup logging
-    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-    
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
     manager = PluginEcosystemManager(Path(args.workspace))
-    
+
     try:
         if args.command == "create":
             if not args.name or not args.type:
                 print("--name and --type required for create command")
                 exit(1)
-            
+
             spec = PluginSpec(
                 name=args.name,
                 plugin_type=PluginType(args.type),
-                description=args.description or f"MLX plugin for {args.type}"
+                description=args.description or f"MLX plugin for {args.type}",
             )
-            
+
             plugin_dir = manager.create_plugin_template(spec)
             print(f"Plugin template created at: {plugin_dir}")
-        
+
         elif args.command == "validate":
             if not args.plugin_path:
                 print("--plugin-path required for validate command")
                 exit(1)
-            
+
             result = manager.validate_plugin(Path(args.plugin_path))
-            print(json.dumps({
-                "plugin": result.plugin_name,
-                "status": result.overall_status,
-                "checks": result.checks,
-                "recommendations": result.recommendations
-            }, indent=2, default=str))
-        
+            print(
+                json.dumps(
+                    {
+                        "plugin": result.plugin_name,
+                        "status": result.overall_status,
+                        "checks": result.checks,
+                        "recommendations": result.recommendations,
+                    },
+                    indent=2,
+                    default=str,
+                )
+            )
+
         elif args.command == "list":
             print("Available plugin types:")
             for plugin_type in PluginType:
                 print(f"  {plugin_type.value}")
-        
+
         elif args.command == "info":
             if not args.type:
                 print("--type required for info command")
                 exit(1)
-            
+
             template_info = manager.templates.get(args.type, {})
             print(json.dumps(template_info, indent=2))
-    
+
     except Exception as e:
         logger.error(f"Command failed: {e}")
-        exit(1) 
+        exit(1)

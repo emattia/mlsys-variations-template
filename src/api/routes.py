@@ -2,8 +2,6 @@
 FastAPI routes for model serving endpoints.
 """
 
-from datetime import datetime
-
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from ..config.manager import get_config_manager
@@ -149,15 +147,14 @@ async def predict(
                 )
 
         predictions, probabilities, processing_time = service.predict(
-            request.features, request.model_name, request.return_probabilities
+            request.model_name, request.features, request.return_probabilities
         )
 
         return PredictionResponse(
-            prediction=predictions,
+            predictions=predictions,
             probabilities=probabilities,
             model_name=request.model_name,
-            timestamp=datetime.now(),
-            processing_time_ms=processing_time,
+            status="success",
         )
 
     except HTTPException:
@@ -194,15 +191,14 @@ async def predict_batch(
                 )
 
         predictions, probabilities, processing_time = service.predict(
-            request.features, request.model_name, request.return_probabilities
+            request.model_name, request.features, request.return_probabilities
         )
 
         return PredictionResponse(
-            prediction=predictions,
+            predictions=predictions,
             probabilities=probabilities,
             model_name=request.model_name,
-            timestamp=datetime.now(),
-            processing_time_ms=processing_time,
+            status="success",
         )
 
     except HTTPException:

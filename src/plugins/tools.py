@@ -1,6 +1,5 @@
 """A collection of tools that can be used by agents."""
 
-from src.config import ConfigManager
 from src.plugins import ExecutionContext, get_plugin
 from src.plugins.base import MLOpsComponent
 from src.plugins.registry import register_plugin

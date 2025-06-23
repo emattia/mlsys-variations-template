@@ -2,7 +2,7 @@
 # Production-ready machine learning operations template
 
 .PHONY: help install install-dev install-uv clean lint format type-check test unit-test integration-test
-.PHONY: all-checks all-checks-strict pre-commit run-api docker-build docker-run docker-compose
+.PHONY: all-checks all-checks-strict dev-checks quick-checks security-only pre-commit run-api docker-build docker-run docker-compose
 .PHONY: demo-comprehensive demo-data demo-models demo-api demo-workflows demo-plugins
 
 # Python and virtual environment settings
@@ -33,11 +33,18 @@ help:
 	@echo "  make install-dev    Install development dependencies"
 	@echo "  make clean         Clean up generated files"
 	@echo ""
-	@echo "Code Quality:"
+	@echo "Code Quality (Fast Development):"
+	@echo "  make quick-checks   ⚡ Super fast checks (lint + format) - 15 seconds"
+	@echo "  make dev-checks     ⚡ Fast development checks (lint + format + test) - 60 seconds"
+	@echo "  make all-checks     Full checks including security scans - 5 minutes"
+	@echo "  make all-checks-strict  All checks + type checking"
+	@echo ""
+	@echo "Code Quality (Individual):"
 	@echo "  make lint          Run linting checks"
 	@echo "  make format        Format code with ruff"
 	@echo "  make type-check    Run type checking with mypy"
 	@echo "  make complexity-check  Run complexity checks (radon/xenon)"
+	@echo "  make security-only  ⚡ Security checks only (bandit + trivy)"
 	@echo "  make security-check    Run security checks (bandit)"
 	@echo "  make trivy-fs-scan     Run Trivy filesystem scan (HIGH/CRITICAL only)"
 	@echo "  make trivy-fs-scan-all Run comprehensive Trivy filesystem scan"
@@ -48,8 +55,6 @@ help:
 	@echo "  make test          Run all tests"
 	@echo "  make unit-test     Run unit tests only"
 	@echo "  make integration-test  Run integration tests only"
-	@echo "  make all-checks    Run comprehensive checks (lint, format, quality, test)"
-	@echo "  make all-checks-strict  Run all checks including type checking"
 	@echo "  make pre-commit    Setup pre-commit hooks"
 	@echo ""
 	@echo "Development & Demo:"
@@ -74,6 +79,12 @@ help:
 	@echo "  make plugin-add NAME=<name> [CATEGORY=<cat>]   Scaffold new plugin"
 	@echo "  make plugins-list           List registered plugins"
 	@echo "  make repo-info              Show git repo info"
+	@echo ""
+	@echo "⚡ Development Workflow Recommendations:"
+	@echo "  Daily coding:       make dev-checks    (fast iteration)"
+	@echo "  Quick feedback:     make quick-checks  (instant feedback)"
+	@echo "  Before commits:     make all-checks    (comprehensive)"
+	@echo "  Security audits:    make security-only (when needed)"
 	@echo ""
 	@echo "Forking Procedure Testing:"
 	@echo "  make test-forking-smoke     Quick smoke test for forking procedure"
@@ -154,6 +165,7 @@ clean:
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 	find . -type d -name ".ruff_cache" -exec rm -rf {} +
+	find . -type d -name "site" -exec rm -rf {} +
 	rm -rf htmlcov
 	rm -rf logs
 	@echo "Removing local test coverage files..."
@@ -168,6 +180,16 @@ format:
 	@echo "Formatting code..."
 	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff format .
 	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff check --fix .
+
+# Temporary working targets for core codebase
+lint-core:
+	@echo "Running linting checks on core codebase..."
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff check src/ .projenrc.py
+
+format-core:
+	@echo "Formatting core codebase..."
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff format src/ .projenrc.py
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff check --fix src/ .projenrc.py
 
 type-check:
 	@echo "Running type checks..."
@@ -232,11 +254,49 @@ integration-test:
 	@echo "Running integration tests..."
 	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; python -m pytest tests/integration/ -v
 
+# Fast development workflow targets
+dev-checks: lint format unit-test
+	@echo ""
+	@echo "🚀 Fast development checks completed!"
+	@echo "   ✅ Code linting and formatting"
+	@echo "   ✅ Unit tests passed"
+	@echo ""
+	@echo "💡 For full security scans, run: make all-checks"
+
+quick-checks: lint format
+	@echo ""
+	@echo "⚡ Quick checks completed!"
+	@echo "   ✅ Code linting and formatting"
+	@echo ""
+	@echo "💡 To include tests, run: make dev-checks"
+
+# Security-focused checks (separated from development workflow)
+security-only: security-check trivy-fs-scan
+	@echo ""
+	@echo "🔒 Security scans completed!"
+	@echo "   ✅ Bandit security analysis"
+	@echo "   ✅ Trivy vulnerability scan"
+	@echo ""
+	@echo "💡 For development checks, run: make dev-checks"
+
 all-checks: lint format quality-checks unit-test
-	@echo "All development checks completed successfully!"
+	@echo ""
+	@echo "🎉 All comprehensive checks completed successfully!"
+	@echo "   ✅ Code quality and formatting"
+	@echo "   ✅ Security scans"
+	@echo "   ✅ Unit tests"
+	@echo ""
+	@echo "🚀 Ready for commit/deployment!"
 
 all-checks-strict: lint format type-check quality-checks test
-	@echo "All strict checks completed successfully!"
+	@echo ""
+	@echo "🎉 All strict checks completed successfully!"
+	@echo "   ✅ Code quality and formatting"
+	@echo "   ✅ Type checking"
+	@echo "   ✅ Security scans"
+	@echo "   ✅ All tests (unit + integration)"
+	@echo ""
+	@echo "🚀 Ready for production deployment!"
 
 verify-setup:
 	@echo "🔍 Verifying development environment setup..."
