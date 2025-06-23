@@ -7,6 +7,11 @@ from pathlib import Path
 from typing import Any
 import sys
 
+# Add project root to sys.path BEFORE importing from src
+# This allows tests to import modules from the `src` directory.
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 import polars as pl
 import pytest
 from asgi_lifespan import LifespanManager
@@ -15,11 +20,6 @@ from httpx import AsyncClient
 from src.api.app import app
 from src.config import Config, ConfigManager
 from src.plugins import ExecutionContext
-
-# Add project root to sys.path
-# This allows tests to import modules from the `src` directory.
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
 
 
 @pytest.fixture(scope="session")
