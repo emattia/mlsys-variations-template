@@ -1,13 +1,14 @@
 """Unit tests for the template management system."""
 
-from unittest.mock import patch
-import tempfile
-import yaml
-from pathlib import Path
-import pytest
 import os
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
 
-from src.utils.templates import PromptVersion, PromptTestResult, TemplateManager
+import pytest
+import yaml
+
+from src.utils.templates import PromptTestResult, PromptVersion, TemplateManager
 
 
 class TestPromptVersion:
@@ -378,7 +379,7 @@ class TestTemplateManager:
         assert "performance_metrics" in analytics
         assert "created" in analytics
 
-    @patch("builtins.open", side_effect=IOError("File not accessible"))
+    @patch("builtins.open", side_effect=OSError("File not accessible"))
     def test_file_access_error(self, mock_open):
         """Test handling of file access errors."""
         manager = TemplateManager(config_path=Path("test.yaml"))

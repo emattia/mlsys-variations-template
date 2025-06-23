@@ -3,6 +3,7 @@
 import json
 import tempfile
 from pathlib import Path
+from unittest.mock import Mock
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,7 +11,6 @@ import polars as pl
 import pytest
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from unittest.mock import Mock
 
 from src.models.evaluation import (
     evaluate_classification_model,
@@ -353,7 +353,7 @@ def test_evaluation_error_handling():
     y = np.array([0, 1])
 
     # Should handle model errors gracefully
-    with pytest.raises(Exception):
+    with pytest.raises((AttributeError, ValueError, RuntimeError)):
         evaluate_classification_model(invalid_model, X, y)
 
 

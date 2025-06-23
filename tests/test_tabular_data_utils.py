@@ -7,12 +7,15 @@ This module tests all functions in src.tabular_data_utils with focus on:
 """
 
 from __future__ import annotations
+
+import tempfile
 from pathlib import Path
+
 import numpy as np
 import polars as pl
 import pytest
 from sklearn.preprocessing import StandardScaler
-import tempfile
+
 from src.tabular_data_utils import (
     encode_categorical,
     get_categorical_columns,

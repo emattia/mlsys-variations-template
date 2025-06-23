@@ -9,15 +9,15 @@ Future Phase 4 infrastructure for AI-enhanced features including:
 - Automated workflow generation
 """
 
-import logging
 import json
+import logging
+import os
 import time
+import uuid
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field
-import uuid
-import os
+from typing import Any
 
 try:
     import openai
@@ -79,13 +79,13 @@ class LLMInteraction:
     interaction_id: str
     timestamp: datetime
     user_query: str
-    context: Dict[str, Any]
-    llm_response: Optional[str] = None
-    processing_time: Optional[float] = None
-    token_usage: Optional[Dict[str, int]] = None
+    context: dict[str, Any]
+    llm_response: str | None = None
+    processing_time: float | None = None
+    token_usage: dict[str, int] | None = None
     success: bool = True
-    error_message: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error_message: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class LLMLogger:
@@ -115,7 +115,7 @@ class LLMLogger:
             extra={"llm_data": log_data},
         )
 
-    def log_query(self, query: str, context: Dict[str, Any] = None) -> str:
+    def log_query(self, query: str, context: dict[str, Any] = None) -> str:
         """Log a user query and return interaction ID."""
         interaction_id = str(uuid.uuid4())[:8]
 
@@ -136,7 +136,7 @@ class LLMLogger:
         interaction_id: str,
         response: str,
         processing_time: float = None,
-        token_usage: Dict[str, int] = None,
+        token_usage: dict[str, int] = None,
     ):
         """Log LLM response."""
         log_data = {
@@ -153,7 +153,7 @@ class LLMLogger:
         )
 
     def log_error(
-        self, interaction_id: str, error: str, context: Dict[str, Any] = None
+        self, interaction_id: str, error: str, context: dict[str, Any] = None
     ):
         """Log LLM interaction error."""
         log_data = {
@@ -192,7 +192,7 @@ class OpenAIProvider:
         self.client = openai.OpenAI(api_key=self.api_key)
 
     async def generate_response(
-        self, prompt: str, context: Dict[str, Any] = None
+        self, prompt: str, context: dict[str, Any] = None
     ) -> str:
         """Generate AI response with advanced context awareness."""
         interaction_id = self.logger.log_query(prompt, context)
@@ -234,14 +234,14 @@ class OpenAIProvider:
             self.logger.log_error(interaction_id, str(e), context)
             return f"❌ Error generating response: {str(e)}"
 
-    def _build_system_prompt(self, context: Dict[str, Any]) -> str:
+    def _build_system_prompt(self, context: dict[str, Any]) -> str:
         """Build intelligent system prompt with MLX context."""
 
         base_prompt = """You are an intelligent MLX platform assistant with deep expertise in machine learning operations, software engineering, and project management.
 
 ## Your Core Competencies:
 - MLX platform architecture and components
-- Python development and best practices  
+- Python development and best practices
 - Machine learning workflows and deployment
 - Security and compliance standards
 - Project optimization and recommendations
@@ -271,7 +271,7 @@ class OpenAIProvider:
 
         return base_prompt
 
-    def analyze_project_intelligently(self, project_path: Path) -> Dict[str, Any]:
+    def analyze_project_intelligently(self, project_path: Path) -> dict[str, Any]:
         """AI-powered project analysis with specific recommendations."""
         interaction_id = self.logger.log_query(
             "analyze_project", {"project_path": str(project_path)}
@@ -323,8 +323,8 @@ class OpenAIProvider:
             return {"error": str(e)}
 
     def recommend_plugins_intelligently(
-        self, project_type: str, existing_plugins: List[str]
-    ) -> List[Dict[str, Any]]:
+        self, project_type: str, existing_plugins: list[str]
+    ) -> list[dict[str, Any]]:
         """ML-based plugin recommendations using project analysis."""
         context = {"project_type": project_type, "existing_plugins": existing_plugins}
         interaction_id = self.logger.log_query("recommend_plugins", context)
@@ -410,8 +410,8 @@ class OpenAIProvider:
         return recommendations
 
     def generate_intelligent_workflow(
-        self, goal: str, project_state: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, goal: str, project_state: dict[str, Any]
+    ) -> dict[str, Any]:
         """Generate intelligent, executable workflows from natural language goals."""
         context = {"goal": goal, "project_state": project_state}
         interaction_id = self.logger.log_query("generate_workflow", context)
@@ -555,7 +555,7 @@ class MLXAIEnhancements:
         self.logger = LLMLogger()
 
     def process_natural_language_query(
-        self, query: str, project_context: Dict[str, Any]
+        self, query: str, project_context: dict[str, Any]
     ) -> str:
         """
         Process natural language queries (Future Phase 4 feature).
@@ -581,7 +581,7 @@ class MLXAIEnhancements:
 
         return response
 
-    def suggest_optimizations(self, project_path: Path) -> List[Dict[str, Any]]:
+    def suggest_optimizations(self, project_path: Path) -> list[dict[str, Any]]:
         """AI-driven project optimization suggestions."""
         if not self.llm_provider:
             return []
@@ -603,7 +603,7 @@ class UsageTracker:
         self.usage_log = Path("logs") / "usage_analytics.jsonl"
         self.usage_log.parent.mkdir(exist_ok=True)
 
-    def track_command_usage(self, command: str, context: Dict[str, Any] = None):
+    def track_command_usage(self, command: str, context: dict[str, Any] = None):
         """Track command usage for analytics."""
         usage_entry = {
             "timestamp": datetime.utcnow().isoformat(),
@@ -615,7 +615,7 @@ class UsageTracker:
         with open(self.usage_log, "a") as f:
             f.write(json.dumps(usage_entry) + "\n")
 
-    def get_usage_statistics(self) -> Dict[str, Any]:
+    def get_usage_statistics(self) -> dict[str, Any]:
         """Get usage statistics for analytics."""
         if not self.usage_log.exists():
             return {}
@@ -627,7 +627,7 @@ class UsageTracker:
             "time_range": {"start": None, "end": None},
         }
 
-        with open(self.usage_log, "r") as f:
+        with open(self.usage_log) as f:
             for line in f:
                 try:
                     entry = json.loads(line.strip())

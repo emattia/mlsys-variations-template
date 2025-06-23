@@ -5,22 +5,23 @@ Your intelligent guide through the MLX Platform Foundation.
 Unifies all frameworks with rich styling and contextual guidance.
 """
 
-import sys
-import logging
-import time
-import subprocess
-import json
 import asyncio
-from pathlib import Path
-from typing import Dict, List, Any
+import json
+import logging
+import subprocess
+import sys
+import time
 import uuid
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
-from rich.prompt import Prompt
-from rich.layout import Layout
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from pathlib import Path
+from typing import Any
+
 import typer
+from rich.console import Console
+from rich.layout import Layout
+from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.prompt import Prompt
+from rich.table import Table
 
 # Add project paths for imports
 project_root = Path(__file__).parent.parent
@@ -31,8 +32,8 @@ sys.path.insert(0, str(project_root / "scripts" / "mlx"))
 # Add imports for naming system integration
 sys.path.insert(0, str(project_root / "scripts"))
 try:
-    from .naming_config import get_naming_config
     from .migrate_platform_naming import MigrationValidator, PlatformNamingMigrator
+    from .naming_config import get_naming_config
 
     NAMING_SYSTEM_AVAILABLE = True
 except ImportError:
@@ -40,7 +41,7 @@ except ImportError:
 
 # Try to import MLX components
 try:
-    from mlx.llm_integration import OpenAIProvider, MLXAIEnhancements
+    from mlx.llm_integration import MLXAIEnhancements, OpenAIProvider
 except ImportError:
     OpenAIProvider = None
     MLXAIEnhancements = None
@@ -110,7 +111,7 @@ class MLXAssistant:
         # Log session start
         logger.info(f"MLX Assistant session started: {self.session_id}")
 
-    def _discover_frameworks(self) -> Dict[str, Dict[str, Any]]:
+    def _discover_frameworks(self) -> dict[str, dict[str, Any]]:
         """Discover all available MLX frameworks and their capabilities."""
         logger.info("Discovering available frameworks")
         frameworks = {
@@ -150,7 +151,7 @@ class MLXAssistant:
         logger.info(f"Discovered {len(frameworks)} frameworks")
         return frameworks
 
-    def _analyze_project_state(self) -> Dict[str, Any]:
+    def _analyze_project_state(self) -> dict[str, Any]:
         """Analyze current project state for contextual recommendations."""
         logger.info("Analyzing project state")
         state = {
@@ -184,7 +185,7 @@ class MLXAssistant:
         logger.info(f"Project analysis complete: {state}")
         return state
 
-    def _analyze_naming_consistency(self) -> Dict[str, Any]:
+    def _analyze_naming_consistency(self) -> dict[str, Any]:
         """Analyze current naming consistency state."""
         naming_state = {
             "system_available": NAMING_SYSTEM_AVAILABLE,
@@ -246,7 +247,7 @@ class MLXAssistant:
 
         return naming_state
 
-    def _generate_recommendations(self, state: Dict[str, Any]) -> List[str]:
+    def _generate_recommendations(self, state: dict[str, Any]) -> list[str]:
         """Generate intelligent recommendations based on project state."""
         logger.info("Generating recommendations")
         recommendations = []
@@ -527,7 +528,7 @@ def show_detailed_status():
     console.print("📊 [bold]Detailed Project Status[/bold]\n")
 
     # Framework status
-    for key, framework in assistant.frameworks.items():
+    for _key, framework in assistant.frameworks.items():
         console.print(
             f"{framework['icon']} [bold]{framework['name']}[/bold]: {framework['status']}"
         )
@@ -819,7 +820,7 @@ def glossary_view():
 
         # Extract key sections
         lines = loaded_data.split("\n")
-        for i, line in enumerate(lines[:50]):  # Show first 50 lines
+        for _i, line in enumerate(lines[:50]):  # Show first 50 lines
             if line.startswith("#"):
                 console.print(f"[bold blue]{line}[/bold blue]")
             elif line.startswith("##"):
@@ -995,7 +996,7 @@ def ask_question(
 
 
 def start_ai_interactive_mode(
-    ai_provider: OpenAIProvider, project_context: Dict[str, Any]
+    ai_provider: OpenAIProvider, project_context: dict[str, Any]
 ):
     """Start interactive AI Q&A session"""
     console.print(
@@ -1220,7 +1221,7 @@ def ai_generate_workflow(
         logger.error(f"AI Workflow error: {e}")
 
 
-def execute_workflow(workflow: Dict[str, Any]):
+def execute_workflow(workflow: dict[str, Any]):
     """Execute a generated workflow step by step"""
     console.print(
         Panel(

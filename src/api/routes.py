@@ -41,7 +41,7 @@ async def health_check(service: ModelService = Depends(get_model_service)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Health check failed: {str(e)}",
-        )
+        ) from e
 
 
 @router.get("/models", response_model=list[str], tags=["models"])
@@ -53,7 +53,7 @@ async def list_models(service: ModelService = Depends(get_model_service)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list models: {str(e)}",
-        )
+        ) from e
 
 
 @router.get("/models/{model_name}", response_model=ModelInfo, tags=["models"])
@@ -75,7 +75,7 @@ async def get_model_info(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get model info: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/models/{model_name}/load", tags=["models"])
@@ -99,7 +99,7 @@ async def load_model(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error loading model: {str(e)}",
-        )
+        ) from e
 
 
 @router.delete("/models/{model_name}", tags=["models"])
@@ -121,7 +121,7 @@ async def unload_model(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error unloading model: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/predict", response_model=PredictionResponse, tags=["prediction"])
@@ -160,12 +160,14 @@ async def predict(
     except HTTPException:
         raise
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Prediction failed: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/predict/batch", response_model=PredictionResponse, tags=["prediction"])
@@ -204,12 +206,14 @@ async def predict_batch(
     except HTTPException:
         raise
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Batch prediction failed: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/models/default/create", tags=["models"])
@@ -229,4 +233,4 @@ async def create_default_model(service: ModelService = Depends(get_model_service
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error creating default model: {str(e)}",
-        )
+        ) from e

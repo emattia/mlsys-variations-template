@@ -15,10 +15,10 @@ Features:
 
 import json
 import random
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, field, asdict
+from typing import Any
 
 
 @dataclass
@@ -29,14 +29,14 @@ class BenchmarkScenario:
     category: str
     difficulty: str  # basic, intermediate, advanced, expert
     user_query: str
-    expected_commands: List[str] = field(default_factory=list)
-    expected_frameworks: List[str] = field(default_factory=list)
-    project_context: Dict[str, Any] = field(default_factory=dict)
-    success_criteria: Dict[str, float] = field(
+    expected_commands: list[str] = field(default_factory=list)
+    expected_frameworks: list[str] = field(default_factory=list)
+    project_context: dict[str, Any] = field(default_factory=dict)
+    success_criteria: dict[str, float] = field(
         default_factory=dict
     )  # min scores for each dimension
     description: str = ""
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
 
 class BenchmarkDatasetGenerator:
@@ -87,7 +87,7 @@ class BenchmarkDatasetGenerator:
             },
         }
 
-    def generate_security_scenarios(self) -> List[BenchmarkScenario]:
+    def generate_security_scenarios(self) -> list[BenchmarkScenario]:
         """Generate security workflow test scenarios"""
         scenarios = []
 
@@ -205,7 +205,7 @@ class BenchmarkDatasetGenerator:
 
         return scenarios
 
-    def generate_plugin_scenarios(self) -> List[BenchmarkScenario]:
+    def generate_plugin_scenarios(self) -> list[BenchmarkScenario]:
         """Generate plugin development test scenarios"""
         scenarios = []
 
@@ -285,7 +285,7 @@ class BenchmarkDatasetGenerator:
 
         return scenarios
 
-    def generate_golden_repos_scenarios(self) -> List[BenchmarkScenario]:
+    def generate_golden_repos_scenarios(self) -> list[BenchmarkScenario]:
         """Generate golden repository test scenarios"""
         scenarios = []
 
@@ -367,7 +367,7 @@ class BenchmarkDatasetGenerator:
 
         return scenarios
 
-    def generate_troubleshooting_scenarios(self) -> List[BenchmarkScenario]:
+    def generate_troubleshooting_scenarios(self) -> list[BenchmarkScenario]:
         """Generate troubleshooting test scenarios"""
         scenarios = []
 
@@ -404,7 +404,7 @@ class BenchmarkDatasetGenerator:
 
         return scenarios
 
-    def generate_integration_scenarios(self) -> List[BenchmarkScenario]:
+    def generate_integration_scenarios(self) -> list[BenchmarkScenario]:
         """Generate framework integration test scenarios"""
         scenarios = []
 
@@ -453,7 +453,7 @@ class BenchmarkDatasetGenerator:
 
         return scenarios
 
-    def generate_edge_case_scenarios(self) -> List[BenchmarkScenario]:
+    def generate_edge_case_scenarios(self) -> list[BenchmarkScenario]:
         """Generate edge case and error handling scenarios"""
         scenarios = []
 
@@ -497,8 +497,8 @@ class BenchmarkDatasetGenerator:
         return scenarios
 
     def generate_benchmark_dataset(
-        self, include_categories: Optional[List[str]] = None
-    ) -> List[BenchmarkScenario]:
+        self, include_categories: list[str] | None = None
+    ) -> list[BenchmarkScenario]:
         """Generate complete benchmark dataset"""
         all_scenarios = []
 
@@ -538,8 +538,8 @@ class BenchmarkDatasetGenerator:
             "metadata": {
                 "generated_at": datetime.now().isoformat(),
                 "total_scenarios": len(self.scenarios),
-                "categories": list(set(s.category for s in self.scenarios)),
-                "difficulty_levels": list(set(s.difficulty for s in self.scenarios)),
+                "categories": list({s.category for s in self.scenarios}),
+                "difficulty_levels": list({s.difficulty for s in self.scenarios}),
             },
             "scenarios": [asdict(scenario) for scenario in self.scenarios],
         }
@@ -561,7 +561,7 @@ class BenchmarkDatasetGenerator:
         for category, count in sorted(category_counts.items()):
             print(f"  - {category}: {count} scenarios")
 
-    def load_benchmark_dataset(self, input_path: Path) -> List[BenchmarkScenario]:
+    def load_benchmark_dataset(self, input_path: Path) -> list[BenchmarkScenario]:
         """Load benchmark dataset from JSON file"""
         with open(input_path) as f:
             data = json.load(f)
@@ -574,11 +574,11 @@ class BenchmarkDatasetGenerator:
         self.scenarios = scenarios
         return scenarios
 
-    def get_scenarios_by_category(self, category: str) -> List[BenchmarkScenario]:
+    def get_scenarios_by_category(self, category: str) -> list[BenchmarkScenario]:
         """Get scenarios filtered by category"""
         return [s for s in self.scenarios if s.category == category]
 
-    def get_scenarios_by_difficulty(self, difficulty: str) -> List[BenchmarkScenario]:
+    def get_scenarios_by_difficulty(self, difficulty: str) -> list[BenchmarkScenario]:
         """Get scenarios filtered by difficulty"""
         return [s for s in self.scenarios if s.difficulty == difficulty]
 

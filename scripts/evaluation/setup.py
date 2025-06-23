@@ -54,11 +54,11 @@ from pathlib import Path
 def main():
     """Run the MLX evaluation system"""
     script_path = Path(__file__).parent / "mlx_eval.py"
-    
+
     if not script_path.exists():
         print("Error: mlx_eval.py not found")
         return 1
-    
+
     # Pass all arguments to the main script
     cmd = [sys.executable, str(script_path)] + sys.argv[1:]
     return subprocess.call(cmd)

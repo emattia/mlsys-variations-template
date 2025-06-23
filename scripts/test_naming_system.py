@@ -9,11 +9,12 @@ Tests the entire naming migration system including:
 - Integration tests
 """
 
-import sys
 import os
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -35,7 +36,7 @@ def run_test_suite():
     # Test 1: Basic naming configuration
     console.print("\n[yellow]1. Testing basic naming configuration...[/yellow]")
     try:
-        from naming_config import NamingConfig, CommonNamingConfigs
+        from naming_config import CommonNamingConfigs, NamingConfig
 
         # Test default config
         config = NamingConfig()
@@ -58,7 +59,7 @@ def run_test_suite():
     # Test 2: Template substitution
     console.print("\n[yellow]2. Testing template substitution...[/yellow]")
     try:
-        from naming_config import substitute_naming_in_text, NamingConfig
+        from naming_config import NamingConfig, substitute_naming_in_text
 
         config = NamingConfig(
             platform_name="testplatform", platform_full_name="Test Platform Foundation"

@@ -18,14 +18,13 @@ Usage:
     python scripts/backup_manager.py --action=cleanup --confirm
 """
 
-import sys
+import argparse
 import json
 import logging
-import argparse
+import sys
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict
-from dataclasses import dataclass, asdict
 
 # Configure logging
 logging.basicConfig(
@@ -45,7 +44,7 @@ class BackupFile:
     category: str  # 'active', 'archivable', 'expired'
     source_exists: bool
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
         return {
             **asdict(self),
@@ -63,7 +62,7 @@ class BackupManager:
         self.archive_days = 30  # Archive after 30 days
         self.archive_dir = self.root_path / "archive" / "backups"
 
-    def discover_backups(self) -> List[BackupFile]:
+    def discover_backups(self) -> list[BackupFile]:
         """Discover all backup files in the repository."""
         logger.info("Discovering backup files...")
         backup_files = []
@@ -103,7 +102,7 @@ class BackupManager:
         logger.info(f"Discovered {len(backup_files)} backup files")
         return backup_files
 
-    def audit_backups(self) -> Dict:
+    def audit_backups(self) -> dict:
         """Audit all backup files and generate report."""
         backups = self.discover_backups()
 
@@ -153,7 +152,7 @@ class BackupManager:
 
         return report
 
-    def _generate_recommendations(self, categories: Dict) -> List[str]:
+    def _generate_recommendations(self, categories: dict) -> list[str]:
         """Generate cleanup recommendations based on audit."""
         recommendations = []
 
@@ -185,7 +184,7 @@ class BackupManager:
 
         return recommendations
 
-    def cleanup_backups(self, dry_run: bool = True) -> Dict:
+    def cleanup_backups(self, dry_run: bool = True) -> dict:
         """Clean up backups according to retention policy."""
         logger.info(f"Starting backup cleanup (dry_run={dry_run})...")
 

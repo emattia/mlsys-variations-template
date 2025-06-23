@@ -7,10 +7,11 @@ This allows easy rebranding/renaming of the entire platform by modifying
 a single configuration file.
 """
 
-from dataclasses import dataclass
-from typing import Dict, Any
-from pathlib import Path
 import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
 import typer
 
 
@@ -45,7 +46,7 @@ class NamingConfig:
     # Repository and Project Names
     template_name: str = "mlx-variations-template"  # Template repository name
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
             "platform_name": self.platform_name,
@@ -64,7 +65,7 @@ class NamingConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "NamingConfig":
+    def from_dict(cls, data: dict[str, Any]) -> "NamingConfig":
         """Create from dictionary"""
         return cls(**data)
 

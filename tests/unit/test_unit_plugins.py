@@ -1,7 +1,7 @@
 """Unit tests for plugin architecture."""
 
-from src.plugins.registry import PluginRegistry
 from src.plugins.base import MLOpsComponent
+from src.plugins.registry import PluginRegistry
 
 
 class MockPlugin(MLOpsComponent):

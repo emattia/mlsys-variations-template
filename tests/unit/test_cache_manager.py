@@ -4,7 +4,6 @@ import tempfile
 import time
 from pathlib import Path
 
-
 from src.utils.cache_manager import CacheManager
 
 
@@ -233,6 +232,6 @@ class TestCacheIntegration:
         # Check that each thread got its own value correctly
         for i in range(3):
             assert i in results, f"Thread {i} did not complete"
-            assert (
-                results[i] == f"value_{i}"
-            ), f"Thread {i} got wrong value: {results[i]}"
+            assert results[i] == f"value_{i}", (
+                f"Thread {i} got wrong value: {results[i]}"
+            )

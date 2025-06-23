@@ -17,7 +17,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple, Dict, Any
+from typing import Any
 
 import typer
 from rich.console import Console
@@ -28,7 +28,7 @@ from rich.table import Table
 # Add the naming config to path
 sys.path.insert(0, str(Path(__file__).parent))
 try:
-    from naming_config import NamingConfig, CommonNamingConfigs, get_naming_config
+    from naming_config import CommonNamingConfigs, NamingConfig, get_naming_config
 except ImportError:
     # Handle case where naming_config module doesn't exist yet
     console = Console()
@@ -118,7 +118,7 @@ class PlatformNamingMigrator:
             (r"mlx:([a-z-]+)", "{PACKAGE_PREFIX}:\\1"),
         ]
 
-    def discover_files(self) -> List[Path]:
+    def discover_files(self) -> list[Path]:
         """Discover all files that might need migration"""
         discovered_files = set()
 
@@ -143,9 +143,9 @@ class PlatformNamingMigrator:
                 if file_path.exists() and file_path.is_file():
                     discovered_files.add(file_path)
 
-        return sorted(list(discovered_files))
+        return sorted(discovered_files)
 
-    def analyze_files(self) -> Dict[str, List[Tuple[int, str, str]]]:
+    def analyze_files(self) -> dict[str, list[tuple[int, str, str]]]:
         """Analyze files to find naming patterns that need migration"""
         results = {}
         files = self.discover_files()
@@ -160,7 +160,7 @@ class PlatformNamingMigrator:
                     lines = loaded_data.split("\n")
 
                     for line_num, line in enumerate(lines, 1):
-                        for pattern, replacement in self.replacement_patterns:
+                        for pattern, _replacement in self.replacement_patterns:
                             if re.search(pattern, line):
                                 matches.append((line_num, pattern, line.strip()))
 
@@ -176,7 +176,7 @@ class PlatformNamingMigrator:
 
     def migrate_file(
         self, file_path: Path, config: NamingConfig, dry_run: bool = True
-    ) -> Tuple[bool, int]:
+    ) -> tuple[bool, int]:
         """Migrate a single file to use naming configuration"""
         if not file_path.exists():
             return False, 0
@@ -326,7 +326,7 @@ class MigrationValidator:
         self.console = Console()
         self.validation_results = {}
 
-    def validate_migration_completeness(self) -> Dict[str, Any]:
+    def validate_migration_completeness(self) -> dict[str, Any]:
         """Perform comprehensive validation of migration completeness."""
         self.console.print(
             "🔍 [bold]Performing Migration Completeness Validation[/bold]"
@@ -374,7 +374,7 @@ class MigrationValidator:
         self.validation_results = results
         return results
 
-    def _validate_file_naming(self) -> Dict[str, Any]:
+    def _validate_file_naming(self) -> dict[str, Any]:
         """Validate that critical files have been properly renamed."""
         file_validation = {
             "status": "checking",
@@ -420,7 +420,7 @@ class MigrationValidator:
 
         return file_validation
 
-    def _validate_pattern_consistency(self) -> Dict[str, Any]:
+    def _validate_pattern_consistency(self) -> dict[str, Any]:
         """Validate naming pattern consistency across all files."""
         migrator = PlatformNamingMigrator()
         files = migrator.discover_files()
@@ -480,7 +480,7 @@ class MigrationValidator:
 
     def _check_file_patterns(
         self, file_path: Path, loaded_data: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Check a specific file for naming pattern inconsistencies."""
         inconsistencies = []
 
@@ -521,7 +521,7 @@ class MigrationValidator:
 
         return inconsistencies
 
-    def _validate_cli_functionality(self) -> Dict[str, Any]:
+    def _validate_cli_functionality(self) -> dict[str, Any]:
         """Validate that CLI commands work with new naming."""
         cli_validation = {
             "status": "checking",
@@ -582,7 +582,7 @@ class MigrationValidator:
 
         return cli_validation
 
-    def _validate_integration_points(self) -> Dict[str, Any]:
+    def _validate_integration_points(self) -> dict[str, Any]:
         """Validate key integration points and dependencies."""
         integration_validation = {
             "status": "checking",
@@ -642,7 +642,7 @@ class MigrationValidator:
 
         return integration_validation
 
-    def _check_pyproject_toml(self, file_path: str) -> Dict[str, Any]:
+    def _check_pyproject_toml(self, file_path: str) -> dict[str, Any]:
         """Check pyproject.toml for naming consistency."""
         pyproject_path = Path(file_path)
         if not pyproject_path.exists():
@@ -667,7 +667,7 @@ class MigrationValidator:
         except Exception as e:
             return {"status": "error", "details": str(e)}
 
-    def _check_docker_compose(self, file_path: str) -> Dict[str, Any]:
+    def _check_docker_compose(self, file_path: str) -> dict[str, Any]:
         """Check docker-compose.yml for naming consistency."""
         docker_path = Path(file_path)
         if not docker_path.exists():
@@ -689,7 +689,7 @@ class MigrationValidator:
         except Exception as e:
             return {"status": "error", "details": str(e)}
 
-    def _check_makefile(self, file_path: str) -> Dict[str, Any]:
+    def _check_makefile(self, file_path: str) -> dict[str, Any]:
         """Check Makefile for naming consistency."""
         makefile_path = Path(file_path)
         if not makefile_path.exists():
@@ -702,7 +702,7 @@ class MigrationValidator:
         except Exception as e:
             return {"status": "error", "details": str(e)}
 
-    def _check_github_workflows(self, file_path: str) -> Dict[str, Any]:
+    def _check_github_workflows(self, file_path: str) -> dict[str, Any]:
         """Check GitHub workflows for naming consistency."""
         workflows_path = Path(file_path)
         if not workflows_path.exists():
@@ -725,7 +725,7 @@ class MigrationValidator:
         except Exception as e:
             return {"status": "error", "details": str(e)}
 
-    def _calculate_consistency_score(self, results: Dict[str, Any]) -> float:
+    def _calculate_consistency_score(self, results: dict[str, Any]) -> float:
         """Calculate overall consistency score from validation results."""
         scores = []
         weights = []
@@ -751,12 +751,14 @@ class MigrationValidator:
             return 0.0
 
         # Calculate weighted average
-        weighted_score = sum(score * weight for score, weight in zip(scores, weights))
+        weighted_score = sum(
+            score * weight for score, weight in zip(scores, weights, strict=False)
+        )
         total_weight = sum(weights)
 
         return weighted_score / total_weight if total_weight > 0 else 0.0
 
-    def _generate_recommendations(self, results: Dict[str, Any]) -> List[str]:
+    def _generate_recommendations(self, results: dict[str, Any]) -> list[str]:
         """Generate intelligent recommendations based on validation results."""
         recommendations = []
 
@@ -993,7 +995,7 @@ def main():
 
         # Show details for first few files
         console.print("\n🔍 Sample matches (showing first 3 files):")
-        for i, (file_path, matches) in enumerate(list(results.items())[:3]):
+        for _i, (file_path, matches) in enumerate(list(results.items())[:3]):
             console.print(f"\n[cyan]{file_path}[/cyan] ({len(matches)} matches)")
 
             table = Table(show_header=True, header_style="bold magenta")

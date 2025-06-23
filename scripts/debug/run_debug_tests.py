@@ -4,13 +4,13 @@ Comprehensive test runner with debugging capabilities.
 Handles different test scenarios and provides detailed feedback.
 """
 
-import sys
-import subprocess
 import argparse
 import logging
-from pathlib import Path
-from typing import List, Dict, Any
+import subprocess
+import sys
 import time
+from pathlib import Path
+from typing import Any
 
 # Setup logging
 logging.basicConfig(
@@ -26,7 +26,7 @@ class TestRunner:
         self.verbose = verbose
         self.results = {}
 
-    def run_command(self, cmd: List[str], description: str) -> Dict[str, Any]:
+    def run_command(self, cmd: list[str], description: str) -> dict[str, Any]:
         """Run a command and capture results."""
         logger.info(f"Running: {description}")
         if self.verbose:
@@ -74,7 +74,7 @@ class TestRunner:
                 "description": description,
             }
 
-    def run_fixed_tests(self) -> Dict[str, Any]:
+    def run_fixed_tests(self) -> dict[str, Any]:
         """Run our fixed test files."""
         logger.info("=" * 60)
         logger.info("RUNNING FIXED TESTS")
@@ -96,7 +96,7 @@ class TestRunner:
 
         return results
 
-    def run_unit_tests(self) -> Dict[str, Any]:
+    def run_unit_tests(self) -> dict[str, Any]:
         """Run unit tests only."""
         logger.info("=" * 60)
         logger.info("RUNNING UNIT TESTS")
@@ -118,7 +118,7 @@ class TestRunner:
             )
         }
 
-    def run_integration_tests(self) -> Dict[str, Any]:
+    def run_integration_tests(self) -> dict[str, Any]:
         """Run integration tests."""
         logger.info("=" * 60)
         logger.info("RUNNING INTEGRATION TESTS")
@@ -131,7 +131,7 @@ class TestRunner:
             )
         }
 
-    def run_specific_failing_tests(self) -> Dict[str, Any]:
+    def run_specific_failing_tests(self) -> dict[str, Any]:
         """Run the specific tests that were failing."""
         logger.info("=" * 60)
         logger.info("RUNNING SPECIFIC FAILING TESTS")
@@ -152,7 +152,7 @@ class TestRunner:
 
         return results
 
-    def run_quick_smoke_test(self) -> Dict[str, Any]:
+    def run_quick_smoke_test(self) -> dict[str, Any]:
         """Run a quick smoke test to verify basic functionality."""
         logger.info("=" * 60)
         logger.info("RUNNING QUICK SMOKE TEST")
@@ -165,7 +165,7 @@ class TestRunner:
             )
         }
 
-    def run_coverage_report(self) -> Dict[str, Any]:
+    def run_coverage_report(self) -> dict[str, Any]:
         """Generate coverage report."""
         logger.info("=" * 60)
         logger.info("GENERATING COVERAGE REPORT")
@@ -186,7 +186,7 @@ class TestRunner:
             )
         }
 
-    def print_summary(self, all_results: Dict[str, Dict[str, Any]]):
+    def print_summary(self, all_results: dict[str, dict[str, Any]]):
         """Print a summary of all test results."""
         logger.info("\n" + "=" * 80)
         logger.info("TEST SUMMARY")

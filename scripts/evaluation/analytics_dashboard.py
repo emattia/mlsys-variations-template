@@ -15,18 +15,18 @@ Features:
 
 import json
 import statistics
+from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-from collections import defaultdict
+from typing import Any
 
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-from rich.layout import Layout
-from rich.tree import Tree
-from rich.align import Align
 import typer
+from rich.align import Align
+from rich.console import Console
+from rich.layout import Layout
+from rich.panel import Panel
+from rich.table import Table
+from rich.tree import Tree
 
 console = Console()
 
@@ -40,7 +40,7 @@ class AnalyticsDashboard:
         self.evaluations = []
         self.metrics_cache = {}
 
-    def load_evaluation_data(self) -> List[Dict[str, Any]]:
+    def load_evaluation_data(self) -> list[dict[str, Any]]:
         """Load all evaluation data from storage"""
         evaluations = []
 
@@ -57,7 +57,7 @@ class AnalyticsDashboard:
         self.evaluations = evaluations
         return evaluations
 
-    def calculate_performance_metrics(self) -> Dict[str, Any]:
+    def calculate_performance_metrics(self) -> dict[str, Any]:
         """Calculate comprehensive performance metrics"""
         if not self.evaluations:
             return {}
@@ -110,7 +110,7 @@ class AnalyticsDashboard:
             # Individual criteria scores
             criteria = eval_data.get("criteria", {})
             for key, value in criteria.items():
-                if isinstance(value, (int, float)) and key != "final_score":
+                if isinstance(value, int | float) and key != "final_score":
                     dimension_scores[key].append(value * 100)  # Convert to percentage
                     category_scores[category][key].append(value * 100)
                     if eval_time >= recent_cutoff:
@@ -165,7 +165,7 @@ class AnalyticsDashboard:
         return metrics
 
     def _calculate_trend(
-        self, all_scores: List[float], recent_scores: List[float]
+        self, all_scores: list[float], recent_scores: list[float]
     ) -> str:
         """Calculate if recent performance is improving/declining"""
         if len(all_scores) < 10 or len(recent_scores) < 3:
@@ -185,8 +185,8 @@ class AnalyticsDashboard:
             return "stable"
 
     def _detect_regressions(
-        self, dimension_scores: Dict[str, List[float]]
-    ) -> List[Dict[str, Any]]:
+        self, dimension_scores: dict[str, list[float]]
+    ) -> list[dict[str, Any]]:
         """Detect performance regressions"""
         alerts = []
 
@@ -273,7 +273,7 @@ class AnalyticsDashboard:
 
         console.print(layout)
 
-    def _create_performance_panel(self, metrics: Dict[str, Any]) -> Panel:
+    def _create_performance_panel(self, metrics: dict[str, Any]) -> Panel:
         """Create overall performance metrics panel"""
         table = Table(title="📈 Overall Performance", show_header=True)
         table.add_column("Dimension", style="cyan")
@@ -306,7 +306,7 @@ class AnalyticsDashboard:
 
         return Panel(table, border_style="green")
 
-    def _create_category_panel(self, metrics: Dict[str, Any]) -> Panel:
+    def _create_category_panel(self, metrics: dict[str, Any]) -> Panel:
         """Create category performance panel"""
         table = Table(title="📋 Performance by Category", show_header=True)
         table.add_column("Category", style="cyan")
@@ -332,7 +332,7 @@ class AnalyticsDashboard:
 
         return Panel(table, border_style="blue")
 
-    def _create_trends_panel(self, metrics: Dict[str, Any]) -> Panel:
+    def _create_trends_panel(self, metrics: dict[str, Any]) -> Panel:
         """Create trends analysis panel"""
         tree = Tree("📊 Trend Analysis")
 
@@ -356,7 +356,7 @@ class AnalyticsDashboard:
 
         return Panel(tree, title="📈 Trends", border_style="yellow")
 
-    def _create_alerts_panel(self, metrics: Dict[str, Any]) -> Panel:
+    def _create_alerts_panel(self, metrics: dict[str, Any]) -> Panel:
         """Create regression alerts panel"""
         alerts = metrics.get("regression_alerts", [])
 
@@ -400,7 +400,7 @@ class AnalyticsDashboard:
         else:
             return "F"
 
-    def display_detailed_analysis(self, category: Optional[str] = None):
+    def display_detailed_analysis(self, category: str | None = None):
         """Display detailed analysis for specific category or overall"""
         metrics = self.calculate_performance_metrics()
 
@@ -415,7 +415,7 @@ class AnalyticsDashboard:
             )
             self._display_overall_details(metrics)
 
-    def _display_category_details(self, metrics: Dict[str, Any], category: str):
+    def _display_category_details(self, metrics: dict[str, Any], category: str):
         """Display detailed analysis for specific category"""
         category_data = metrics.get("category_performance", {}).get(category)
 
@@ -463,7 +463,7 @@ class AnalyticsDashboard:
 
                 console.print(f"  {i}. [{timestamp}] {score:.1f}% ({grade}) - {query}")
 
-    def _display_overall_details(self, metrics: Dict[str, Any]):
+    def _display_overall_details(self, metrics: dict[str, Any]):
         """Display detailed overall analysis"""
         overall = metrics.get("overall_performance", {})
 
@@ -545,7 +545,7 @@ def show_dashboard():
 
 @app.command("analyze")
 def analyze_performance(
-    category: Optional[str] = typer.Option(
+    category: str | None = typer.Option(
         None, "--category", "-c", help="Analyze specific category"
     ),
 ):

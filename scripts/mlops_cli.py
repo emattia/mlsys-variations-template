@@ -4,10 +4,11 @@ MLOps CLI - Unified Command Line Interface
 Provides unified access to MLOps platform functionality
 """
 
-import subprocess
 import re
-import typer
+import subprocess
 from pathlib import Path
+
+import typer
 
 app = typer.Typer(help="Unified CLI for the MLOps template.")
 
@@ -24,6 +25,50 @@ def _pascal_case(name: str) -> str:
     return "".join(word.capitalize() for word in re.split(r"[\-_ ]+", name))
 
 
+def get_commit_hash() -> str:
+    """Get the current git commit hash."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        return "unknown"
+
+
+def get_git_status() -> str:
+    """Get the current git status."""
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+        )
+        if result.stdout.strip():
+            return "dirty"
+        else:
+            return "clean"
+    except subprocess.CalledProcessError:
+        return "unknown"
+
+
+def get_version() -> str:
+    """Get the project version."""
+    try:
+        # Try to get version from pyproject.toml
+        pyproject_path = Path("pyproject.toml")
+        if pyproject_path.exists():
+            with open(pyproject_path) as f:
+                content = f.read()
+                for line in content.split("\n"):
+                    if line.strip().startswith("version"):
+                        return line.split("=")[1].strip().strip('"')
+        return "1.0.0"
+    except Exception:
+        return "unknown"
+
+
 # ---------------------------------------------------------------------
 # Repo sub-commands
 # ---------------------------------------------------------------------
@@ -34,22 +79,21 @@ repo_app = typer.Typer(help="Repository insights & git helpers")
 def repo_info():
     """Show high-level repository information (branch, remotes, latest commit)."""
     try:
-        branch = subprocess.check_output(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"], text=True
-        ).strip()
-        commit = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"], text=True
-        ).strip()
-        remote = subprocess.check_output(
-            ["git", "config", "--get", "remote.origin.url"], text=True
-        ).strip()
+        result = subprocess.run(
+            ["git", "branch", "--show-current"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        branch = result.stdout.strip()
     except subprocess.CalledProcessError as exc:
         typer.secho(f"[git error] {exc}", fg=typer.colors.RED)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     typer.echo(f"Branch : {branch}")
-    typer.echo(f"Commit : {commit}")
-    typer.echo(f"Remote : {remote}")
+    typer.echo(f"Commit : {get_commit_hash()}")
+    typer.echo(f"Status : {get_git_status()}")
+    typer.echo(f"Version: {get_version()}")
 
 
 @repo_app.command("branches")
@@ -86,7 +130,7 @@ def list_plugins(
         typer.echo(plugins)
     except ImportError:
         typer.secho("Plugins module not available", fg=typer.colors.RED)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
 
 @plugin_app.command("info")
@@ -100,10 +144,10 @@ def plugin_info(name: str):
         typer.echo(info)
     except ImportError:
         typer.secho("Plugins module not available", fg=typer.colors.RED)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
     except KeyError as exc:
         typer.secho(str(exc), fg=typer.colors.RED)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
 
 @plugin_app.command("add")

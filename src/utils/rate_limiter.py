@@ -8,12 +8,13 @@ This module provides comprehensive rate limiting for:
 """
 
 import asyncio
-import time
-from typing import Any, Callable, Dict
-from dataclasses import dataclass
-from collections import defaultdict, deque
 import functools
 import logging
+import time
+from collections import defaultdict, deque
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -32,18 +33,18 @@ class RateLimit:
 class RateLimiter:
     """Thread-safe rate limiter with cost tracking."""
 
-    def __init__(self, config: Dict[str, RateLimit]):
+    def __init__(self, config: dict[str, RateLimit]):
         """Initialize rate limiter with configuration.
 
         Args:
             config: Dictionary mapping service names to rate limits
         """
         self.config = config
-        self.request_history: Dict[str, deque] = defaultdict(deque)
-        self.cost_tracking: Dict[str, Dict[str, float]] = defaultdict(
+        self.request_history: dict[str, deque] = defaultdict(deque)
+        self.cost_tracking: dict[str, dict[str, float]] = defaultdict(
             lambda: {"daily": 0.0, "last_reset": time.time()}
         )
-        self._locks: Dict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
+        self._locks: dict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 
     async def acquire(self, service: str, cost: float = 0.0) -> bool:
         """Acquire permission to make a request.
@@ -83,7 +84,7 @@ class RateLimiter:
         self._record_request(service, now, cost)
         return True
 
-    def _get_request_counts(self, history: Any, now: float) -> Dict[str, int]:
+    def _get_request_counts(self, history: Any, now: float) -> dict[str, int]:
         """Get request counts for different time windows."""
         # Clean old requests
         cutoff_day = now - 86400
@@ -101,7 +102,7 @@ class RateLimiter:
         return {"minute": minute_count, "hour": hour_count, "day": day_count}
 
     def _check_rate_limits(
-        self, service: str, limits: Any, counts: Dict[str, int]
+        self, service: str, limits: Any, counts: dict[str, int]
     ) -> bool:
         """Check if request counts are within limits."""
         if counts["minute"] >= limits.requests_per_minute:
@@ -145,7 +146,7 @@ class RateLimiter:
         history.append({"timestamp": now, "cost": cost})
         cost_info["daily"] += cost
 
-    def get_status(self, service: str) -> Dict[str, Any]:
+    def get_status(self, service: str) -> dict[str, Any]:
         """Get current rate limit status for a service."""
         if service not in self.config:
             return {"error": f"No config for service: {service}"}

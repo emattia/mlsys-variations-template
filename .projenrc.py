@@ -11,9 +11,9 @@ and uses UV (not Poetry) for package management.
 
 import json
 import os
+from typing import Any
 
 from projen.python import PythonProject
-from typing import Dict, Any
 
 
 class MLXProject(PythonProject):
@@ -316,7 +316,7 @@ class MLXProject(PythonProject):
             description="Update documentation cross-references after reorganization",
         )
 
-    def add_mlx_component(self, component_id: str, config: Dict[str, Any] = None):
+    def add_mlx_component(self, component_id: str, config: dict[str, Any] = None):
         """
         Add MLX component to project with projen synthesis.
 
@@ -404,7 +404,7 @@ class MLXProject(PythonProject):
 This is an MLX Foundation project using projen for configuration management while maintaining the original repository structure.
 
 ### Core Directories (Existing Structure Maintained)
-- `src/api/`: FastAPI application components  
+- `src/api/`: FastAPI application components
 - `src/config/`: Configuration management
 - `src/plugins/`: Plugin architecture and registry
 - `src/cli/`: Command-line interface
@@ -442,7 +442,7 @@ This is an MLX Foundation project using projen for configuration management whil
 ### Common Commands (Preserved & Enhanced)
 - `projen` - Synthesize project configuration
 - `projen test:smart` - Run AI-selected tests from existing test suite
-- `projen mlx:status` - Check project health 
+- `projen mlx:status` - Check project health
 - `projen api:dev` - Start existing FastAPI development server
 - `make test` - Use existing Makefile (preserved)
 - `uv pip install package` - Add dependencies with UV
@@ -515,19 +515,19 @@ from pathlib import Path
 
 def organize_documentation():
     """Move documentation files to proper locations."""
-    
+
     # Define file moves
     moves = [
         ("ANALYSIS_AND_RECOMMENDATIONS.md", "docs/project-analysis.md"),
         ("BRANCHING_STRATEGY.md", "docs/development/branching-strategy.md"),
         # Add more as needed
     ]
-    
+
     for source, destination in moves:
         if os.path.exists(source):
             # Ensure destination directory exists
             Path(destination).parent.mkdir(parents=True, exist_ok=True)
-            
+
             # Move file
             shutil.move(source, destination)
             print(f"Moved {source} -> {destination}")

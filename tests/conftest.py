@@ -5,186 +5,190 @@ import tempfile
 from collections.abc import Generator
 from pathlib import Path
 from typing import Any
-import sys
-
-# Add project root to sys.path BEFORE importing from src
-# This allows tests to import modules from the `src` directory.
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
 
 import polars as pl
 import pytest
 from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
 
+# Import from installed package (no sys.path manipulation needed)
 from src.api.app import app
 from src.config import Config, ConfigManager
 from src.plugins import ExecutionContext
 
 
 @pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for each test session."""
+def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
+    """Create an instance of the default event loop for the test session."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
 
 
-@pytest.fixture(scope="session")
-def temp_dir() -> Generator[Path, None, None]:
-    """Create a temporary directory for tests."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield Path(tmpdir)
-
-
-@pytest.fixture(scope="session")
-def config_manager(temp_dir: Path) -> ConfigManager:
-    """Create a test configuration manager."""
-    config_dir = temp_dir / "con"
-    manager = ConfigManager(config_dir=config_dir)
-    manager.create_default_config_files()
-    return manager
-
-
-@pytest.fixture(scope="session")
-def test_config(config_manager: ConfigManager) -> Config:
-    """Create a test configuration."""
-    return config_manager.load_config()
+@pytest.fixture
+def config() -> Config:
+    """Provide a test configuration instance."""
+    # Create a temporary config for testing
+    test_config = Config(
+        app_name="test_app",
+        debug=True,
+        testing=True,
+    )
+    return test_config
 
 
 @pytest.fixture
-def execution_context(test_config: Config) -> ExecutionContext:
-    """Create a test execution context."""
-    return ExecutionContext(
-        config=test_config,
-        run_id="test-run-001",
-        component_name="test-component",
-        metadata={"test": True},
+def config_manager() -> ConfigManager:
+    """Provide a test configuration manager."""
+    return ConfigManager()
+
+
+@pytest.fixture
+def execution_context(config: Config) -> ExecutionContext:
+    """Provide a test execution context."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        context = ExecutionContext(
+            config=config,
+            run_id="test_run_123",
+            component_name="test_component",
+            artifacts_dir=Path(temp_dir),
+        )
+        yield context
+
+
+@pytest.fixture
+def sample_dataframe() -> pl.DataFrame:
+    """Provide a sample polars DataFrame for testing."""
+    return pl.DataFrame(
+        {
+            "id": [1, 2, 3, 4, 5],
+            "name": ["Alice", "Bob", "Charlie", "Diana", "Eve"],
+            "age": [25, 30, 35, 28, 32],
+            "score": [85.5, 90.2, 78.8, 92.1, 87.3],
+        }
     )
 
 
-@pytest.fixture(scope="session")
-async def async_client(test_config: Config) -> AsyncClient:
-    """Create an async test client for the API."""
-    app.state.config = test_config
+@pytest.fixture
+async def async_client() -> Generator[AsyncClient, None, None]:
+    """Provide an async HTTP client for API testing."""
     async with LifespanManager(app):
         async with AsyncClient(app=app, base_url="http://test") as client:
             yield client
 
 
-@pytest.fixture
-def sample_dataframe() -> pl.DataFrame:
-    """Create a sample DataFrame for testing."""
-    import numpy as np
-
-    np.random.seed(42)
-    n_samples = 100
-
-    data = {
-        "feature_1": np.random.randn(n_samples),
-        "feature_2": np.random.randn(n_samples),
-        "feature_3": np.random.uniform(0, 1, n_samples),
-        "categorical_feature": np.random.choice(["A", "B", "C"], n_samples),
-        "target": np.random.choice([0, 1], n_samples),
-    }
-
-    return pl.DataFrame(data)
+@pytest.fixture(scope="session")
+def test_data_dir() -> Path:
+    """Provide path to test data directory."""
+    return Path(__file__).parent / "data"
 
 
 @pytest.fixture
-def sample_regression_dataframe() -> pl.DataFrame:
-    """Create a sample DataFrame for regression testing."""
-    import numpy as np
+def mock_api_key() -> str:
+    """Provide a mock API key for testing."""
+    return "test_api_key_12345"
 
-    np.random.seed(42)
-    n_samples = 100
 
-    # Create correlated features for regression
-    feature_1 = np.random.randn(n_samples)
-    feature_2 = np.random.randn(n_samples)
-    target = 2 * feature_1 + 1.5 * feature_2 + np.random.randn(n_samples) * 0.1
-
-    data = {
-        "feature_1": feature_1,
-        "feature_2": feature_2,
-        "feature_3": np.random.uniform(0, 1, n_samples),
-        "categorical_feature": np.random.choice(["X", "Y", "Z"], n_samples),
-        "target": target,
-    }
-
-    return pl.DataFrame(data)
+# Test configuration for different environments
+@pytest.fixture(params=["development", "testing", "production"])
+def env_config(request) -> str:
+    """Provide different environment configurations for parametrized tests."""
+    return request.param
 
 
 @pytest.fixture
-def sample_csv_file(sample_dataframe: pl.DataFrame, temp_dir: Path) -> Path:
-    """Create a sample CSV file for testing."""
-    csv_path = temp_dir / "sample_data.csv"
-    sample_dataframe.write_csv(csv_path)
-    return csv_path
-
-
-@pytest.fixture(autouse=True)
-def clean_registry():
-    """Clean the plugin registry before each test."""
-    from src.plugins.registry import get_registry
-
-    registry = get_registry()
-    registry.clear()
-    yield
-    registry.clear()
+def temp_file_path() -> Generator[Path, None, None]:
+    """Provide a temporary file path for testing."""
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp_path = Path(tmp.name)
+    yield tmp_path
+    if tmp_path.exists():
+        tmp_path.unlink()
 
 
 @pytest.fixture
-def mock_model():
-    """Create a mock trained model for testing."""
-    from sklearn.datasets import make_classification
-    from sklearn.ensemble import RandomForestClassifier
-
-    # Create synthetic data
-    X, y = make_classification(
-        n_samples=100, n_features=4, n_classes=2, random_state=42
-    )
-
-    # Train a simple model
-    model = RandomForestClassifier(n_estimators=10, random_state=42)
-    model.fit(X, y)
-
-    return model
+def temp_dir_path() -> Generator[Path, None, None]:
+    """Provide a temporary directory path for testing."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        yield Path(tmp_dir)
 
 
-@pytest.fixture
-def config_override() -> dict[str, Any]:
-    """Provide configuration overrides for testing."""
-    return {
-        "ml": {
-            "random_seed": 123,
-            "test_size": 0.3,
-        },
-        "model": {
-            "model_type": "linear",
-            "problem_type": "classification",
-        },
-    }
-
-
-# Test markers
-pytest.mark.integration = pytest.mark.integration
-pytest.mark.unit = pytest.mark.unit
-pytest.mark.slow = pytest.mark.slow
-
-
+# Markers for different test categories
 def pytest_configure(config):
     """Configure pytest with custom markers."""
-    config.addinivalue_line("markers", "integration: mark test as integration test")
-    config.addinivalue_line("markers", "unit: mark test as unit test")
+    config.addinivalue_line("markers", "unit: mark test as a unit test")
+    config.addinivalue_line("markers", "integration: mark test as an integration test")
     config.addinivalue_line("markers", "slow: mark test as slow running")
+    config.addinivalue_line("markers", "api: mark test as an API test")
+    config.addinivalue_line(
+        "markers", "benchmark: mark test as a performance benchmark"
+    )
 
 
+# Custom test collection
 def pytest_collection_modifyitems(config, items):
     """Modify test collection to add default markers."""
     for item in items:
-        # Add unit marker by default if no other marker is present
-        if not any(
-            mark.name in ["integration", "slow", "unit"] for mark in item.iter_markers()
-        ):
+        # Add unit marker to tests in unit/ directory
+        if "unit" in str(item.fspath):
             item.add_marker(pytest.mark.unit)
+        # Add integration marker to tests in integration/ directory
+        elif "integration" in str(item.fspath):
+            item.add_marker(pytest.mark.integration)
+        # Add api marker to API tests
+        if "api" in str(item.fspath) or "test_api" in item.name:
+            item.add_marker(pytest.mark.api)
+
+
+# Async fixtures for database/external service testing
+@pytest.fixture
+async def mock_database():
+    """Provide a mock database connection for testing."""
+
+    # This would typically set up a test database
+    # For now, return a simple mock
+    class MockDB:
+        def __init__(self):
+            self.data = {}
+
+        async def get(self, key: str):
+            return self.data.get(key)
+
+        async def set(self, key: str, value: Any):
+            self.data[key] = value
+
+        async def delete(self, key: str):
+            self.data.pop(key, None)
+
+    db = MockDB()
+    yield db
+    # Cleanup would happen here
+
+
+@pytest.fixture
+def mock_external_service():
+    """Provide a mock external service for testing."""
+
+    class MockService:
+        def __init__(self):
+            self.calls = []
+
+        async def call_api(self, endpoint: str, data: dict = None):
+            self.calls.append({"endpoint": endpoint, "data": data})
+            return {"status": "success", "data": data}
+
+        def get_call_count(self):
+            return len(self.calls)
+
+    return MockService()
+
+
+# Performance testing fixtures
+@pytest.fixture
+def benchmark_config():
+    """Configuration for performance benchmarks."""
+    return {
+        "iterations": 100,
+        "timeout": 30,
+        "memory_limit": "1GB",
+    }

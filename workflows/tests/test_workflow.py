@@ -6,7 +6,6 @@ This module contains tests for the data processing and model training workflows.
 from __future__ import annotations
 
 import tempfile
-
 from pathlib import Path
 from unittest import mock
 

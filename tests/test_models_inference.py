@@ -3,13 +3,13 @@
 import pickle
 import tempfile
 from pathlib import Path
+from unittest.mock import Mock
 
 import numpy as np
 import polars as pl
 import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from unittest.mock import Mock
 
 from src.models.inference import (
     batch_predict,

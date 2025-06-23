@@ -9,6 +9,7 @@ This module provides comprehensive security hardening capabilities including:
 - Compliance reporting
 """
 
+import hashlib
 import json
 import logging
 import os
@@ -16,10 +17,9 @@ import subprocess
 import tempfile
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
-import hashlib
 from enum import Enum
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -52,11 +52,11 @@ class SecurityFinding:
     severity: str
     title: str
     description: str
-    file_path: Optional[str] = None
-    line_number: Optional[int] = None
-    cve_id: Optional[str] = None
-    recommendation: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    file_path: str | None = None
+    line_number: int | None = None
+    cve_id: str | None = None
+    recommendation: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -66,18 +66,18 @@ class SecurityReport:
     scan_timestamp: float
     project_path: str
     security_level: SecurityLevel
-    findings: List[SecurityFinding] = field(default_factory=list)
-    sbom: Optional[Dict[str, Any]] = None
-    compliance_status: Dict[str, bool] = field(default_factory=dict)
-    metrics: Dict[str, Union[int, float]] = field(default_factory=dict)
+    findings: list[SecurityFinding] = field(default_factory=list)
+    sbom: dict[str, Any] | None = None
+    compliance_status: dict[str, bool] = field(default_factory=dict)
+    metrics: dict[str, int | float] = field(default_factory=dict)
 
     @property
-    def critical_findings(self) -> List[SecurityFinding]:
+    def critical_findings(self) -> list[SecurityFinding]:
         """Get critical severity findings."""
         return [f for f in self.findings if f.severity.upper() == "CRITICAL"]
 
     @property
-    def high_findings(self) -> List[SecurityFinding]:
+    def high_findings(self) -> list[SecurityFinding]:
         """Get high severity findings."""
         return [f for f in self.findings if f.severity.upper() == "HIGH"]
 
@@ -108,7 +108,7 @@ class SecurityHardeningFramework:
         # Ensure required tools are available
         self._verify_security_tools()
 
-    def _load_tools_config(self) -> Dict[str, Any]:
+    def _load_tools_config(self) -> dict[str, Any]:
         """Load security tools configuration."""
         return {
             "trivy": {
@@ -139,7 +139,7 @@ class SecurityHardeningFramework:
             },
         }
 
-    def _load_security_policies(self) -> Dict[str, Any]:
+    def _load_security_policies(self) -> dict[str, Any]:
         """Load security policies based on security level."""
         base_policies = {
             "max_critical_findings": 0,
@@ -269,7 +269,7 @@ class SecurityHardeningFramework:
 
         return report
 
-    def _run_scan_by_type(self, scan_type: ScanType) -> List[SecurityFinding]:
+    def _run_scan_by_type(self, scan_type: ScanType) -> list[SecurityFinding]:
         """Run a specific type of security scan."""
         if scan_type == ScanType.FILESYSTEM:
             return self._run_trivy_filesystem_scan()
@@ -286,7 +286,7 @@ class SecurityHardeningFramework:
         else:
             return []
 
-    def _run_trivy_filesystem_scan(self) -> List[SecurityFinding]:
+    def _run_trivy_filesystem_scan(self) -> list[SecurityFinding]:
         """Run Trivy filesystem vulnerability scan."""
         config = self.tools_config["trivy"]
 
@@ -316,7 +316,7 @@ class SecurityHardeningFramework:
             logger.error(f"Trivy filesystem scan failed: {e}")
             return []
 
-    def _run_trivy_container_scan(self) -> List[SecurityFinding]:
+    def _run_trivy_container_scan(self) -> list[SecurityFinding]:
         """Run Trivy container image scan."""
         # Look for Dockerfile or built images
         dockerfile_path = self.project_path / "Dockerfile"
@@ -353,7 +353,7 @@ class SecurityHardeningFramework:
             logger.error(f"Trivy container scan failed: {e}")
             return []
 
-    def _run_dependency_scan(self) -> List[SecurityFinding]:
+    def _run_dependency_scan(self) -> list[SecurityFinding]:
         """Run dependency vulnerability scan using Safety."""
         if not self._tool_available("safety"):
             logger.warning("Safety not available, skipping dependency scan")
@@ -390,7 +390,7 @@ class SecurityHardeningFramework:
 
         return findings
 
-    def _run_code_scan(self) -> List[SecurityFinding]:
+    def _run_code_scan(self) -> list[SecurityFinding]:
         """Run code security scan using Bandit."""
         if not self._tool_available("bandit"):
             logger.warning("Bandit not available, skipping code scan")
@@ -427,7 +427,7 @@ class SecurityHardeningFramework:
 
         return findings
 
-    def _run_secrets_scan(self) -> List[SecurityFinding]:
+    def _run_secrets_scan(self) -> list[SecurityFinding]:
         """Run secrets detection scan."""
         # Use Trivy's secret detection capability
         config = self.tools_config["trivy"]
@@ -459,7 +459,7 @@ class SecurityHardeningFramework:
             logger.error(f"Secrets scan failed: {e}")
             return []
 
-    def _run_configuration_scan(self) -> List[SecurityFinding]:
+    def _run_configuration_scan(self) -> list[SecurityFinding]:
         """Run configuration security scan."""
         # Use Trivy's misconfiguration detection
         config = self.tools_config["trivy"]
@@ -492,8 +492,8 @@ class SecurityHardeningFramework:
             return []
 
     def _parse_trivy_results(
-        self, results: Dict[str, Any], scan_type: ScanType
-    ) -> List[SecurityFinding]:
+        self, results: dict[str, Any], scan_type: ScanType
+    ) -> list[SecurityFinding]:
         """Parse Trivy scan results."""
         findings = []
 
@@ -557,8 +557,8 @@ class SecurityHardeningFramework:
         return findings
 
     def _parse_safety_results(
-        self, results: List[Dict[str, Any]], req_file: str
-    ) -> List[SecurityFinding]:
+        self, results: list[dict[str, Any]], req_file: str
+    ) -> list[SecurityFinding]:
         """Parse Safety scan results."""
         findings = []
 
@@ -582,7 +582,7 @@ class SecurityHardeningFramework:
 
         return findings
 
-    def _parse_bandit_results(self, results: Dict[str, Any]) -> List[SecurityFinding]:
+    def _parse_bandit_results(self, results: dict[str, Any]) -> list[SecurityFinding]:
         """Parse Bandit scan results."""
         findings = []
 
@@ -607,7 +607,7 @@ class SecurityHardeningFramework:
 
         return findings
 
-    def generate_sbom(self) -> Dict[str, Any]:
+    def generate_sbom(self) -> dict[str, Any]:
         """Generate Software Bill of Materials using Syft."""
         if not self._tool_available("syft"):
             raise RuntimeError("Syft not available for SBOM generation")
@@ -626,7 +626,7 @@ class SecurityHardeningFramework:
 
             subprocess.run(cmd, capture_output=True, text=True, check=True)
 
-            with open(output_file, "r") as f:
+            with open(output_file) as f:
                 sbom_data = json.load(f)
 
             # Enhance SBOM with additional metadata
@@ -641,7 +641,7 @@ class SecurityHardeningFramework:
             return enhanced_sbom
 
         except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"SBOM generation failed: {e}")
+            raise RuntimeError(f"SBOM generation failed: {e}") from e
         finally:
             # Clean up temporary file
             try:
@@ -649,9 +649,7 @@ class SecurityHardeningFramework:
             except FileNotFoundError:
                 pass
 
-    def verify_signatures(
-        self, container_image: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def verify_signatures(self, container_image: str | None = None) -> dict[str, Any]:
         """Verify container image signatures using Cosign."""
         if not self._tool_available("cosign"):
             raise RuntimeError("Cosign not available for signature verification")
@@ -685,7 +683,7 @@ class SecurityHardeningFramework:
                 "error": str(e),
             }
 
-    def _check_compliance(self, report: SecurityReport) -> Dict[str, bool]:
+    def _check_compliance(self, report: SecurityReport) -> dict[str, bool]:
         """Check compliance against security policies."""
         compliance = {}
 
@@ -705,7 +703,7 @@ class SecurityHardeningFramework:
         )
 
         # Check required scans
-        completed_scans = set(f.scan_type for f in report.findings)
+        completed_scans = {f.scan_type for f in report.findings}
         required_scans = set(self.policies["required_scans"])
         compliance["required_scans"] = required_scans.issubset(completed_scans)
 
@@ -718,9 +716,7 @@ class SecurityHardeningFramework:
 
         return compliance
 
-    def _calculate_metrics(
-        self, report: SecurityReport
-    ) -> Dict[str, Union[int, float]]:
+    def _calculate_metrics(self, report: SecurityReport) -> dict[str, int | float]:
         """Calculate security metrics."""
         findings_by_severity = {}
         findings_by_type = {}
@@ -817,7 +813,7 @@ class SecurityHardeningFramework:
         <p><strong>Scan Date:</strong> {scan_date}</p>
         <p><strong>Risk Score:</strong> {risk_score}/10</p>
     </div>
-    
+
     <h2>Metrics</h2>
     <div class="metrics">
         <div class="metric">Total Findings: {total_findings}</div>
@@ -825,7 +821,7 @@ class SecurityHardeningFramework:
         <div class="metric">High: {high_count}</div>
         <div class="metric">Medium: {medium_count}</div>
     </div>
-    
+
     <h2>Findings</h2>
     {findings_html}
 </body>
@@ -927,7 +923,7 @@ class SecurityHardeningFramework:
 
         return json.dumps(sarif_report, indent=2)
 
-    def create_security_baseline(self) -> Dict[str, Any]:
+    def create_security_baseline(self) -> dict[str, Any]:
         """Create security baseline for the project."""
         baseline_report = self.run_comprehensive_scan()
 
@@ -960,7 +956,7 @@ class SecurityHardeningFramework:
         )
         return baseline
 
-    def compare_with_baseline(self, current_report: SecurityReport) -> Dict[str, Any]:
+    def compare_with_baseline(self, current_report: SecurityReport) -> dict[str, Any]:
         """Compare current scan with security baseline."""
         baseline_file = self.project_path / ".security_baseline.json"
 
@@ -979,7 +975,7 @@ class SecurityHardeningFramework:
             current_checksums.add(checksum)
 
         # Create checksums for baseline findings
-        baseline_checksums = set(f["checksum"] for f in baseline["allowed_findings"])
+        baseline_checksums = {f["checksum"] for f in baseline["allowed_findings"]}
 
         # Find new and resolved findings
         new_findings = current_checksums - baseline_checksums

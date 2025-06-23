@@ -1,68 +1,103 @@
+"""Configuration script for MLOps template."""
+
 from pathlib import Path
 
-import toml
 import typer
+import yaml
 
-app = typer.Typer()
+app = typer.Typer(help="Configure MLOps template settings")
 
 
-@app.command()
-def project_name(name: str):
-    """
-    Sets the project name in pyproject.toml.
-    """
+def create_config_file(config_path: Path, config_data: dict) -> None:
+    """Create configuration file."""
     try:
-        pyproject_path = Path("pyproject.toml")
-        if not pyproject_path.exists():
-            typer.echo("pyproject.toml not found!", err=True)
-            raise typer.Exit(1)
-
-        data = toml.load(pyproject_path)
-        data["project"]["name"] = name
-
-        with open(pyproject_path, "w") as f:
-            toml.dump(data, f)
-
-        typer.echo(f"Project name updated to: {name}")
-
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(config_path, "w") as f:
+            yaml.dump(config_data, f, default_flow_style=False)
+        typer.echo(f"Configuration saved to {config_path}")
     except Exception as e:
         typer.echo(f"An error occurred: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @app.command()
-def package_name(name: str):
-    """
-    Sets the package name in pyproject.toml for Ruff's isort configuration.
-    """
-    try:
-        pyproject_path = Path("pyproject.toml")
-        if not pyproject_path.exists():
-            typer.echo("pyproject.toml not found!", err=True)
-            raise typer.Exit(1)
+def init(
+    project_name: str = typer.Option(..., "--name", "-n", help="Project name"),
+    config_dir: Path | None = typer.Option(
+        None, "--config-dir", "-c", help="Configuration directory"
+    ),
+) -> None:
+    """Initialize project configuration."""
+    if config_dir is None:
+        config_dir = Path("conf")
 
-        data = toml.load(pyproject_path)
-        if (
-            "tool" in data
-            and "ruf" in data["tool"]
-            and "lint" in data["tool"]["ruf"]
-            and "isort" in data["tool"]["ruf"]["lint"]
+    config_path = config_dir / "config.yaml"
+
+    if config_path.exists():
+        if not typer.confirm(
+            f"Configuration file {config_path} already exists. Overwrite?"
         ):
-            data["tool"]["ruf"]["lint"]["isort"]["known-first-party"] = [name]
-        else:
-            typer.echo(
-                "Could not find [tool.ruff.lint.isort] in pyproject.toml", err=True
-            )
-            raise typer.Exit(1)
+            typer.echo("Configuration cancelled.")
+            return
 
-        with open(pyproject_path, "w") as f:
-            toml.dump(data, f)
+    config_data = {
+        "project": {
+            "name": project_name,
+            "version": "1.0.0",
+        },
+        "paths": {
+            "data": "data",
+            "models": "models",
+            "logs": "logs",
+        },
+        "logging": {
+            "level": "INFO",
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        },
+    }
 
-        typer.echo(f"Package name for isort updated to: {name}")
-
+    try:
+        create_config_file(config_path, config_data)
+        typer.echo(f"✅ Project '{project_name}' configured successfully!")
     except Exception as e:
         typer.echo(f"An error occurred: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
+
+
+@app.command()
+def update(
+    config_file: Path = typer.Option(
+        "conf/config.yaml", "--config", "-c", help="Configuration file path"
+    ),
+    key: str = typer.Option(..., "--key", "-k", help="Configuration key to update"),
+    value: str = typer.Option(..., "--value", "-v", help="New value"),
+) -> None:
+    """Update configuration value."""
+    if not config_file.exists():
+        typer.echo(f"Configuration file {config_file} not found.", err=True)
+        raise typer.Exit(1) from None
+
+    try:
+        with open(config_file) as f:
+            config = yaml.safe_load(f)
+
+        # Simple key update (could be enhanced for nested keys)
+        keys = key.split(".")
+        current = config
+        for k in keys[:-1]:
+            if k not in current:
+                current[k] = {}
+            current = current[k]
+        current[keys[-1]] = value
+
+        with open(config_file, "w") as f:
+            yaml.dump(config, f, default_flow_style=False)
+
+        typer.echo(f"✅ Updated {key} = {value}")
+
+    except Exception as e:
+        typer.echo(f"Failed to update configuration: {e}", err=True)
+        raise typer.Exit(1) from None
 
 
 if __name__ == "__main__":

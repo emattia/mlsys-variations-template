@@ -17,18 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def safe_pickle_load(file_path: Path) -> Any:
-    """Safely load pickled files with additional validation.
-
-    Args:
-        file_path: Path to the pickle file
-
-    Returns:
-        Loaded object
-
-    Raises:
-        FileNotFoundError: If file doesn't exist
-        ValueError: If file appears to be malicious or corrupted
-    """
+    """Safely load a pickle file with error handling."""
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -43,7 +32,7 @@ def safe_pickle_load(file_path: Path) -> Any:
             data = pickle.load(f)  # nosec B301 - Internal model files only
         return data
     except (pickle.UnpicklingError, EOFError, ImportError) as e:
-        raise ValueError(f"Failed to load pickle file: {e}")
+        raise ValueError(f"Failed to load pickle file: {e}") from e
 
 
 def train_model(

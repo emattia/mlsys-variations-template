@@ -121,8 +121,8 @@ def create_app(config_override: dict[str, Any] = None) -> FastAPI:
     app.include_router(router, prefix="/api/v1")
 
     # Add direct endpoints for backward compatibility (tests expect these)
+    from .models import HealthResponse, PredictionRequest, PredictionResponse
     from .service import ModelService
-    from .models import PredictionRequest, PredictionResponse, HealthResponse
 
     @app.get("/health", response_model=HealthResponse, tags=["health"])
     async def health_check_direct():
@@ -138,7 +138,7 @@ def create_app(config_override: dict[str, Any] = None) -> FastAPI:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Health check failed: {str(e)}",
-            )
+            ) from e
 
     @app.post("/predict", response_model=PredictionResponse, tags=["prediction"])
     async def predict_direct(request: PredictionRequest):
@@ -184,16 +184,16 @@ def create_app(config_override: dict[str, Any] = None) -> FastAPI:
             if "not found" in str(e).lower():
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
-                )
+                ) from e
             elif "validation" in str(e).lower():
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
-                )
+                ) from e
             else:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Prediction failed: {str(e)}",
-                )
+                ) from e
 
     @app.get("/models", response_model=list[str], tags=["models"])
     async def list_models_direct():
@@ -208,7 +208,7 @@ def create_app(config_override: dict[str, Any] = None) -> FastAPI:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to list models: {str(e)}",
-            )
+            ) from e
 
     # Add root endpoint
     @app.get("/", tags=["root"])
@@ -284,8 +284,8 @@ class _ModelServiceProxy:
 
     def _create_model_service(self):
         """Create the model service instance."""
-        from .service import ModelService
         from ..config.manager import get_config_manager
+        from .service import ModelService
 
         config_manager = get_config_manager()
         try:

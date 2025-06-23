@@ -3,8 +3,8 @@
 This module provides a FastAPI endpoint for making predictions with trained models.
 """
 
-import os
 import logging
+import os
 from typing import Any
 
 import polars as pl

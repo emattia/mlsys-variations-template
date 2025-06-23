@@ -3,6 +3,7 @@ This module tests the functions in src.data.validation.
 """
 
 from __future__ import annotations
+
 import polars as pl
 import pytest
 

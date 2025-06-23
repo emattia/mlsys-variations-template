@@ -13,13 +13,12 @@ Example:
 """
 
 import argparse
-import sys
-import tomllib
-from pathlib import Path
-from typing import Dict
 import shutil
 import subprocess
+import sys
 import tempfile
+import tomllib
+from pathlib import Path
 
 
 def run_command(cmd: list, cwd: Path, timeout: int = 60) -> subprocess.CompletedProcess:
@@ -99,7 +98,7 @@ def run_transformation(project_dir: Path, project_name: str) -> bool:
     return True
 
 
-def verify_transformation(project_dir: Path, project_name: str) -> Dict[str, bool]:
+def verify_transformation(project_dir: Path, project_name: str) -> dict[str, bool]:
     """Verify the transformation was successful."""
     print("🔍 Verifying transformation results...")
 
@@ -153,7 +152,7 @@ def verify_transformation(project_dir: Path, project_name: str) -> Dict[str, boo
     return results
 
 
-def print_results(results: Dict[str, bool]) -> bool:
+def print_results(results: dict[str, bool]) -> bool:
     """Print the verification results."""
     print("\n📊 Test Results:")
     print("=" * 50)

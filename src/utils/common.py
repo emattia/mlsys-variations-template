@@ -201,7 +201,7 @@ def get_data_path(
             if data_type not in data_type_mapping:
                 raise ValueError(
                     f"Invalid data_type: {data_type}. Must be one of {list(data_type_mapping.keys())}"
-                )
+                ) from None
 
             path = data_type_mapping[data_type]
             path.mkdir(parents=True, exist_ok=True)
@@ -217,7 +217,7 @@ def get_data_path(
     if data_type not in data_type_mapping:
         raise ValueError(
             f"Invalid data_type: {data_type}. Must be one of {list(data_type_mapping.keys())}"
-        )
+        ) from None
 
     path = data_type_mapping[data_type]
     path.mkdir(parents=True, exist_ok=True)
@@ -254,7 +254,7 @@ def get_model_path(
             if model_type not in model_type_mapping:
                 raise ValueError(
                     f"Invalid model_type: {model_type}. Must be one of {list(model_type_mapping.keys())}"
-                )
+                ) from None
 
             path = model_type_mapping[model_type]
             path.mkdir(parents=True, exist_ok=True)
@@ -268,7 +268,7 @@ def get_model_path(
     if model_type not in model_type_mapping:
         raise ValueError(
             f"Invalid model_type: {model_type}. Must be one of {list(model_type_mapping.keys())}"
-        )
+        ) from None
 
     path = model_type_mapping[model_type]
     path.mkdir(parents=True, exist_ok=True)
@@ -306,7 +306,7 @@ def get_reports_path(
             if report_type not in report_type_mapping:
                 raise ValueError(
                     f"Invalid report_type: {report_type}. Must be one of {list(report_type_mapping.keys())}"
-                )
+                ) from None
 
             path = report_type_mapping[report_type]
             path.mkdir(parents=True, exist_ok=True)
@@ -321,7 +321,7 @@ def get_reports_path(
     if report_type not in report_type_mapping:
         raise ValueError(
             f"Invalid report_type: {report_type}. Must be one of {list(report_type_mapping.keys())}"
-        )
+        ) from None
 
     path = report_type_mapping[report_type]
     path.mkdir(parents=True, exist_ok=True)

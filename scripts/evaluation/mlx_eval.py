@@ -23,7 +23,7 @@ import asyncio
 import json
 import time
 from pathlib import Path
-from typing import Dict, Optional, List
+
 import typer
 from rich.console import Console
 from rich.panel import Panel
@@ -31,9 +31,9 @@ from rich.progress import Progress
 from rich.table import Table
 
 # Local imports
-from .ai_response_evaluator import AIResponseEvaluator, AIResponseEvaluation
-from .benchmark_generator import BenchmarkDatasetGenerator, BenchmarkScenario
+from .ai_response_evaluator import AIResponseEvaluation, AIResponseEvaluator
 from .analytics_dashboard import AnalyticsDashboard
+from .benchmark_generator import BenchmarkDatasetGenerator, BenchmarkScenario
 
 console = Console()
 app = typer.Typer(
@@ -59,13 +59,13 @@ def evaluate_single_response(
     query: str = typer.Option(
         ..., "--query", "-q", help="User query to evaluate AI response for"
     ),
-    response: Optional[str] = typer.Option(
+    response: str | None = typer.Option(
         None,
         "--response",
         "-r",
         help="AI response to evaluate (will prompt if not provided)",
     ),
-    context_file: Optional[str] = typer.Option(
+    context_file: str | None = typer.Option(
         None, "--context", "-c", help="JSON file with project context"
     ),
     output_format: str = typer.Option(
@@ -128,16 +128,16 @@ def evaluate_single_response(
 
 @app.command("benchmark")
 def run_benchmark_evaluation(
-    category: Optional[str] = typer.Option(
+    category: str | None = typer.Option(
         None, "--category", "-c", help="Benchmark category to run"
     ),
-    difficulty: Optional[str] = typer.Option(
+    difficulty: str | None = typer.Option(
         None,
         "--difficulty",
         "-d",
         help="Difficulty level: basic, intermediate, advanced, expert",
     ),
-    dataset_file: Optional[str] = typer.Option(
+    dataset_file: str | None = typer.Option(
         None, "--dataset", help="Custom benchmark dataset file"
     ),
     limit: int = typer.Option(
@@ -235,11 +235,11 @@ def show_analytics_dashboard():
 
 @app.command("analyze")
 def analyze_performance(
-    category: Optional[str] = typer.Option(
+    category: str | None = typer.Option(
         None, "--category", "-c", help="Analyze specific category"
     ),
     time_range: int = typer.Option(30, "--days", "-d", help="Time range in days"),
-    export_path: Optional[str] = typer.Option(
+    export_path: str | None = typer.Option(
         None, "--export", "-e", help="Export analysis to file"
     ),
 ):
@@ -259,7 +259,7 @@ def analyze_performance(
 
 @app.command("generate-dataset")
 def generate_benchmark_dataset(
-    categories: Optional[List[str]] = typer.Option(
+    categories: list[str] | None = typer.Option(
         None, "--categories", "-c", help="Categories to include"
     ),
     output_file: str = typer.Option(
@@ -295,7 +295,7 @@ def export_evaluation_data(
         "-o",
         help="Output path (without extension)",
     ),
-    category: Optional[str] = typer.Option(
+    category: str | None = typer.Option(
         None, "--category", "-c", help="Filter by category"
     ),
     time_range: int = typer.Option(30, "--days", "-d", help="Time range in days"),
@@ -505,7 +505,7 @@ def _check_scenario_pass(
     return True
 
 
-def _display_benchmark_results(results: List[Dict], output_dir: str):
+def _display_benchmark_results(results: list[dict], output_dir: str):
     """Display benchmark evaluation results"""
     total_scenarios = len(results)
     passed_scenarios = sum(1 for r in results if r["passed"])

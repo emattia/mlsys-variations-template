@@ -14,16 +14,16 @@ Key Features:
 """
 
 import json
+import logging
+import re
+import statistics
+import sys
 import time
 import uuid
-import logging
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, field, asdict
-import statistics
-import re
-import sys
+from typing import Any
 
 from rich.console import Console
 
@@ -88,7 +88,7 @@ class AIResponseEvaluation:
     timestamp: datetime
     user_query: str
     ai_response: str
-    project_context: Dict[str, Any]
+    project_context: dict[str, Any]
 
     # Evaluation scores
     criteria: EvaluationCriteria
@@ -96,15 +96,15 @@ class AIResponseEvaluation:
     grade: str = ""
 
     # Detailed analysis
-    command_accuracy_details: Dict[str, Any] = field(default_factory=dict)
-    framework_coverage: List[str] = field(default_factory=list)
-    missing_elements: List[str] = field(default_factory=list)
-    strengths: List[str] = field(default_factory=list)
-    improvement_areas: List[str] = field(default_factory=list)
+    command_accuracy_details: dict[str, Any] = field(default_factory=dict)
+    framework_coverage: list[str] = field(default_factory=list)
+    missing_elements: list[str] = field(default_factory=list)
+    strengths: list[str] = field(default_factory=list)
+    improvement_areas: list[str] = field(default_factory=list)
 
     # Performance metrics
     response_time: float = 0.0
-    token_usage: Dict[str, int] = field(default_factory=dict)
+    token_usage: dict[str, int] = field(default_factory=dict)
     cost_estimate: float = 0.0
 
     def __post_init__(self):
@@ -184,7 +184,7 @@ class MLXCommandValidator:
             "utility",
         ]
 
-    def validate_command_accuracy(self, response: str) -> Dict[str, Any]:
+    def validate_command_accuracy(self, response: str) -> dict[str, Any]:
         """Validate mlx command accuracy in AI response"""
         results = {
             "total_commands": 0,
@@ -254,7 +254,7 @@ class MLXCommandValidator:
         return results
 
     def _validate_parameters(
-        self, cmd: str, framework: str, subcommand: str, results: Dict[str, Any]
+        self, cmd: str, framework: str, subcommand: str, results: dict[str, Any]
     ):
         """Validate command parameters"""
         if framework == "security" and subcommand == "scan":
@@ -314,7 +314,7 @@ class MLXFrameworkAnalyzer:
 
     def analyze_framework_integration(
         self, response: str, query: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Analyze how well response integrates MLX frameworks"""
         analysis = {
             "frameworks_mentioned": [],
@@ -384,7 +384,7 @@ class MLXFrameworkAnalyzer:
 class ProductionReadinessAnalyzer:
     """Analyzes production readiness aspects of AI responses"""
 
-    def analyze_production_readiness(self, response: str, query: str) -> Dict[str, Any]:
+    def analyze_production_readiness(self, response: str, query: str) -> dict[str, Any]:
         """Analyze production readiness indicators"""
         analysis = {
             "error_handling_mentioned": False,
@@ -467,7 +467,7 @@ class ProductionReadinessAnalyzer:
 class AIResponseEvaluator:
     """Production-grade AI response evaluation system"""
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Path | None = None):
         self.config = self._load_config(config_path)
         self.command_validator = MLXCommandValidator()
         self.framework_analyzer = MLXFrameworkAnalyzer()
@@ -481,7 +481,7 @@ class AIResponseEvaluator:
         self.evaluation_history = []
         self.benchmark_results = {}
 
-    def _load_config(self, config_path: Optional[Path]) -> Dict[str, Any]:
+    def _load_config(self, config_path: Path | None) -> dict[str, Any]:
         """Load evaluation configuration"""
         default_config = {
             "scoring_weights": {
@@ -518,9 +518,9 @@ class AIResponseEvaluator:
         self,
         user_query: str,
         ai_response: str,
-        project_context: Dict[str, Any] = None,
+        project_context: dict[str, Any] = None,
         response_time: float = 0.0,
-        token_usage: Dict[str, int] = None,
+        token_usage: dict[str, int] = None,
     ) -> AIResponseEvaluation:
         """Comprehensive AI response evaluation"""
 

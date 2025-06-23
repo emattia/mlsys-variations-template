@@ -4,14 +4,15 @@ Debug Configuration and Tools for MLSys Template
 Provides debugging utilities, test runners, and diagnostics.
 """
 
+import logging
 import os
 import sys
-import logging
-import pytest
-from typing import Dict, Any, Optional
-from pathlib import Path
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import pytest
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -25,8 +26,8 @@ class DebugConfig:
     test_mode: bool = True
     verbose: bool = True
     save_logs: bool = True
-    log_file: Optional[str] = None
-    test_filter: Optional[str] = None
+    log_file: str | None = None
+    test_filter: str | None = None
     coverage_report: bool = True
 
 
@@ -110,7 +111,7 @@ class TestRunner:
 
         return pytest.main(args)
 
-    def run_failing_tests(self) -> Dict[str, Any]:
+    def run_failing_tests(self) -> dict[str, Any]:
         """Run only the failing tests identified earlier."""
         failing_tests = [
             "tests/integration/test_ml_systems_integration.py::TestMLSystemsIntegration::test_llm_pipeline_with_all_components",
@@ -152,7 +153,7 @@ class SystemDiagnostics:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    def check_dependencies(self) -> Dict[str, Any]:
+    def check_dependencies(self) -> dict[str, Any]:
         """Check if all dependencies are properly installed."""
         deps_status = {}
 
@@ -175,8 +176,8 @@ class SystemDiagnostics:
 
         # Check our modules
         try:
-            from src.utils.rate_limiter import RateLimiter  # noqa: F401
             from src.utils.cache_manager import CacheManager  # noqa: F401
+            from src.utils.rate_limiter import RateLimiter  # noqa: F401
             from src.utils.templates import TemplateManager  # noqa: F401
 
             deps_status["core_modules"] = {"installed": True}
@@ -185,7 +186,7 @@ class SystemDiagnostics:
 
         return deps_status
 
-    def check_test_environment(self) -> Dict[str, Any]:
+    def check_test_environment(self) -> dict[str, Any]:
         """Check test environment setup."""
         env_status = {}
 
@@ -211,7 +212,7 @@ class SystemDiagnostics:
 
         return env_status
 
-    def run_diagnostics(self) -> Dict[str, Any]:
+    def run_diagnostics(self) -> dict[str, Any]:
         """Run all diagnostics."""
         self.logger.info("Running system diagnostics...")
 

@@ -3,12 +3,12 @@
 This module provides a service for processing batch prediction requests.
 """
 
-import time
-import os
-import json
-from datetime import datetime
 import argparse
+import json
 import logging
+import os
+import time
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv

@@ -15,15 +15,15 @@ Usage:
 import re
 import sys
 from pathlib import Path
-from typing import List, Tuple, Dict
+
 import typer
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
+from rich.table import Table
 
 # Add the naming config to path
 sys.path.insert(0, str(Path(__file__).parent.parent))  # Go up to scripts/ directory
-from naming_config import NamingConfig, CommonNamingConfigs, get_naming_config
+from naming_config import CommonNamingConfigs, NamingConfig, get_naming_config
 
 console = Console()
 
@@ -72,7 +72,7 @@ class NamingMigrator:
             (r"\bmlx-plugin-", "{PACKAGE_PREFIX}-plugin-"),
         ]
 
-    def analyze_files(self) -> Dict[str, List[Tuple[int, str, str]]]:
+    def analyze_files(self) -> dict[str, list[tuple[int, str, str]]]:
         """Analyze files to find naming patterns that need migration"""
         results = {}
 
@@ -87,7 +87,7 @@ class NamingMigrator:
                 lines = loaded_data.split("\n")
 
                 for line_num, line in enumerate(lines, 1):
-                    for pattern, replacement in self.replacement_patterns:
+                    for pattern, _replacement in self.replacement_patterns:
                         if re.search(pattern, line):
                             matches.append((line_num, pattern, line.strip()))
 
@@ -101,7 +101,7 @@ class NamingMigrator:
 
     def migrate_file(
         self, file_path: Path, config: NamingConfig, dry_run: bool = True
-    ) -> Tuple[bool, int]:
+    ) -> tuple[bool, int]:
         """Migrate a single file to use naming configuration"""
         if not file_path.exists():
             return False, 0

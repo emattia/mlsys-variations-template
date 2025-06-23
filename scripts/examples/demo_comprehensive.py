@@ -38,7 +38,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from src.plugins import list_plugins, get_plugin
+    from src.plugins import get_plugin, list_plugins
 except ImportError:
 
     def list_plugins():
@@ -295,8 +295,8 @@ class MLOpsPlatformDemo:
 
             # Check if FastAPI dependencies are available
             try:
-                import uvicorn  # noqa: F401
                 import fastapi  # noqa: F401
+                import uvicorn  # noqa: F401
 
                 self.print_success("FastAPI and Uvicorn are available")
             except ImportError:

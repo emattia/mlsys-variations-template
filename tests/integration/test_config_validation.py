@@ -1,5 +1,7 @@
-import pytest
 from pathlib import Path
+
+import pytest
+
 from src.config import ConfigManager
 
 # The root directory of the configuration files.

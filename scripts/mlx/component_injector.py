@@ -6,11 +6,11 @@ with proper conflict resolution, template variable substitution, and dependency 
 """
 
 import json
-import yaml
-from pathlib import Path
-from typing import Dict, List, Optional
 import subprocess
 import sys
+from pathlib import Path
+
+import yaml
 
 
 class ComponentInjector:
@@ -66,7 +66,7 @@ class ComponentInjector:
         print(f"✅ Component '{component_name}' added successfully!")
         return True
 
-    def list_available_components(self) -> List[Dict]:
+    def list_available_components(self) -> list[dict]:
         """List all available components with their metadata."""
         components = []
         for name, meta in self.registry["components"].items():
@@ -82,40 +82,40 @@ class ComponentInjector:
             )
         return components
 
-    def get_component_info(self, component_name: str) -> Optional[Dict]:
+    def get_component_info(self, component_name: str) -> dict | None:
         """Get detailed information about a specific component."""
         if component_name not in self.registry["components"]:
             return None
 
         return self.registry["components"][component_name]
 
-    def _load_registry(self) -> Dict:
+    def _load_registry(self) -> dict:
         """Load the component registry."""
         registry_path = self.components_dir / "registry.json"
         if not registry_path.exists():
             return {"components": {}}
 
         try:
-            with open(registry_path, "r") as f:
+            with open(registry_path) as f:
                 return json.load(f)
         except Exception as e:
             print(f"⚠️  Warning: Could not load registry: {e}")
             return {"components": {}}
 
-    def _load_project_config(self) -> Dict:
+    def _load_project_config(self) -> dict:
         """Load the project configuration."""
         config_path = self.project_root / "mlx.config.json"
         if not config_path.exists():
             return {"platform": {"components": []}}
 
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 return json.load(f)
         except Exception as e:
             print(f"⚠️  Warning: Could not load project config: {e}")
             return {"platform": {"components": []}}
 
-    def _check_dependencies(self, component_meta: Dict, force: bool) -> bool:
+    def _check_dependencies(self, component_meta: dict, force: bool) -> bool:
         """Check if component dependencies are satisfied."""
         compatibility = component_meta.get("compatibility_matrix", {})
         requires = compatibility.get("requires", [])
@@ -139,7 +139,7 @@ class ComponentInjector:
 
         return True
 
-    def _check_conflicts(self, component_meta: Dict) -> bool:
+    def _check_conflicts(self, component_meta: dict) -> bool:
         """Check for component conflicts."""
         conflicts = component_meta.get("conflicts_with", [])
         if not conflicts:
@@ -158,7 +158,7 @@ class ComponentInjector:
 
         return True
 
-    def _install_system_dependencies(self, component_meta: Dict) -> bool:
+    def _install_system_dependencies(self, component_meta: dict) -> bool:
         """Install system dependencies (Docker services, etc.)."""
         system_deps = component_meta.get("system_dependencies", [])
 
@@ -183,7 +183,7 @@ class ComponentInjector:
 
         return True
 
-    def _install_python_dependencies(self, component_meta: Dict) -> bool:
+    def _install_python_dependencies(self, component_meta: dict) -> bool:
         """Install Python dependencies using uv."""
         python_deps = component_meta.get("python_dependencies", [])
 
@@ -216,7 +216,7 @@ class ComponentInjector:
             return False
 
     def _inject_component_files(
-        self, component_name: str, component_meta: Dict
+        self, component_name: str, component_meta: dict
     ) -> bool:
         """Inject component files into the project."""
         component_dir = self.components_dir / component_name
@@ -237,7 +237,7 @@ class ComponentInjector:
 
             # Read template content
             try:
-                with open(template_file, "r", encoding="utf-8") as f:
+                with open(template_file, encoding="utf-8") as f:
                     content = f.read()
             except Exception as e:
                 print(f"⚠️  Could not read template {template_file}: {e}")
@@ -258,7 +258,7 @@ class ComponentInjector:
 
         return True
 
-    def _get_template_variables(self, component_meta: Dict) -> Dict[str, str]:
+    def _get_template_variables(self, component_meta: dict) -> dict[str, str]:
         """Get template variables for substitution."""
         # Get project name from directory or config
         project_name = self.project_root.name
@@ -276,8 +276,8 @@ class ComponentInjector:
         }
 
     def _determine_target_path(
-        self, template_file: Path, component_meta: Dict
-    ) -> Optional[Path]:
+        self, template_file: Path, component_meta: dict
+    ) -> Path | None:
         """Determine where to place the template file in the project."""
         # Remove .template extension
         filename = template_file.name.replace(".template", "")
@@ -296,14 +296,14 @@ class ComponentInjector:
             return self.project_root / "src" / filename
 
     def _substitute_template_variables(
-        self, content: str, variables: Dict[str, str]
+        self, content: str, variables: dict[str, str]
     ) -> str:
         """Substitute template variables in content."""
         for var_name, var_value in variables.items():
             content = content.replace(f"{{{{{var_name}}}}}", var_value)
         return content
 
-    def _get_merge_strategy(self, target_path: str, component_meta: Dict) -> str:
+    def _get_merge_strategy(self, target_path: str, component_meta: dict) -> str:
         """Get the merge strategy for a specific file."""
         merge_strategies = component_meta.get("merge_strategies", {})
 
@@ -358,7 +358,7 @@ class ComponentInjector:
         """Merge YAML content intelligently."""
         try:
             # Load existing YAML
-            with open(target_path, "r", encoding="utf-8") as f:
+            with open(target_path, encoding="utf-8") as f:
                 existing_data = yaml.safe_load(f) or {}
 
             # Parse new YAML
@@ -376,7 +376,7 @@ class ComponentInjector:
             print(f"⚠️  Could not merge YAML content: {e}")
             return False
 
-    def _deep_merge_dict(self, base: Dict, update: Dict) -> Dict:
+    def _deep_merge_dict(self, base: dict, update: dict) -> dict:
         """Deep merge two dictionaries."""
         result = base.copy()
 
@@ -406,7 +406,7 @@ class ComponentInjector:
         """Enhance existing file with new content."""
         try:
             # Read existing content
-            with open(target_path, "r", encoding="utf-8") as f:
+            with open(target_path, encoding="utf-8") as f:
                 existing_content = f.read()
 
             # Look for enhancement points (comments like # MLX_INJECT_POINT)
@@ -429,12 +429,12 @@ class ComponentInjector:
             print(f"⚠️  Could not enhance {target_path}: {e}")
             return False
 
-    def _update_docker_compose(self, system_deps: List[Dict]):
+    def _update_docker_compose(self, system_deps: list[dict]):
         """Update docker-compose.yml with system dependencies."""
         compose_path = self.project_root / "docker-compose.yml"
 
         try:
-            with open(compose_path, "r") as f:
+            with open(compose_path) as f:
                 compose_data = yaml.safe_load(f)
         except Exception:
             compose_data = {"version": "3.8", "services": {}}
@@ -456,7 +456,7 @@ class ComponentInjector:
         except Exception as e:
             print(f"⚠️  Could not update docker-compose.yml: {e}")
 
-    def _get_service_ports(self, dep: Dict) -> List[str]:
+    def _get_service_ports(self, dep: dict) -> list[str]:
         """Get default ports for a service."""
         port_mapping = {
             "redis": ["6379:6379"],
@@ -465,7 +465,7 @@ class ComponentInjector:
         }
         return port_mapping.get(dep["name"], [])
 
-    def _get_service_environment(self, dep: Dict) -> Dict[str, str]:
+    def _get_service_environment(self, dep: dict) -> dict[str, str]:
         """Get default environment variables for a service."""
         env_mapping = {
             "postgresql": {
@@ -480,7 +480,7 @@ class ComponentInjector:
         }
         return env_mapping.get(dep["name"], {})
 
-    def _update_project_config(self, component_name: str, component_meta: Dict):
+    def _update_project_config(self, component_name: str, component_meta: dict):
         """Update project configuration with new component."""
         if "platform" not in self.project_config:
             self.project_config["platform"] = {}

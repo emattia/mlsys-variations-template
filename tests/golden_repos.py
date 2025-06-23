@@ -9,12 +9,13 @@ import hashlib
 import logging
 import shutil
 import subprocess
-import yaml
-from pathlib import Path
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Any, Optional, Union
-import time
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -36,19 +37,19 @@ class GoldenRepoSpec:
     name: str
     type: GoldenRepoType
     description: str
-    components: List[str] = field(default_factory=list)
-    plugins: List[str] = field(default_factory=list)
-    config_overrides: Dict[str, Any] = field(default_factory=dict)
-    expected_files: List[str] = field(default_factory=list)
-    expected_dependencies: List[str] = field(default_factory=list)
-    performance_targets: Dict[str, Union[int, float]] = field(default_factory=dict)
-    validation_commands: List[str] = field(default_factory=list)
+    components: list[str] = field(default_factory=list)
+    plugins: list[str] = field(default_factory=list)
+    config_overrides: dict[str, Any] = field(default_factory=dict)
+    expected_files: list[str] = field(default_factory=list)
+    expected_dependencies: list[str] = field(default_factory=list)
+    performance_targets: dict[str, int | float] = field(default_factory=dict)
+    validation_commands: list[str] = field(default_factory=list)
 
 
 class GoldenRepoManager:
     """Manager for golden repository creation and validation."""
 
-    def __init__(self, base_dir: Optional[Path] = None):
+    def __init__(self, base_dir: Path | None = None):
         self.base_dir = Path(base_dir) if base_dir else Path.cwd()
         self.golden_repos_dir = self.base_dir / "tests" / "golden_repos"
         self.golden_repos_dir.mkdir(parents=True, exist_ok=True)
@@ -56,7 +57,7 @@ class GoldenRepoManager:
         # Define golden repository specifications
         self.specs = self._define_golden_repo_specs()
 
-    def _define_golden_repo_specs(self) -> Dict[str, GoldenRepoSpec]:
+    def _define_golden_repo_specs(self) -> dict[str, GoldenRepoSpec]:
         """Define specifications for all golden repositories."""
         return {
             "minimal": GoldenRepoSpec(
@@ -350,19 +351,19 @@ import pytest
 def test_golden_repo_structure(repo_root):
     """Test that golden repository has expected structure."""
     expected_dirs = ["src", "conf", "tests", "data", "models", "scripts", "docs"]
-    
+
     for dir_name in expected_dirs:
         assert (repo_root / dir_name).exists(), f"Directory {{dir_name}} should exist"
 
 def test_configuration_files(config_dir):
     """Test that configuration files exist and are valid."""
     assert (config_dir / "config.yaml").exists(), "Main config.yaml should exist"
-    
+
     # Test config is loadable
     import yaml
     with open(config_dir / "config.yaml") as f:
         config = yaml.safe_load(f)
-    
+
     assert config["name"] == "golden-repo-{spec.name}"
     assert config["type"] == "{spec.type.value}"
 '''
@@ -402,23 +403,23 @@ from typing import Dict, Any, Optional
 
 class ConfigManager:
     """Manages configuration for the golden repository."""
-    
+
     def __init__(self, config_path: Optional[Path] = None):
         self.config_path = config_path or Path("conf") / "config.yaml"
         self._config = None
-    
+
     def load_config(self) -> Dict[str, Any]:
         """Load configuration from file."""
         if self._config is None:
             with open(self.config_path) as f:
                 self._config = yaml.safe_load(f)
         return self._config
-    
+
     def get(self, key: str, default: Any = None) -> Any:
         """Get configuration value by key."""
         config = self.load_config()
         return config.get(key, default)
-    
+
     def reload(self):
         """Reload configuration from file."""
         self._config = None
@@ -501,27 +502,27 @@ from typing import Optional, Dict, Any
 
 class DataLoader:
     """Handles data loading for the golden repository."""
-    
+
     def __init__(self, data_dir: Optional[Path] = None):
         self.data_dir = data_dir or Path("data")
-    
+
     def load_csv(self, filename: str, **kwargs) -> pd.DataFrame:
         """Load CSV file."""
         file_path = self.data_dir / filename
         return pd.read_csv(file_path, **kwargs)
-    
+
     def save_csv(self, df: pd.DataFrame, filename: str, **kwargs):
         """Save DataFrame to CSV."""
         file_path = self.data_dir / filename
         file_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(file_path, index=False, **kwargs)
-    
+
     def get_data_info(self, filename: str) -> Dict[str, Any]:
         """Get information about a data file."""
         file_path = self.data_dir / filename
         if not file_path.exists():
             return {"exists": False}
-        
+
         df = self.load_csv(filename)
         return {
             "exists": True,
@@ -551,28 +552,28 @@ from pathlib import Path
 
 class PluginRegistry:
     """Manages plugins for the golden repository."""
-    
+
     def __init__(self):
         self._plugins: Dict[str, Any] = {}
         self._loaded_plugins: Dict[str, bool] = {}
-    
+
     def register_plugin(self, name: str, plugin_class: Type):
         """Register a plugin class."""
         self._plugins[name] = plugin_class
         self._loaded_plugins[name] = True
-    
+
     def get_plugin(self, name: str) -> Any:
         """Get a plugin instance by name."""
         if name not in self._plugins:
             raise ValueError(f"Plugin {name} not found")
-        
+
         plugin_class = self._plugins[name]
         return plugin_class()
-    
+
     def list_plugins(self) -> List[str]:
         """List all registered plugins."""
         return list(self._plugins.keys())
-    
+
     def load_plugins_from_directory(self, plugins_dir: Path):
         """Load plugins from a directory."""
         for plugin_file in plugins_dir.glob("*_plugin.py"):
@@ -581,11 +582,11 @@ class PluginRegistry:
                 spec = importlib.util.spec_from_file_location(plugin_name, plugin_file)
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
-                
+
                 # Look for plugin class
                 if hasattr(module, "Plugin"):
                     self.register_plugin(plugin_name, module.Plugin)
-                    
+
             except Exception as e:
                 print(f"Failed to load plugin {plugin_name}: {e}")
 
@@ -614,16 +615,16 @@ from typing import Any, Optional, Dict
 
 class CacheManager:
     """Simple file-based cache manager."""
-    
+
     def __init__(self, cache_dir: Optional[Path] = None):
         self.cache_dir = cache_dir or Path("cache")
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-    
+
     def _get_cache_path(self, key: str) -> Path:
         """Get cache file path for a key."""
         safe_key = key.replace("/", "_").replace("\\", "_")
         return self.cache_dir / f"{safe_key}.json"
-    
+
     def set(self, key: str, value: Any, ttl: Optional[int] = None):
         """Set a cache value."""
         cache_data = {
@@ -631,38 +632,38 @@ class CacheManager:
             "timestamp": time.time(),
             "ttl": ttl
         }
-        
+
         cache_path = self._get_cache_path(key)
         with open(cache_path, "w") as f:
             json.dump(cache_data, f)
-    
+
     def get(self, key: str) -> Optional[Any]:
         """Get a cache value."""
         cache_path = self._get_cache_path(key)
-        
+
         if not cache_path.exists():
             return None
-        
+
         try:
             with open(cache_path) as f:
                 cache_data = json.load(f)
-            
+
             # Check TTL
             if cache_data.get("ttl"):
                 if time.time() - cache_data["timestamp"] > cache_data["ttl"]:
                     cache_path.unlink()  # Remove expired cache
                     return None
-            
+
             return cache_data["value"]
-            
+
         except (json.JSONDecodeError, KeyError):
             return None
-    
+
     def clear(self):
         """Clear all cache."""
         for cache_file in self.cache_dir.glob("*.json"):
             cache_file.unlink()
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""
         cache_files = list(self.cache_dir.glob("*.json"))
@@ -798,19 +799,19 @@ class StreamingPlugin:
         self.queue = queue.Queue()
         self.running = False
         self.thread = None
-    
+
     def start_stream(self):
         """Start streaming."""
         self.running = True
         self.thread = threading.Thread(target=self._stream_worker)
         self.thread.start()
-    
+
     def stop_stream(self):
         """Stop streaming."""
         self.running = False
         if self.thread:
             self.thread.join()
-    
+
     def _stream_worker(self):
         """Stream worker thread."""
         while self.running:
@@ -818,7 +819,7 @@ class StreamingPlugin:
             data = {"timestamp": time.time(), "value": "streaming_data"}
             self.queue.put(data)
             time.sleep(1)
-    
+
     def get_data(self):
         """Get data from stream."""
         try:
@@ -829,7 +830,7 @@ class StreamingPlugin:
         with open(plugins_dir / "streaming_plugin.py", "w") as f:
             f.write(plugin_code)
 
-    def validate_golden_repo(self, spec_name: str) -> Dict[str, Any]:
+    def validate_golden_repo(self, spec_name: str) -> dict[str, Any]:
         """Validate a golden repository against its specification."""
         if spec_name not in self.specs:
             raise ValueError(f"Unknown golden repo spec: {spec_name}")
@@ -877,7 +878,7 @@ class StreamingPlugin:
 
     def _check_expected_files(
         self, repo_path: Path, spec: GoldenRepoSpec
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Check that expected files exist."""
         missing_files = []
         existing_files = []
@@ -898,7 +899,7 @@ class StreamingPlugin:
 
     def _check_dependencies(
         self, repo_path: Path, spec: GoldenRepoSpec
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Check that dependencies are properly specified."""
         requirements_file = repo_path / "requirements.txt"
         if not requirements_file.exists():
@@ -920,7 +921,7 @@ class StreamingPlugin:
 
     def _run_validation_commands(
         self, repo_path: Path, spec: GoldenRepoSpec
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run validation commands."""
         if not spec.validation_commands:
             return {"status": "SKIPPED", "reason": "No validation commands specified"}
@@ -965,7 +966,7 @@ class StreamingPlugin:
 
     def _check_performance_targets(
         self, repo_path: Path, spec: GoldenRepoSpec
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Check performance targets (simplified implementation)."""
         if not spec.performance_targets:
             return {"status": "SKIPPED", "reason": "No performance targets specified"}
@@ -1002,7 +1003,7 @@ class StreamingPlugin:
             "total_targets": len(spec.performance_targets),
         }
 
-    def create_all_golden_repos(self, force: bool = False) -> Dict[str, Path]:
+    def create_all_golden_repos(self, force: bool = False) -> dict[str, Path]:
         """Create all golden repositories."""
         created_repos = {}
         for spec_name in self.specs:
@@ -1013,7 +1014,7 @@ class StreamingPlugin:
                 logger.error(f"Failed to create golden repo {spec_name}: {e}")
         return created_repos
 
-    def validate_all_golden_repos(self) -> Dict[str, Dict[str, Any]]:
+    def validate_all_golden_repos(self) -> dict[str, dict[str, Any]]:
         """Validate all golden repositories."""
         validation_results = {}
         for spec_name in self.specs:

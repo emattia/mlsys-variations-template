@@ -1,126 +1,110 @@
 [build-system]
-requires = [ "poetry-core",]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
-name = "assistant"
+[project]
+name = "mlx-foundation"
 version = "0.1.0"
 description = "Production-ready MLOps template for specialized ML systems"
-authors = [ "Your Name <you@example.com>",]
+authors = [{name = "MLX Team", email = "team@mlx.dev"}]
 readme = "README.md"
-[[tool.poetry.packages]]
-include = "analysis_template"
-from = "src"
+requires-python = ">=3.11"
+license = "MIT"
 
-[tool.isort]
-profile = "black"
-known_first_party = [ "analysis_template",]
+dependencies = [
+    "click>=8.1.3",
+    "rich>=13.5.2",
+    "typer[all]>=0.9.0",
+    "mkdocs>=1.5.2",
+    "mkdocs-material>=9.2.8",
+    "mkdocstrings[python]>=0.25.1",
+    "pymdown-extensions>=10.2.1",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "hydra-core>=1.3.2",
+    "httpx>=0.27.0",
+    "jinja2>=3.1.2",
+    "pyyaml>=6.0",
+    "joblib>=1.3.2",
+    "numpy>=1.26.4",
+    "scikit-learn>=1.5.0",
+    "matplotlib>=3.9.0",
+    "polars>=1.30.0",
+    "asgi-lifespan>=2.1.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-click = "8.1.3"
-rich = "^13.5.2"
-mkdocs = "^1.5.2"
-mkdocs-material = "^9.2.8"
-pymdown-extensions = "^10.2.1"
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.1.1",
+    "pytest-cov>=5.0.0",
+    "pytest-asyncio>=0.23.7",
+    "ruff>=0.3.2",
+    "mypy>=1.8.0",
+    "bandit[toml]>=1.7.8",
+    "radon>=5.1.0",
+    "nbdoc>=0.0.8",
+]
 
-[tool.poetry.extras]
-dev = [ "nbdoc", "radon", "pytest", "ruff", "bandit", "mypy", "polars", "asgi-lifespan", "httpx", "fastapi", "uvicorn", "hydra-core", "pydantic-settings", "joblib", "numpy", "pytest-cov", "scikit-learn", "matplotlib", "pytest-asyncio", "vulture", "unimport",]
+[project.scripts]
+mlx-foundation = "analysis_template.cli_template:app"
 
-[tool.poetry.scripts]
-analysis-template = "analysis_template.cli_template:app"
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by formatter
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Allow E402 (module level import not at top of file) in test configuration
+"tests/conftest.py" = ["E402"]
+# Allow unused imports in __init__.py files
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["analysis_template", "src"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+]
 
-[tool.poetry.dependencies.typer]
-extras = [ "all",]
-version = "^0.9.0"
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+exclude = [
+    "build/",
+    "dist/",
+]
 
-[tool.poetry.dependencies.mkdocstrings]
-extras = [ "python",]
-version = "^0.25.1"
-
-[tool.poetry.dependencies.nbdoc]
-version = "^0.0.8"
-optional = true
-
-[tool.poetry.dependencies.radon]
-version = "^5.1.0"
-optional = true
-
-[tool.poetry.dependencies.pytest]
-version = "^8.1.1"
-optional = true
-
-[tool.poetry.dependencies.ruff]
-version = "^0.3.2"
-optional = true
-
-[tool.poetry.dependencies.bandit]
-version = "^1.7.8"
-optional = true
-
-[tool.poetry.dependencies.mypy]
-version = "^1.8.0"
-optional = true
-
-[tool.poetry.dependencies.polars]
-version = "^1.30.0"
-optional = true
-
-[tool.poetry.dependencies.asgi-lifespan]
-version = "^2.1.0"
-optional = true
-
-[tool.poetry.dependencies.httpx]
-version = "^0.27.0"
-optional = true
-
-[tool.poetry.dependencies.fastapi]
-version = "^0.110.0"
-optional = true
-
-[tool.poetry.dependencies.uvicorn]
-version = "^0.30.0"
-optional = true
-
-[tool.poetry.dependencies.hydra-core]
-version = "^1.3.2"
-optional = true
-
-[tool.poetry.dependencies.pydantic-settings]
-version = "^2.1.0"
-optional = true
-
-[tool.poetry.dependencies.joblib]
-version = "^1.3.2"
-optional = true
-
-[tool.poetry.dependencies.numpy]
-version = "^1.26.4"
-optional = true
-
-[tool.poetry.dependencies.pytest-cov]
-version = "^5.0.0"
-optional = true
-
-[tool.poetry.dependencies.scikit-learn]
-version = "^1.5.0"
-optional = true
-
-[tool.poetry.dependencies.matplotlib]
-version = "^3.9.0"
-optional = true
-
-[tool.poetry.dependencies.pytest-asyncio]
-version = "^0.23.7"
-optional = true
-
-[tool.poetry.dependencies.vulture]
-version = "^2.0.0"
-optional = true
-
-[tool.poetry.dependencies.unimport]
-version = "^1.0.0"
-optional = true
+[tool.bandit]
+exclude_dirs = ["tests", "build", "dist"]
+skips = ["B101", "B601"]

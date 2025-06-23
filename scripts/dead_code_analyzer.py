@@ -19,16 +19,16 @@ Usage:
     python scripts/dead_code_analyzer.py --scan-all --report
 """
 
-from datetime import datetime
+import argparse
 import ast
-import sys
 import json
 import logging
-import argparse
-from pathlib import Path
-from typing import Dict, List, Any, Optional
+import sys
 from collections import defaultdict
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
@@ -49,9 +49,9 @@ class DeadCodeItem:
     size_lines: int
     confidence: float  # 0.0 to 1.0
     reason: str
-    dependencies: List[str]
+    dependencies: list[str]
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
         return asdict(self)
 
@@ -173,15 +173,13 @@ class ASTAnalyzer(ast.NodeVisitor):
         for child in ast.walk(node):
             if isinstance(
                 child,
-                (
-                    ast.If,
-                    ast.While,
-                    ast.For,
-                    ast.AsyncFor,
-                    ast.ExceptHandler,
-                    ast.With,
-                    ast.AsyncWith,
-                ),
+                ast.If
+                | ast.While
+                | ast.For
+                | ast.AsyncFor
+                | ast.ExceptHandler
+                | ast.With
+                | ast.AsyncWith,
             ):
                 complexity += 1
             elif isinstance(child, ast.BoolOp):
@@ -195,13 +193,13 @@ class DeadCodeAnalyzer:
 
     def __init__(self, root_path: str = "."):
         self.root_path = Path(root_path)
-        self.analyzers: Dict[str, ASTAnalyzer] = {}
-        self.dead_code_items: List[DeadCodeItem] = []
+        self.analyzers: dict[str, ASTAnalyzer] = {}
+        self.dead_code_items: list[DeadCodeItem] = []
 
-    def analyze_file(self, file_path: Path) -> Optional[ASTAnalyzer]:
+    def analyze_file(self, file_path: Path) -> ASTAnalyzer | None:
         """Analyze a single Python file."""
         try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            with open(file_path, encoding="utf-8", errors="ignore") as f:
                 loaded_data = f.read()
 
             tree = ast.parse(loaded_data, filename=str(file_path))
@@ -220,7 +218,7 @@ class DeadCodeAnalyzer:
             logger.error(f"Error analyzing {file_path}: {e}")
             return None
 
-    def scan_repository(self, exclude_patterns: List[str] = None) -> None:
+    def scan_repository(self, exclude_patterns: list[str] = None) -> None:
         """Scan entire repository for Python files."""
         if exclude_patterns is None:
             exclude_patterns = [".venv", "__pycache__", ".git", "node_modules"]
@@ -237,7 +235,7 @@ class DeadCodeAnalyzer:
         for py_file in python_files:
             self.analyze_file(py_file)
 
-    def identify_dead_code(self) -> List[DeadCodeItem]:
+    def identify_dead_code(self) -> list[DeadCodeItem]:
         """Identify dead code across all analyzed files."""
         dead_items = []
 
@@ -271,7 +269,7 @@ class DeadCodeAnalyzer:
                 }
 
         # Identify unused functions
-        for func_key, func_info in all_defined_functions.items():
+        for _func_key, func_info in all_defined_functions.items():
             func_name = func_info["name"]
             confidence = 0.8
 
@@ -334,7 +332,7 @@ class DeadCodeAnalyzer:
 
     def generate_report(
         self, output_file: str = "dead_code_report.json"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate comprehensive dead code report."""
 
         # Categorize dead code by type and confidence
@@ -375,7 +373,7 @@ class DeadCodeAnalyzer:
         logger.info(f"Dead code report saved to {output_file}")
         return report
 
-    def _generate_recommendations(self, categories: Dict, stats: Dict) -> List[str]:
+    def _generate_recommendations(self, categories: dict, stats: dict) -> list[str]:
         """Generate cleanup recommendations."""
         recommendations = []
 

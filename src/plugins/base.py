@@ -106,20 +106,20 @@ class MLOpsComponent(ABC):
         """Validate component configuration.
 
         Args:
-            config: Configuration to validate
+            config: Configuration dictionary
 
         Returns:
             True if configuration is valid
         """
         pass
 
+    @abstractmethod
     def cleanup(self, context: ExecutionContext) -> None:
         """Clean up resources after execution.
 
         Args:
             context: Execution context
         """
-        # Default implementation does nothing
         pass
 
     def get_dependencies(self) -> list[str]:

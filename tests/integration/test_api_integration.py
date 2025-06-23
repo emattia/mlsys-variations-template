@@ -3,14 +3,13 @@ Integration tests for the API endpoints.
 """
 
 import asyncio
-import time
-
+import subprocess
 import sys
+import time
 from collections.abc import AsyncGenerator
 
 import httpx
 import pytest
-import subprocess
 
 
 @pytest.fixture(scope="session")

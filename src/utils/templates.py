@@ -7,13 +7,14 @@ This module provides:
 - Template validation and testing
 """
 
-import yaml
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+import json
+import logging
 from dataclasses import dataclass
 from datetime import datetime
-import logging
-import json
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +27,8 @@ class PromptVersion:
     version: str
     created: str
     description: str
-    parameters: List[str] = None
-    performance_metrics: Dict[str, float] = None
+    parameters: list[str] = None
+    performance_metrics: dict[str, float] = None
     usage_count: int = 0
 
     def __post_init__(self):
@@ -43,9 +44,9 @@ class PromptTestResult:
 
     prompt_name: str
     version: str
-    test_input: Dict[str, Any]
+    test_input: dict[str, Any]
     output: str
-    metrics: Dict[str, float]
+    metrics: dict[str, float]
     timestamp: str
     success: bool
 
@@ -53,7 +54,7 @@ class PromptTestResult:
 class TemplateManager:
     """Manager for versioned prompt templates."""
 
-    def __init__(self, config_path: Union[str, Path] = "config/prompt_templates.yaml"):
+    def __init__(self, config_path: str | Path = "config/prompt_templates.yaml"):
         """Initialize template manager.
 
         Args:
@@ -71,14 +72,14 @@ class TemplateManager:
         # Active experiments (A/B testing)
         self.active_experiments = {}
 
-    def _load_templates(self) -> Dict[str, Any]:
+    def _load_templates(self) -> dict[str, Any]:
         """Load templates from configuration file."""
         if not self.config_path.exists():
             logger.warning(f"Template config not found: {self.config_path}")
             return {"prompts": {}, "metadata": {}}
 
         try:
-            with open(self.config_path, "r") as f:
+            with open(self.config_path) as f:
                 data = yaml.safe_load(f)
 
             # Handle exported template format (with "templates" wrapper)
@@ -100,7 +101,7 @@ class TemplateManager:
         except Exception as e:
             logger.error(f"Error saving templates: {e}")
 
-    def get_template(self, name: str, version: Optional[str] = None) -> Optional[str]:
+    def get_template(self, name: str, version: str | None = None) -> str | None:
         """Get a template by name and version.
 
         Args:
@@ -132,8 +133,8 @@ class TemplateManager:
         return None
 
     def render_template(
-        self, name: str, variables: Dict[str, Any], version: Optional[str] = None
-    ) -> Optional[str]:
+        self, name: str, variables: dict[str, Any], version: str | None = None
+    ) -> str | None:
         """Render a template with variables.
 
         Args:
@@ -165,7 +166,7 @@ class TemplateManager:
         template: str,
         version: str = "v1",
         description: str = "",
-        parameters: List[str] = None,
+        parameters: list[str] = None,
     ) -> bool:
         """Add a new template version.
 
@@ -204,9 +205,7 @@ class TemplateManager:
             logger.error(f"Error adding template: {e}")
             return False
 
-    def list_templates(
-        self, version: Optional[str] = None
-    ) -> Dict[str, Dict[str, Any]]:
+    def list_templates(self, version: str | None = None) -> dict[str, dict[str, Any]]:
         """List all templates.
 
         Args:
@@ -223,7 +222,7 @@ class TemplateManager:
         else:
             return self.templates["prompts"]
 
-    def get_template_versions(self, name: str) -> List[str]:
+    def get_template_versions(self, name: str) -> list[str]:
         """Get all versions of a template.
 
         Args:
@@ -241,9 +240,9 @@ class TemplateManager:
     def test_template(
         self,
         name: str,
-        test_inputs: List[Dict[str, Any]],
-        version: Optional[str] = None,
-    ) -> List[PromptTestResult]:
+        test_inputs: list[dict[str, Any]],
+        version: str | None = None,
+    ) -> list[PromptTestResult]:
         """Test a template with multiple inputs.
 
         Args:
@@ -355,7 +354,7 @@ class TemplateManager:
         )
         return experiment_id
 
-    def get_ab_template(self, experiment_id: str, user_id: str = None) -> Optional[str]:
+    def get_ab_template(self, experiment_id: str, user_id: str = None) -> str | None:
         """Get template version based on A/B test assignment.
 
         Args:
@@ -386,7 +385,7 @@ class TemplateManager:
         return experiment["version_a"] if use_version_a else experiment["version_b"]
 
     def record_ab_result(
-        self, experiment_id: str, version: str, metrics: Dict[str, float]
+        self, experiment_id: str, version: str, metrics: dict[str, float]
     ) -> None:
         """Record A/B test results.
 
@@ -407,7 +406,7 @@ class TemplateManager:
         elif version == experiment["version_b"]:
             experiment["results_b"].append(result)
 
-    def get_ab_results(self, experiment_id: str) -> Optional[Dict[str, Any]]:
+    def get_ab_results(self, experiment_id: str) -> dict[str, Any] | None:
         """Get A/B test results summary.
 
         Args:
@@ -449,7 +448,7 @@ class TemplateManager:
             "avg_metrics_b": calculate_avg_metrics(experiment["results_b"]),
         }
 
-    def get_template_analytics(self, name: str) -> Dict[str, Any]:
+    def get_template_analytics(self, name: str) -> dict[str, Any]:
         """Get analytics for a template across all versions.
 
         Args:
@@ -489,7 +488,7 @@ class TemplateManager:
 
         return analytics
 
-    def stop_ab_test(self, experiment_id: str) -> Dict[str, Any]:
+    def stop_ab_test(self, experiment_id: str) -> dict[str, Any]:
         """Stop an A/B test and return final results.
 
         Args:
@@ -512,7 +511,7 @@ class TemplateManager:
 
     def compare_templates(
         self, name: str, version_a: str, version_b: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Compare two template versions.
 
         Args:
@@ -554,7 +553,7 @@ class TemplateManager:
 
         return comparison
 
-    def import_templates(self, data: Dict[str, Any]) -> bool:
+    def import_templates(self, data: dict[str, Any]) -> bool:
         """Import templates from data.
 
         Args:
@@ -591,7 +590,7 @@ class TemplateManager:
             logger.error(f"Error importing templates: {e}")
             return False
 
-    def backup_templates(self, backup_path: Union[str, Path]) -> bool:
+    def backup_templates(self, backup_path: str | Path) -> bool:
         """Create a backup of all templates.
 
         Args:
@@ -614,7 +613,7 @@ class TemplateManager:
             logger.error(f"Error backing up templates: {e}")
             return False
 
-    def restore_templates(self, backup_path: Union[str, Path]) -> bool:
+    def restore_templates(self, backup_path: str | Path) -> bool:
         """Restore templates from a backup file.
 
         Args:
@@ -628,7 +627,7 @@ class TemplateManager:
             if not backup_path.exists():
                 raise FileNotFoundError(f"Backup file not found: {backup_path}")
 
-            with open(backup_path, "r") as f:
+            with open(backup_path) as f:
                 backup_data = yaml.safe_load(f)
 
             # Restore templates
@@ -642,7 +641,7 @@ class TemplateManager:
             logger.error(f"Error restoring templates: {e}")
             return False
 
-    def get_performance_analytics(self, name: str, version: str) -> Dict[str, Any]:
+    def get_performance_analytics(self, name: str, version: str) -> dict[str, Any]:
         """Get performance analytics for a specific template version.
 
         Args:
@@ -676,7 +675,7 @@ class TemplateManager:
             "description": template_data.get("description", ""),
         }
 
-    def export_templates(self, output_path: Union[str, Path]) -> bool:
+    def export_templates(self, output_path: str | Path) -> bool:
         """Export templates to a file.
 
         Args:
@@ -721,8 +720,8 @@ def get_template_manager() -> TemplateManager:
 
 
 def render_prompt(
-    name: str, variables: Dict[str, Any], version: Optional[str] = None
-) -> Optional[str]:
+    name: str, variables: dict[str, Any], version: str | None = None
+) -> str | None:
     """Convenience function to render a prompt template.
 
     Args:

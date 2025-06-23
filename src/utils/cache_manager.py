@@ -10,14 +10,14 @@ This module provides intelligent caching for:
 
 import hashlib
 import json
+import logging
 import pickle
 import sqlite3
-import time
-from pathlib import Path
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass
-import logging
 import threading
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +34,8 @@ class CacheEntry:
     accessed_at: float
     access_count: int
     cost_saved: float
-    ttl: Optional[float] = None
-    tags: List[str] = None
+    ttl: float | None = None
+    tags: list[str] = None
 
     def __post_init__(self):
         if self.tags is None:
@@ -60,7 +60,7 @@ class CacheManager:
         self._init_database()
 
         # In-memory cache for frequently accessed items
-        self.memory_cache: Dict[str, CacheEntry] = {}
+        self.memory_cache: dict[str, CacheEntry] = {}
         self.max_memory_items = 1000
 
         # Cache statistics
@@ -108,7 +108,7 @@ class CacheManager:
         if isinstance(data, dict):
             # Sort dict for consistent hashing
             data_str = json.dumps(data, sort_keys=True)
-        elif isinstance(data, (list, tuple)):
+        elif isinstance(data, list | tuple):
             data_str = json.dumps(data)
         else:
             data_str = str(data)
@@ -134,7 +134,7 @@ class CacheManager:
                 if not cache_file.exists():
                     return default
 
-                with open(cache_file, "r") as f:
+                with open(cache_file) as f:
                     cache_data = json.load(f)
 
                 # Check if expired
@@ -152,9 +152,9 @@ class CacheManager:
         self,
         key: str,
         value: Any,
-        ttl: Optional[int] = None,
+        ttl: int | None = None,
         cost_saved: float = 0.0,
-        tags: List[str] = None,
+        tags: list[str] = None,
     ) -> bool:
         """Set a value in the cache."""
         try:
@@ -177,7 +177,7 @@ class CacheManager:
                 with sqlite3.connect(self.db_path) as conn:
                     conn.execute(
                         """
-                        INSERT OR REPLACE INTO cache_entries 
+                        INSERT OR REPLACE INTO cache_entries
                         (key, created_at, accessed_at, access_count, cost_saved, ttl, tags, file_path)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """,
@@ -204,7 +204,7 @@ class CacheManager:
             return False
         return time.time() - entry.created_at > entry.ttl
 
-    def _get_from_disk(self, key: str) -> Optional[CacheEntry]:
+    def _get_from_disk(self, key: str) -> CacheEntry | None:
         """Get cache entry from disk."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute("SELECT * FROM cache_entries WHERE key = ?", (key,))
@@ -249,7 +249,7 @@ class CacheManager:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT OR REPLACE INTO cache_entries 
+                INSERT OR REPLACE INTO cache_entries
                 (key, created_at, accessed_at, access_count, cost_saved, ttl, tags, file_path)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
@@ -270,7 +270,7 @@ class CacheManager:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                UPDATE cache_entries 
+                UPDATE cache_entries
                 SET accessed_at = ?, access_count = ?
                 WHERE key = ?
             """,
@@ -315,7 +315,7 @@ class CacheManager:
 
         return key
 
-    def get_llm_response(self, prompt: str, model: str) -> Optional[str]:
+    def get_llm_response(self, prompt: str, model: str) -> str | None:
         """Get cached LLM response.
 
         Args:
@@ -330,7 +330,7 @@ class CacheManager:
         return self.get(key)
 
     def cache_embedding(
-        self, text: str, model: str, embedding: List[float], cost: float = 0.0
+        self, text: str, model: str, embedding: list[float], cost: float = 0.0
     ) -> str:
         """Cache text embedding.
 
@@ -350,7 +350,7 @@ class CacheManager:
 
         return key
 
-    def get_embedding(self, text: str, model: str) -> Optional[List[float]]:
+    def get_embedding(self, text: str, model: str) -> list[float] | None:
         """Get cached embedding.
 
         Args:
@@ -398,7 +398,7 @@ class CacheManager:
         logger.info(f"Cleaned {cleaned} expired cache entries")
         return cleaned
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
         Returns:
@@ -435,7 +435,7 @@ class CacheManager:
             "misses": self.stats["misses"],
         }
 
-    def clear_by_tags(self, tags: List[str]) -> int:
+    def clear_by_tags(self, tags: list[str]) -> int:
         """Clear cache entries by tags.
 
         Args:

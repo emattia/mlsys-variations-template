@@ -13,10 +13,11 @@ import logging
 import subprocess
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Dict, List
-import yaml
 from enum import Enum
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +55,12 @@ class PluginSpec:
     author: str = "MLX Team"
     version: str = "0.1.0"
     python_version: str = ">=3.9"
-    dependencies: List[str] = field(default_factory=list)
-    dev_dependencies: List[str] = field(default_factory=list)
-    entry_points: Dict[str, str] = field(default_factory=dict)
-    interfaces: List[str] = field(default_factory=list)
-    config_schema: Dict[str, Any] = field(default_factory=dict)
-    test_frameworks: List[str] = field(default_factory=lambda: ["pytest"])
+    dependencies: list[str] = field(default_factory=list)
+    dev_dependencies: list[str] = field(default_factory=list)
+    entry_points: dict[str, str] = field(default_factory=dict)
+    interfaces: list[str] = field(default_factory=list)
+    config_schema: dict[str, Any] = field(default_factory=dict)
+    test_frameworks: list[str] = field(default_factory=lambda: ["pytest"])
 
 
 @dataclass
@@ -69,10 +70,10 @@ class PluginValidationResult:
     plugin_name: str
     validation_timestamp: float
     overall_status: str
-    checks: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    compatibility_matrix: Dict[str, bool] = field(default_factory=dict)
-    performance_metrics: Dict[str, float] = field(default_factory=dict)
-    recommendations: List[str] = field(default_factory=list)
+    checks: dict[str, dict[str, Any]] = field(default_factory=dict)
+    compatibility_matrix: dict[str, bool] = field(default_factory=dict)
+    performance_metrics: dict[str, float] = field(default_factory=dict)
+    recommendations: list[str] = field(default_factory=list)
 
 
 class PluginEcosystemManager:
@@ -94,7 +95,7 @@ class PluginEcosystemManager:
         self.templates = self._load_plugin_templates()
         self.validation_rules = self._load_validation_rules()
 
-    def _load_plugin_templates(self) -> Dict[str, Dict[str, Any]]:
+    def _load_plugin_templates(self) -> dict[str, dict[str, Any]]:
         """Load plugin templates for different plugin types."""
         return {
             PluginType.ML_FRAMEWORK.value: {
@@ -163,7 +164,7 @@ class PluginEcosystemManager:
             },
         }
 
-    def _load_validation_rules(self) -> Dict[str, Any]:
+    def _load_validation_rules(self) -> dict[str, Any]:
         """Load validation rules for plugin development."""
         return {
             "naming_convention": {
@@ -333,15 +334,15 @@ from pathlib import Path
 # MLX plugin base class (would be imported from mlx-core)
 class BasePlugin:
     """Base plugin interface."""
-    
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {{}}
         self.logger = logging.getLogger(self.__class__.__name__)
-    
+
     def initialize(self) -> bool:
         """Initialize the plugin."""
         return True
-    
+
     def cleanup(self) -> None:
         """Clean up plugin resources."""
         pass
@@ -350,18 +351,18 @@ class BasePlugin:
 class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
     """
     {spec.description}
-    
+
     Plugin Type: {spec.plugin_type.value}
     Version: {spec.version}
     """
-    
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         super().__init__(config)
         self.name = "{spec.name}"
         self.version = "{spec.version}"
         self.plugin_type = "{spec.plugin_type.value}"
         self._initialized = False
-    
+
     def initialize(self) -> bool:
         """Initialize the {spec.plugin_type.value} plugin."""
         try:
@@ -373,7 +374,7 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
         except Exception as e:
             self.logger.error(f"Failed to initialize {{self.name}} plugin: {{e}}")
             return False
-    
+
     def _setup_plugin(self) -> None:
         """Setup plugin-specific components."""
         # Implement plugin-specific setup logic
@@ -388,7 +389,7 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
         """Train a model with the provided _data."""
         if not self._initialized:
             raise RuntimeError("Plugin not initialized")
-        
+
         # Implement training logic
         self.logger.info("Training started")
         # TODO: Implement actual training logic
@@ -400,7 +401,7 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
         """Make predictions with the model."""
         if not self._initialized:
             raise RuntimeError("Plugin not initialized")
-        
+
         # Implement prediction logic
         self.logger.info("Making predictions")
         # TODO: Implement actual prediction logic
@@ -412,7 +413,7 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
         """Process the input _data."""
         if not self._initialized:
             raise RuntimeError("Plugin not initialized")
-        
+
         # Implement data processing logic
         self.logger.info("Processing data")
         # TODO: Implement actual processing logic
@@ -424,7 +425,7 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
         """Validate input _data."""
         if not self._initialized:
             raise RuntimeError("Plugin not initialized")
-        
+
         # Implement validation logic
         self.logger.info("Validating data")
         # TODO: Implement actual validation logic
@@ -436,12 +437,12 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
     def {method}(self, *args, **kwargs) -> Any:
         """
         {method.replace("_", " ").title()} functionality.
-        
+
         TODO: Implement {method} logic for {spec.plugin_type.value} plugin.
         """
         if not self._initialized:
             raise RuntimeError("Plugin not initialized")
-        
+
         self.logger.info(f"Executing {method}")
         # TODO: Implement actual {method} logic
         return None
@@ -455,7 +456,7 @@ class {base_class.replace("Plugin", "")}Plugin(BasePlugin):
             # Implement cleanup logic
             self._initialized = False
             self.logger.info(f"{self.name} plugin cleaned up")
-    
+
     def get_info(self) -> Dict[str, Any]:
         """Get plugin information."""
         return {
@@ -523,12 +524,12 @@ from src.{package_name}.plugin import {class_name}
 
 class Test{class_name}:
     """Test suite for {class_name}."""
-    
+
     @pytest.fixture
     def plugin(self):
         """Create plugin instance for testing."""
         return {class_name}()
-    
+
     @pytest.fixture
     def plugin_with_config(self):
         """Create plugin instance with test configuration."""
@@ -537,38 +538,38 @@ class Test{class_name}:
             "timeout": 30
         }}
         return {class_name}(config)
-    
+
     def test_plugin_initialization(self, plugin):
         """Test plugin initialization."""
         assert plugin.name == "{spec.name}"
         assert plugin.version == "{spec.version}"
         assert plugin.plugin_type == "{spec.plugin_type.value}"
         assert not plugin._initialized
-    
+
     def test_plugin_initialize_success(self, plugin):
         """Test successful plugin initialization."""
         result = plugin.initialize()
         assert result is True
         assert plugin._initialized is True
-    
+
     def test_plugin_cleanup(self, plugin):
         """Test plugin cleanup."""
         plugin.initialize()
         assert plugin._initialized is True
-        
+
         plugin.cleanup()
         assert plugin._initialized is False
-    
+
     def test_plugin_info(self, plugin):
         """Test plugin info retrieval."""
         info = plugin.get_info()
-        
+
         assert info["name"] == "{spec.name}"
         assert info["version"] == "{spec.version}"
         assert info["type"] == "{spec.plugin_type.value}"
         assert "initialized" in info
         assert "config" in info
-    
+
     def test_plugin_with_config(self, plugin_with_config):
         """Test plugin with custom configuration."""
         assert plugin_with_config.config["test_mode"] is True
@@ -584,7 +585,7 @@ class Test{class_name}:
     def test_{method}(self, plugin):
         """Test {method} method."""
         plugin.initialize()
-        
+
         # TODO: Add specific test logic for {method}
         result = plugin.{method}(test_data="sample")
         assert result is not None
@@ -596,14 +597,14 @@ class Test{class_name}:
     def test_plugin_performance(self, plugin):
         """Test plugin performance metrics."""
         import time
-        
+
         start_time = time.time()
         plugin.initialize()
         init_time = time.time() - start_time
-        
+
         # Check initialization time
         assert init_time < 5.0, f"Initialization took too long: {init_time}s"
-        
+
         # Check memory usage (simplified)
         import psutil
         import os
@@ -777,29 +778,29 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
-    
+
     - name: Lint with ruff
       run: |
         ruff check .
-    
+
     - name: Type check with mypy
       run: |
         mypy src/
-    
+
     - name: Test with pytest
       run: |
         pytest --cov=src --cov-report=xml
-    
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
@@ -842,7 +843,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions  
+# C extensions
 *.so
 
 # Distribution / packaging
@@ -1064,7 +1065,7 @@ all: install-dev lint typecheck test  ## Run all checks
         logger.info(f"Plugin validation completed: {result.overall_status}")
         return result
 
-    def _validate_plugin_structure(self, plugin_path: Path) -> Dict[str, Any]:
+    def _validate_plugin_structure(self, plugin_path: Path) -> dict[str, Any]:
         """Validate plugin directory structure."""
 
         # Check required files
@@ -1095,7 +1096,7 @@ all: install-dev lint typecheck test  ## Run all checks
 
         return result
 
-    def _validate_code_quality(self, plugin_path: Path) -> Dict[str, Any]:
+    def _validate_code_quality(self, plugin_path: Path) -> dict[str, Any]:
         """Validate code quality using ruff and mypy."""
 
         try:
@@ -1134,7 +1135,7 @@ all: install-dev lint typecheck test  ## Run all checks
 
         return result
 
-    def _validate_tests(self, plugin_path: Path) -> Dict[str, Any]:
+    def _validate_tests(self, plugin_path: Path) -> dict[str, Any]:
         """Validate test coverage and execution."""
 
         try:
@@ -1174,7 +1175,7 @@ all: install-dev lint typecheck test  ## Run all checks
 
         return result
 
-    def _validate_documentation(self, plugin_path: Path) -> Dict[str, Any]:
+    def _validate_documentation(self, plugin_path: Path) -> dict[str, Any]:
         """Validate plugin documentation."""
 
         # Check README.md
@@ -1196,7 +1197,7 @@ all: install-dev lint typecheck test  ## Run all checks
 
         return result
 
-    def _validate_security(self, plugin_path: Path) -> Dict[str, Any]:
+    def _validate_security(self, plugin_path: Path) -> dict[str, Any]:
         """Validate plugin security."""
 
         try:
@@ -1240,7 +1241,7 @@ all: install-dev lint typecheck test  ## Run all checks
 
         return result
 
-    def _validate_performance(self, plugin_path: Path) -> Dict[str, Any]:
+    def _validate_performance(self, plugin_path: Path) -> dict[str, Any]:
         """Validate plugin performance characteristics."""
 
         try:
@@ -1269,7 +1270,7 @@ all: install-dev lint typecheck test  ## Run all checks
 
         return result
 
-    def _check_compatibility(self, plugin_path: Path) -> Dict[str, bool]:
+    def _check_compatibility(self, plugin_path: Path) -> dict[str, bool]:
         """Check plugin compatibility with MLX platform."""
         compatibility = {}
 
@@ -1296,7 +1297,7 @@ all: install-dev lint typecheck test  ## Run all checks
 
         return compatibility
 
-    def _generate_recommendations(self, checks: Dict[str, Dict[str, Any]]) -> List[str]:
+    def _generate_recommendations(self, checks: dict[str, dict[str, Any]]) -> list[str]:
         """Generate recommendations based on validation results."""
         recommendations = []
 

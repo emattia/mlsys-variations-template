@@ -11,10 +11,11 @@ for complex ML systems with databases, APIs, secrets, and deployment requirement
 import ast
 import json
 import re
-import yaml
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
+from typing import Any
+
+import yaml
 
 
 @dataclass
@@ -23,11 +24,11 @@ class ComponentDependency:
 
     name: str
     type: str  # "package", "service", "api", "database"
-    version: Optional[str] = None
-    environment_variables: List[str] = None
-    configuration_path: Optional[str] = None
-    required_for: List[str] = None  # environments where this is required
-    docker_image: Optional[str] = None
+    version: str | None = None
+    environment_variables: list[str] = None
+    configuration_path: str | None = None
+    required_for: list[str] = None  # environments where this is required
+    docker_image: str | None = None
 
     def __post_init__(self):
         if self.environment_variables is None:
@@ -46,27 +47,27 @@ class ComponentMetadata:
     component_type: str  # "infrastructure", "application", "utility"
 
     # File mappings
-    source_files: List[str]
-    config_files: List[str]
-    infrastructure_files: List[str]
-    template_files: List[str]
+    source_files: list[str]
+    config_files: list[str]
+    infrastructure_files: list[str]
+    template_files: list[str]
 
     # Dependencies and requirements
-    python_dependencies: List[str]
-    system_dependencies: List[ComponentDependency]
-    environment_variables: List[str]
-    required_secrets: List[str]
+    python_dependencies: list[str]
+    system_dependencies: list[ComponentDependency]
+    environment_variables: list[str]
+    required_secrets: list[str]
 
     # Integration and compatibility
-    injection_points: Dict[str, str]
-    merge_strategies: Dict[str, str]
-    compatibility_matrix: Dict[str, List[str]]
-    conflicts_with: List[str]
+    injection_points: dict[str, str]
+    merge_strategies: dict[str, str]
+    compatibility_matrix: dict[str, list[str]]
+    conflicts_with: list[str]
 
     # Deployment and infrastructure
-    docker_requirements: Optional[Dict[str, Any]]
-    monitoring_endpoints: List[str]
-    health_checks: List[str]
+    docker_requirements: dict[str, Any] | None
+    monitoring_endpoints: list[str]
+    health_checks: list[str]
 
     def __post_init__(self):
         # Initialize lists if None
@@ -207,7 +208,7 @@ class ProductionComponentExtractor:
         self.docker_config = self._analyze_docker_setup()
         self.requirements = self._parse_requirements()
 
-    def extract_all_components(self) -> Dict[str, ComponentMetadata]:
+    def extract_all_components(self) -> dict[str, ComponentMetadata]:
         """Extract all components with complete production metadata."""
         print("🔍 Starting comprehensive component extraction...")
 
@@ -268,9 +269,7 @@ class ProductionComponentExtractor:
 
         return components
 
-    def _extract_component(
-        self, name: str, mapping: Dict
-    ) -> Optional[ComponentMetadata]:
+    def _extract_component(self, name: str, mapping: dict) -> ComponentMetadata | None:
         """Extract a single component with full analysis."""
 
         # Analyze source code
@@ -320,7 +319,7 @@ class ProductionComponentExtractor:
             health_checks=source_analysis["health_checks"],
         )
 
-    def _analyze_source_code(self, source_paths: List[str]) -> Dict:
+    def _analyze_source_code(self, source_paths: list[str]) -> dict:
         """Comprehensive source code analysis using AST parsing."""
         analysis = {
             "files": [],
@@ -344,7 +343,7 @@ class ProductionComponentExtractor:
 
                 # Parse AST for detailed analysis
                 try:
-                    with open(py_file, "r", encoding="utf-8") as f:
+                    with open(py_file, encoding="utf-8") as f:
                         loaded_data = f.read()
                         tree = ast.parse(loaded_data)
                         visitor = ComponentAnalysisVisitor()
@@ -374,7 +373,7 @@ class ProductionComponentExtractor:
 
         return analysis
 
-    def _analyze_configuration(self, config_paths: List[str]) -> Dict:
+    def _analyze_configuration(self, config_paths: list[str]) -> dict:
         """Analyze Hydra configuration files and dependencies."""
         analysis = {
             "files": [],
@@ -394,7 +393,7 @@ class ProductionComponentExtractor:
 
                 # Parse YAML for environment variables and secrets
                 try:
-                    with open(config_file, "r", encoding="utf-8") as f:
+                    with open(config_file, encoding="utf-8") as f:
                         config_data = yaml.safe_load(f)
                         if config_data:
                             self._extract_config_dependencies(config_data, analysis)
@@ -408,7 +407,7 @@ class ProductionComponentExtractor:
 
         return analysis
 
-    def _extract_config_dependencies(self, config_data: Any, analysis: Dict):
+    def _extract_config_dependencies(self, config_data: Any, analysis: dict):
         """Extract dependencies from configuration _data."""
         if isinstance(config_data, dict):
             for key, value in config_data.items():
@@ -431,14 +430,14 @@ class ProductionComponentExtractor:
                     ):
                         analysis["secrets"].add(key)
 
-                elif isinstance(value, (dict, list)):
+                elif isinstance(value, dict | list):
                     self._extract_config_dependencies(value, analysis)
 
         elif isinstance(config_data, list):
             for item in config_data:
                 self._extract_config_dependencies(item, analysis)
 
-    def _analyze_infrastructure(self, infra_paths: List[str]) -> Dict:
+    def _analyze_infrastructure(self, infra_paths: list[str]) -> dict:
         """Analyze infrastructure files (Docker, scripts, etc.)."""
         analysis = {"files": [], "docker": {}, "scripts": [], "monitoring": []}
 
@@ -482,7 +481,7 @@ class ProductionComponentExtractor:
 
         return analysis
 
-    def _parse_dockerfile(self, dockerfile_path: Path) -> Dict:
+    def _parse_dockerfile(self, dockerfile_path: Path) -> dict:
         """Parse Dockerfile for metadata."""
         docker_info = {
             "base_image": None,
@@ -492,7 +491,7 @@ class ProductionComponentExtractor:
         }
 
         try:
-            with open(dockerfile_path, "r") as f:
+            with open(dockerfile_path) as f:
                 for line in f:
                     line = line.strip()
                     if line.startswith("FROM "):
@@ -513,8 +512,8 @@ class ProductionComponentExtractor:
         return docker_info
 
     def _extract_component_dependencies(
-        self, source_analysis: Dict, config_analysis: Dict
-    ) -> Dict:
+        self, source_analysis: dict, config_analysis: dict
+    ) -> dict:
         """Extract comprehensive component dependencies."""
         dependencies = {"python": [], "system": [], "env_vars": [], "secrets": []}
 
@@ -565,8 +564,8 @@ class ProductionComponentExtractor:
         return dependencies
 
     def _determine_injection_points(
-        self, source_analysis: Dict, component_name: str
-    ) -> Dict:
+        self, source_analysis: dict, component_name: str
+    ) -> dict:
         """Determine where and how to inject this component into other projects."""
         injection_points = {}
 
@@ -595,8 +594,8 @@ class ProductionComponentExtractor:
         return injection_points
 
     def _determine_merge_strategies(
-        self, config_analysis: Dict, component_name: str
-    ) -> Dict:
+        self, config_analysis: dict, component_name: str
+    ) -> dict:
         """Determine how to merge configurations when adding components."""
         strategies = {}
 
@@ -611,8 +610,8 @@ class ProductionComponentExtractor:
         return strategies
 
     def _build_compatibility_matrix(
-        self, component_name: str, dependencies: Dict
-    ) -> Dict:
+        self, component_name: str, dependencies: dict
+    ) -> dict:
         """Build compatibility matrix for component relationships."""
         compatibility = {"enhances": {}, "conflicts": []}
 
@@ -669,7 +668,7 @@ class ProductionComponentExtractor:
     ):
         """Convert source file to template with variable substitution."""
         try:
-            with open(source_path, "r", encoding="utf-8") as f:
+            with open(source_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Template variable substitutions
@@ -725,7 +724,7 @@ Endpoints: {", ".join(metadata.monitoring_endpoints)}
         with open(guide_file, "w") as f:
             f.write(guide_content)
 
-    def _extract_environment_variables(self) -> Dict:
+    def _extract_environment_variables(self) -> dict:
         """Extract environment variables from .env files."""
         env_vars = {}
         env_files = [".env", ".env-example", ".env.development"]
@@ -734,7 +733,7 @@ Endpoints: {", ".join(metadata.monitoring_endpoints)}
             env_path = self.source_dir / env_file
             if env_path.exists():
                 try:
-                    with open(env_path, "r") as f:
+                    with open(env_path) as f:
                         for line in f:
                             line = line.strip()
                             if line and not line.startswith("#") and "=" in line:
@@ -745,7 +744,7 @@ Endpoints: {", ".join(metadata.monitoring_endpoints)}
 
         return env_vars
 
-    def _analyze_docker_setup(self) -> Dict:
+    def _analyze_docker_setup(self) -> dict:
         """Analyze Docker configuration."""
         docker_info = {}
 
@@ -753,14 +752,14 @@ Endpoints: {", ".join(metadata.monitoring_endpoints)}
         compose_path = self.source_dir / "docker-compose.yml"
         if compose_path.exists():
             try:
-                with open(compose_path, "r") as f:
+                with open(compose_path) as f:
                     docker_info["compose"] = yaml.safe_load(f)
             except Exception as e:
                 print(f"⚠️  Warning: Could not parse docker-compose.yml: {e}")
 
         return docker_info
 
-    def _parse_requirements(self) -> List[str]:
+    def _parse_requirements(self) -> list[str]:
         """Parse requirements.txt for dependency information."""
         requirements = []
         req_files = ["requirements.txt", "requirements-dev.txt"]
@@ -769,7 +768,7 @@ Endpoints: {", ".join(metadata.monitoring_endpoints)}
             req_path = self.source_dir / req_file
             if req_path.exists():
                 try:
-                    with open(req_path, "r") as f:
+                    with open(req_path) as f:
                         for line in f:
                             line = line.strip()
                             if line and not line.startswith("#"):

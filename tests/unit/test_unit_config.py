@@ -1,9 +1,10 @@
 """Unit tests for configuration management."""
 
 import tempfile
-import yaml
 from pathlib import Path
+
 import pytest
+import yaml
 
 from src.config.manager import ConfigManager
 from src.config.models import APIConfig, DetailedModelConfig

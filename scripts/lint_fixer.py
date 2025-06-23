@@ -19,7 +19,6 @@ Usage:
 
 import re
 from pathlib import Path
-from typing import Dict
 
 
 class LintFixer:
@@ -198,7 +197,7 @@ class LintFixer:
         loaded_data = re.sub(r"l\.value", r"levelevel.value", loaded_data)
         return loaded_data
 
-    def fix_all_files(self) -> Dict[str, int]:
+    def fix_all_files(self) -> dict[str, int]:
         """Fix all Python files in the repository."""
         python_files = []
 

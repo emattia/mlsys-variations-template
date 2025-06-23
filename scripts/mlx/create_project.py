@@ -6,11 +6,10 @@ Creates new MLX-based ML projects with intelligent component injection.
 Replaces the old template renaming approach with composable architecture.
 """
 
-import sys
-import subprocess
-import shutil
 import json
-from typing import List, Optional
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -19,8 +18,8 @@ def ensure_dependencies():
     required_packages = ["typer[all]", "rich"]
 
     try:
-        import typer  # noqa: F401
         import rich  # noqa: F401
+        import typer  # noqa: F401
 
         return  # Dependencies already available
     except ImportError:
@@ -89,7 +88,7 @@ from projen import DevEnvironmentDockerImage, GitpodOptions
 
 def main():
     """Create the MLX project configuration."""
-    
+
     project = PythonProject(
         name="mlx-project",
         author_name="MLX Team",
@@ -97,11 +96,11 @@ def main():
         version="1.0.0",
         description="MLX-based ML project with composable components",
         license="MIT",
-        
+
         # Python Configuration
         module_name="src",
         python_version="3.8",
-        
+
         # Dependencies
         deps=[
             "fastapi>=0.104.0",
@@ -110,7 +109,7 @@ def main():
             "hydra-core>=1.3.0",
             "mlx-core>=0.1.0",
         ],
-        
+
         dev_deps=[
             "pytest>=7.0.0",
             "pytest-asyncio>=0.21.0",
@@ -118,11 +117,11 @@ def main():
             "ruff>=0.1.0",
             "mypy>=1.0.0",
         ],
-        
+
         # Project structure
         src_dir="src",
         test_dir="tests",
-        
+
         # Git configuration
         git_ignore_options={
             "patterns": [
@@ -130,26 +129,26 @@ def main():
                 "outputs/", "mlruns/", "data/raw/", "data/processed/",
             ]
         },
-        
+
         # GitHub integration
         github=True,
         github_options={
             "mergify": True,
             "pull_request_template": True,
         },
-        
+
         # Development environment
         gitpod=GitpodOptions(
             docker_image=DevEnvironmentDockerImage.from_image("python:3.9"),
             prebuilds=True,
         ),
-        
+
         # Scripts and tasks
         scripts={
             "api:dev": "uvicorn src.api.main:app --reload --port 8000",
             "api:prod": "uvicorn src.api.main:app --host 0.0.0.0 --port 8000",
             "test:unit": "pytest tests/unit -v",
-            "test:integration": "pytest tests/integration -v", 
+            "test:integration": "pytest tests/integration -v",
             "test:all": "pytest tests/ -v",
             "lint": "ruff check src/ tests/",
             "format": "black src/ tests/",
@@ -157,20 +156,20 @@ def main():
             "mlx:status": "python -m mlx.cli status",
         },
     )
-    
+
     # MLX-specific configuration
     project.add_task(
         "mlx:health",
         description="Check MLX project health",
         exec="python scripts/mlx/health_check.py",
     )
-    
+
     project.add_task(
         "mlx:components",
-        description="List installed MLX components", 
+        description="List installed MLX components",
         exec="python scripts/mlx/list_components.py",
     )
-    
+
     project.synthesize()
 
 
@@ -205,7 +204,7 @@ def create(
     output_dir: Path = typer.Option(
         Path.cwd(), "--output", "-o", help="Output directory"
     ),
-    components: Optional[List[str]] = typer.Option(
+    components: list[str] | None = typer.Option(
         None, "--add-component", "-c", help="Additional components to include"
     ),
 ):
@@ -293,7 +292,7 @@ Components: [yellow]{", ".join(all_components)}[/yellow]
 
 Next steps:
 1. [bold]cd {project_kebab}[/bold]
-2. [bold]uv pip install -e .[dev][/bold]  
+2. [bold]uv pip install -e .[dev][/bold]
 3. [bold]projen[/bold]  # Synthesize configuration
 4. [bold]projen api:dev[/bold]  # Start development server
 5. [bold]mlx status[/bold]  # Check project health
@@ -302,11 +301,10 @@ Next steps:
         console.print(Panel(success_text, title="Success!", border_style="green"))
 
     except Exception as e:
-        console.print(f"\n[red]Error creating project:[/red] {e}")
-        if project_path.exists():
-            console.print("🧹 Cleaning up partial project...")
-            shutil.rmtree(project_path)
-        raise typer.Exit(1)
+        console.print(f"❌ [red]Error creating project: {e}[/red]")
+        console.print("🧹 Cleaning up partial project...")
+        shutil.rmtree(project_path)
+        raise typer.Exit(1) from None
 
 
 def copy_foundation_structure(source: Path, target: Path, project_snake: str):
@@ -361,7 +359,7 @@ def setup_projen_config(
     projenrc_path.write_text(projenrc_loaded_data)
 
 
-def inject_components(project_path: Path, components: List[str]):
+def inject_components(project_path: Path, components: list[str]):
     """Inject MLX components into the new project."""
 
     # This would use the MLX injection system once Phase 2 is complete

@@ -3,12 +3,14 @@ This module tests the functions in src.data.loading.
 """
 
 from __future__ import annotations
+
+import tempfile
 from pathlib import Path
+
 import polars as pl
 import pytest
-import tempfile
 
-from src.data.loading import load_data, save_data, load_local_dataset
+from src.data.loading import load_data, load_local_dataset, save_data
 
 
 class TestLoadData:
@@ -77,7 +79,7 @@ class TestLoadData:
 
     def test_load_data_nonexistent_file(self):
         """Test loading non-existent file."""
-        with pytest.raises(Exception):  # Could be FileNotFoundError or other
+        with pytest.raises((FileNotFoundError, OSError)):
             load_data("nonexistent.csv")
 
 
