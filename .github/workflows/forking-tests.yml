@@ -5,7 +5,7 @@ on:
     branches: [ main, develop ]
     paths:
       - 'mlsys'
-      - 'src/analysis_template/**'
+      - 'src/test_project/**'
       - 'pyproject.toml'
       - 'docs/**'
       - 'tests/integration/test_forking_procedure.py'
@@ -14,7 +14,7 @@ on:
     branches: [ main, develop ]
     paths:
       - 'mlsys'
-      - 'src/analysis_template/**'
+      - 'src/test_project/**'
       - 'pyproject.toml'
       - 'docs/**'
       - 'tests/integration/test_forking_procedure.py'

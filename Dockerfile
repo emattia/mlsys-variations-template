@@ -1,4 +1,5 @@
-# Multi-stage Dockerfile for MLOps Template API
+# Multi-stage Dockerfile for test-project API
+# Project: test-project
 
 # Build stage
 FROM python:3.11-slim as builder

@@ -109,7 +109,7 @@ class TestAPIIntegration:
 
         # Make a prediction
         prediction_request = {
-            "features": [5.1, 3.5, 1.4, 0.2],
+            "features": [[5.1, 3.5, 1.4, 0.2]],  # Single prediction in batch format
             "model_name": "default",
             "return_probabilities": True,
         }
@@ -118,12 +118,12 @@ class TestAPIIntegration:
         assert response.status_code == 200
 
         data = response.json()
-        assert "prediction" in data
+        assert "predictions" in data
         assert "probabilities" in data
         assert "model_name" in data
-        assert "timestamp" in data
-        assert "processing_time_ms" in data
+        assert "status" in data
         assert data["model_name"] == "default"
+        assert data["status"] == "success"
 
         # Test batch prediction
         batch_request = {
@@ -136,14 +136,14 @@ class TestAPIIntegration:
         assert response.status_code == 200
 
         data = response.json()
-        assert len(data["prediction"]) == 2  # Two predictions
+        assert len(data["predictions"]) == 2  # Two predictions
 
     @pytest.mark.integration
     async def test_error_handling(self, async_client: httpx.AsyncClient):
         """Test API error handling."""
         # Test prediction with non-existent model
         prediction_request = {
-            "features": [1.0, 2.0, 3.0, 4.0],
+            "features": [[1.0, 2.0, 3.0, 4.0]],  # Correct batch format
             "model_name": "nonexistent",
         }
 
@@ -175,7 +175,7 @@ class TestAPIIntegration:
         # Test docs endpoint
         response = await async_client.get("/docs")
         assert response.status_code == 200
-        assert "text/html" in response.headers["loaded_data-type"]
+        assert "text/html" in response.headers["content-type"]
 
     @pytest.mark.integration
     async def test_concurrent_predictions(self, async_client: httpx.AsyncClient):
@@ -185,7 +185,10 @@ class TestAPIIntegration:
         assert response.status_code == 200
 
         # Make multiple concurrent predictions
-        prediction_request = {"features": [5.1, 3.5, 1.4, 0.2], "model_name": "default"}
+        prediction_request = {
+            "features": [[5.1, 3.5, 1.4, 0.2]],
+            "model_name": "default",
+        }
 
         # Create multiple concurrent requests
         tasks = []
@@ -200,7 +203,7 @@ class TestAPIIntegration:
         for response in responses:
             assert response.status_code == 200
             data = response.json()
-            assert "prediction" in data
+            assert "predictions" in data
 
 
 @pytest.mark.integration
@@ -215,7 +218,10 @@ class TestAPIPerformance:
         response = await async_client.post("/api/v1/models/default/create")
         assert response.status_code == 200
 
-        prediction_request = {"features": [5.1, 3.5, 1.4, 0.2], "model_name": "default"}
+        prediction_request = {
+            "features": [[5.1, 3.5, 1.4, 0.2]],
+            "model_name": "default",
+        }
 
         # Measure response times
         response_times = []
@@ -262,7 +268,7 @@ class TestAPIPerformance:
             assert response.status_code == 200
 
             data = response.json()
-            assert len(data["prediction"]) == batch_size
+            assert len(data["predictions"]) == batch_size
 
             # Check that batch processing is efficient
             processing_time = end_time - start_time

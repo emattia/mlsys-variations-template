@@ -37,7 +37,15 @@ def transform_project(project_name: str) -> bool:
     """Transform the current template project to a named project."""
     try:
         import shutil
-        import toml
+        
+        # Try to import toml, install if missing
+        try:
+            import toml
+        except ImportError:
+            print("📦 Installing missing 'toml' dependency...")
+            import subprocess
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "toml"])
+            import toml
         
         # Convert names
         snake_case = project_name.replace("-", "_")
@@ -80,7 +88,33 @@ def transform_project(project_name: str) -> bool:
             with open(pyproject_path, "w") as f:
                 toml.dump(data, f)
         
-        # 3. Update any import references in the codebase
+        # 3. Update Dockerfile
+        dockerfile_path = Path("Dockerfile")
+        if dockerfile_path.exists():
+            print("🐳 Updating Dockerfile")
+            content = dockerfile_path.read_text()
+            # Add a marker to indicate the project has been transformed
+            updated_content = content.replace(
+                "# Multi-stage Dockerfile for MLOps Template API",
+                f"# Multi-stage Dockerfile for {project_name} API\n# Project: {project_name}"
+            )
+            dockerfile_path.write_text(updated_content)
+        
+        # 4. Update GitHub workflows
+        workflows_dir = Path(".github/workflows")
+        if workflows_dir.exists():
+            print("⚙️ Updating GitHub workflows")
+            for workflow_file in workflows_dir.glob("*.yml"):
+                try:
+                    content = workflow_file.read_text()
+                    updated_content = content.replace("analysis_template", snake_case)
+                    updated_content = updated_content.replace("src/analysis_template", f"src/{snake_case}")
+                    workflow_file.write_text(updated_content)
+                    print(f"🔄 Updated {workflow_file}")
+                except Exception as e:
+                    print(f"⚠️  Warning: Could not update {workflow_file}: {e}")
+        
+        # 5. Update any import references in the codebase
         files_to_update = [
             "src/config/models.py",
             "tests/unit/test_config.py", 
@@ -98,8 +132,8 @@ def transform_project(project_name: str) -> bool:
                 except Exception as e:
                     print(f"⚠️  Warning: Could not update {file_path}: {e}")
         
-        # 4. Update any remaining references
-        # Update imports in __init__.py files and other potential references
+        # 6. Update any remaining references in Python files
+        print("🔄 Updating Python imports...")
         for py_file in Path("src").rglob("*.py"):
             try:
                 content = py_file.read_text()
@@ -110,6 +144,33 @@ def transform_project(project_name: str) -> bool:
             except Exception:
                 pass  # Skip files that can't be read/written
         
+        # 7. Update configuration files
+        config_files = [
+            "conf/config.yaml",
+            "conf/ml_systems.yaml",
+            "mkdocs.yml",
+            "README.md"
+        ]
+        
+        for config_file_str in config_files:
+            config_file = Path(config_file_str)
+            if config_file.exists():
+                try:
+                    content = config_file.read_text()
+                    if "analysis_template" in content:
+                        updated_content = content.replace("analysis_template", snake_case)
+                        config_file.write_text(updated_content)
+                        print(f"🔄 Updated {config_file}")
+                except Exception as e:
+                    print(f"⚠️  Warning: Could not update {config_file}: {e}")
+        
+        # 8. Create a test file to verify imports work
+        test_import_file = new_src / "__init__.py"
+        if not test_import_file.exists():
+            test_import_file.write_text(f'"""Package {snake_case}."""\n')
+            print(f"📝 Created {test_import_file}")
+        
+        print(f"✅ Transformation completed successfully!")
         return True
         
     except Exception as e:
