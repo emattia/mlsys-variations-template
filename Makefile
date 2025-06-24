@@ -198,12 +198,12 @@ format:
 # Temporary working targets for core codebase
 lint-core:
 	@echo "Running linting checks on core codebase..."
-	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff check src/ .projenrc.py
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff check src/ tests/
 
 format-core:
 	@echo "Formatting core codebase..."
-	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff format src/ .projenrc.py
-	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff check --fix src/ .projenrc.py
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff format src/ tests/
+	@if [ -f "$(VENV_ACTIVATE)" ]; then . $(VENV_ACTIVATE); fi; ruff check --fix src/ tests/
 
 type-check:
 	@echo "Running type checks..."
@@ -255,6 +255,12 @@ security-scan-comprehensive: security-check trivy-fs-scan-all
 
 quality-checks: complexity-check security-scan-local
 	@echo "Quality checks completed!"
+
+# New comprehensive quality check using our script
+quality-check-comprehensive:
+	@echo "Running comprehensive quality checks with our custom script..."
+	@chmod +x scripts/quality-check.sh
+	@./scripts/quality-check.sh
 
 test:
 	@echo "Running all tests..."

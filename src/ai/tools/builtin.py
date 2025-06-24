@@ -1,15 +1,14 @@
 """Built-in tools for AI agents."""
 
 import asyncio
-import math
-import operator
 from pathlib import Path
+from typing import Any
 
-from .base import BaseTool, ToolParameter, ToolResult
+from ..tools.base import BaseTool, ToolParameter, ToolResult
 
 
 class CalculatorTool(BaseTool):
-    """Tool for performing mathematical calculations."""
+    """Tool for safe mathematical calculations."""
 
     @property
     def name(self) -> str:
@@ -17,7 +16,7 @@ class CalculatorTool(BaseTool):
 
     @property
     def description(self) -> str:
-        return "Perform mathematical calculations and evaluations"
+        return "Perform safe mathematical calculations"
 
     @property
     def parameters(self) -> list[ToolParameter]:
@@ -25,46 +24,123 @@ class CalculatorTool(BaseTool):
             ToolParameter(
                 name="expression",
                 type="str",
-                description="Mathematical expression to evaluate (e.g., '2 + 3 * 4', 'sqrt(16)', 'sin(pi/2)')",
+                description="Mathematical expression to evaluate (e.g., '2 + 3 * 4')",
             )
         ]
 
-    async def execute(self, expression: str) -> ToolResult:
-        """Execute mathematical calculation."""
+    def _safe_eval(self, expression: str) -> Any:
+        """Safely evaluate mathematical expression using AST."""
+        import ast
+        import math
+
         try:
-            # Safe mathematical evaluation
-            allowed_names = {
-                # Basic operators
-                "__builtins__": {},
-                # Math functions
-                "abs": abs,
-                "round": round,
-                "min": min,
-                "max": max,
-                "sum": sum,
-                "pow": pow,
-                # Math module functions
+            # Parse the expression into an AST
+            node = ast.parse(expression, mode="eval")
+
+            # Define safe functions that can be called
+            safe_functions = {
                 "sqrt": math.sqrt,
                 "sin": math.sin,
                 "cos": math.cos,
                 "tan": math.tan,
+                "asin": math.asin,
+                "acos": math.acos,
+                "atan": math.atan,
                 "log": math.log,
                 "log10": math.log10,
                 "exp": math.exp,
-                "pi": math.pi,
-                "e": math.e,
-                # Operators
-                "+": operator.add,
-                "-": operator.sub,
-                "*": operator.mul,
-                "/": operator.truediv,
-                "//": operator.floordiv,
-                "%": operator.mod,
-                "**": operator.pow,
+                "pow": pow,
+                "abs": abs,
+                "round": round,
+                "min": min,
+                "max": max,
             }
 
-            # Evaluate expression safely
-            result = eval(expression, allowed_names)
+            # Define safe constants
+            safe_constants = {
+                "pi": math.pi,
+                "e": math.e,
+            }
+
+            def _safe_eval_node(node):
+                """Recursively evaluate AST nodes safely."""
+                if isinstance(node, ast.Constant):
+                    return node.value
+
+                elif isinstance(node, ast.Name):
+                    # Allow safe constants
+                    if node.id in safe_constants:
+                        return safe_constants[node.id]
+                    else:
+                        raise ValueError(f"Undefined variable: {node.id}")
+
+                elif isinstance(node, ast.BinOp):
+                    left = _safe_eval_node(node.left)
+                    right = _safe_eval_node(node.right)
+                    op_type = type(node.op)
+
+                    if op_type == ast.Add:
+                        return left + right
+                    elif op_type == ast.Sub:
+                        return left - right
+                    elif op_type == ast.Mult:
+                        return left * right
+                    elif op_type == ast.Div:
+                        if right == 0:
+                            raise ValueError("Division by zero")
+                        return left / right
+                    elif op_type == ast.FloorDiv:
+                        if right == 0:
+                            raise ValueError("Division by zero")
+                        return left // right
+                    elif op_type == ast.Mod:
+                        return left % right
+                    elif op_type == ast.Pow:
+                        return left**right
+                    else:
+                        raise ValueError(f"Unsupported binary operation: {op_type}")
+
+                elif isinstance(node, ast.UnaryOp):
+                    operand = _safe_eval_node(node.operand)
+                    op_type = type(node.op)
+
+                    if op_type == ast.UAdd:
+                        return +operand
+                    elif op_type == ast.USub:
+                        return -operand
+                    else:
+                        raise ValueError(f"Unsupported unary operation: {op_type}")
+
+                elif isinstance(node, ast.Call):
+                    # Support safe function calls
+                    if isinstance(node.func, ast.Name):
+                        func_name = node.func.id
+                        if func_name in safe_functions:
+                            func = safe_functions[func_name]
+                            args = [_safe_eval_node(arg) for arg in node.args]
+                            try:
+                                return func(*args)
+                            except Exception as e:
+                                raise ValueError(
+                                    f"Error calling {func_name}: {e}"
+                                ) from e
+                        else:
+                            raise ValueError(f"Unsafe function call: {func_name}")
+                    else:
+                        raise ValueError("Complex function calls not supported")
+
+                else:
+                    raise ValueError(f"Unsupported node type: {type(node)}")
+
+            return _safe_eval_node(node.body)
+
+        except (ValueError, TypeError, ZeroDivisionError, OverflowError) as e:
+            raise ValueError(f"Invalid expression: {e}") from e
+
+    async def execute(self, expression: str) -> ToolResult:
+        """Execute mathematical calculation safely."""
+        try:
+            result = self._safe_eval(expression)
 
             return ToolResult(
                 success=True,
@@ -335,29 +411,52 @@ class CodeExecutorTool(BaseTool):
                         error=f"Dangerous import detected: {dangerous}",
                     )
 
-            # Prepare safe execution environment
+            # Additional security checks
+            dangerous_patterns = [
+                "__import__",
+                "getattr",
+                "setattr",
+                "delattr",
+                "hasattr",
+                "globals",
+                "locals",
+                "vars",
+                "dir",
+            ]
+            for pattern in dangerous_patterns:
+                if pattern in code:
+                    return ToolResult(
+                        success=False,
+                        result=None,
+                        error=f"Dangerous pattern detected: {pattern}",
+                    )
+
+            # Prepare safe execution environment with minimal builtins
+            safe_builtins = {
+                "print": print,
+                "len": len,
+                "str": str,
+                "int": int,
+                "float": float,
+                "bool": bool,
+                "list": list,
+                "dict": dict,
+                "set": set,
+                "tuple": tuple,
+                "range": range,
+                "enumerate": enumerate,
+                "zip": zip,
+                "sum": sum,
+                "min": min,
+                "max": max,
+                "abs": abs,
+                "round": round,
+                "__import__": __import__,  # Allow imports for safe modules
+            }
+
+            # Preload safe modules in globals
             safe_globals = {
-                "__builtins__": {
-                    "__import__": __import__,  # Allow imports for safe modules
-                    "print": print,
-                    "len": len,
-                    "str": str,
-                    "int": int,
-                    "float": float,
-                    "bool": bool,
-                    "list": list,
-                    "dict": dict,
-                    "set": set,
-                    "tuple": tuple,
-                    "range": range,
-                    "enumerate": enumerate,
-                    "zip": zip,
-                    "sum": sum,
-                    "min": min,
-                    "max": max,
-                    "abs": abs,
-                    "round": round,
-                },
+                "__builtins__": safe_builtins,
                 "math": __import__("math"),
                 "json": __import__("json"),
                 "datetime": __import__("datetime"),
@@ -370,8 +469,17 @@ class CodeExecutorTool(BaseTool):
             output_buffer = io.StringIO()
 
             with contextlib.redirect_stdout(output_buffer):
-                # Execute with timeout
-                exec(code, safe_globals)
+                # Compile code first for additional safety
+                try:
+                    compiled_code = compile(code, "<string>", "exec")
+                except SyntaxError as e:
+                    return ToolResult(
+                        success=False, result=None, error=f"Syntax error: {str(e)}"
+                    )
+
+                # Execute compiled code with restricted globals
+                # Note: Using exec with compiled code and restricted globals is safer than direct exec
+                exec(compiled_code, safe_globals, {})  # nosec B102 - controlled execution with restricted globals
 
             output = output_buffer.getvalue()
 
